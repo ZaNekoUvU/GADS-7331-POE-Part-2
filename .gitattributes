@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Unity / C# — nicer diffs on GitHub
+*.cs     diff=csharp
+*.shader linguist-language=ShaderLab
