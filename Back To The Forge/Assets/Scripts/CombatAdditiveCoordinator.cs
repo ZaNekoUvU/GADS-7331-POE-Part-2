@@ -1,21 +1,29 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Place in the exploration scene. Loads the combat scene additively and disables
-/// the exploration camera and audio listener while combat is active.
+/// Lives in the exploration scene. Loads combat additively, hides exploration (cameras, listeners,
+/// renderers, canvases) and optionally sets Time.timeScale to 0 while combat is shown.
 /// </summary>
 public class CombatAdditiveCoordinator : MonoBehaviour
 {
     [SerializeField] private string combatSceneName = "Combat Scene";
-    [SerializeField] private Camera explorationCamera;
-    [SerializeField] private AudioListener explorationAudioListener;
 
-    [Tooltip("If true, sets Time.timeScale to 0 while combat is shown. Combat logic must use unscaled time or set scale back to 1.")]
-    [SerializeField] private bool pauseExplorationWithTimeScale;
+    [Tooltip("Pauses scaled time while combat is shown. Combat UI/logic must use unscaled time (e.g. Animator Update Mode Unscaled, WaitForSecondsRealtime, UI Toolkit unscaled).")]
+    [SerializeField] private bool pauseExplorationWithTimeScale = true;
 
     private AsyncOperation _loadOp;
     private float _savedTimeScale = 1f;
+
+    private Camera[] _explorationCameras;
+    private bool[] _explorationCamerasWereEnabled;
+    private AudioListener[] _explorationListeners;
+    private bool[] _explorationListenersWereEnabled;
+    private Renderer[] _explorationRenderers;
+    private bool[] _explorationRenderersWereEnabled;
+    private Canvas[] _explorationCanvases;
+    private bool[] _explorationCanvasesWereEnabled;
 
     /// <summary>True while the combat scene is loading or already loaded.</summary>
     public bool IsCombatActiveOrLoading
@@ -33,6 +41,11 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        CacheExplorationSceneOutput();
+    }
+
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -43,6 +56,52 @@ public class CombatAdditiveCoordinator : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
+    }
+
+    /// <summary>Snapshots cameras/listeners in this GameObject's scene (exploration). Call before combat if you add cameras at runtime.</summary>
+    public void RefreshExplorationOutputCache()
+    {
+        CacheExplorationSceneOutput();
+    }
+
+    private void CacheExplorationSceneOutput()
+    {
+        var scene = gameObject.scene;
+        if (!scene.IsValid())
+            return;
+
+        var cameras = new List<Camera>();
+        var listeners = new List<AudioListener>();
+        var renderers = new List<Renderer>();
+        var canvases = new List<Canvas>();
+
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            cameras.AddRange(root.GetComponentsInChildren<Camera>(true));
+            listeners.AddRange(root.GetComponentsInChildren<AudioListener>(true));
+            renderers.AddRange(root.GetComponentsInChildren<Renderer>(true));
+            canvases.AddRange(root.GetComponentsInChildren<Canvas>(true));
+        }
+
+        _explorationCameras = cameras.ToArray();
+        _explorationCamerasWereEnabled = new bool[_explorationCameras.Length];
+        for (var i = 0; i < _explorationCameras.Length; i++)
+            _explorationCamerasWereEnabled[i] = _explorationCameras[i] != null && _explorationCameras[i].enabled;
+
+        _explorationListeners = listeners.ToArray();
+        _explorationListenersWereEnabled = new bool[_explorationListeners.Length];
+        for (var i = 0; i < _explorationListeners.Length; i++)
+            _explorationListenersWereEnabled[i] = _explorationListeners[i] != null && _explorationListeners[i].enabled;
+
+        _explorationRenderers = renderers.ToArray();
+        _explorationRenderersWereEnabled = new bool[_explorationRenderers.Length];
+        for (var i = 0; i < _explorationRenderers.Length; i++)
+            _explorationRenderersWereEnabled[i] = _explorationRenderers[i] != null && _explorationRenderers[i].enabled;
+
+        _explorationCanvases = canvases.ToArray();
+        _explorationCanvasesWereEnabled = new bool[_explorationCanvases.Length];
+        for (var i = 0; i < _explorationCanvases.Length; i++)
+            _explorationCanvasesWereEnabled[i] = _explorationCanvases[i] != null && _explorationCanvases[i].enabled;
     }
 
     /// <summary>Call from encounter zones, UI, etc.</summary>
@@ -56,6 +115,9 @@ public class CombatAdditiveCoordinator : MonoBehaviour
             Debug.LogError($"{nameof(CombatAdditiveCoordinator)}: combat scene name is empty.", this);
             return;
         }
+
+        // Refresh so we never use Camera.main after combat exists; exploration-only refs only.
+        CacheExplorationSceneOutput();
 
         _loadOp = SceneManager.LoadSceneAsync(combatSceneName, LoadSceneMode.Additive);
         if (_loadOp == null)
@@ -84,12 +146,6 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         if (scene.name != combatSceneName)
             return;
 
-        if (explorationCamera == null)
-            explorationCamera = Camera.main;
-
-        if (explorationAudioListener == null && explorationCamera != null)
-            explorationAudioListener = explorationCamera.GetComponent<AudioListener>();
-
         SetExplorationOutputEnabled(false);
 
         if (pauseExplorationWithTimeScale)
@@ -114,10 +170,64 @@ public class CombatAdditiveCoordinator : MonoBehaviour
 
     private void SetExplorationOutputEnabled(bool enabled)
     {
-        if (explorationCamera != null)
-            explorationCamera.enabled = enabled;
+        if (_explorationCameras != null)
+        {
+            for (var i = 0; i < _explorationCameras.Length; i++)
+            {
+                var cam = _explorationCameras[i];
+                if (cam == null)
+                    continue;
 
-        if (explorationAudioListener != null)
-            explorationAudioListener.enabled = enabled;
+                if (enabled)
+                    cam.enabled = _explorationCamerasWereEnabled[i];
+                else
+                    cam.enabled = false;
+            }
+        }
+
+        if (_explorationListeners != null)
+        {
+            for (var i = 0; i < _explorationListeners.Length; i++)
+            {
+                var listener = _explorationListeners[i];
+                if (listener == null)
+                    continue;
+
+                if (enabled)
+                    listener.enabled = _explorationListenersWereEnabled[i];
+                else
+                    listener.enabled = false;
+            }
+        }
+
+        if (_explorationRenderers != null)
+        {
+            for (var i = 0; i < _explorationRenderers.Length; i++)
+            {
+                var r = _explorationRenderers[i];
+                if (r == null)
+                    continue;
+
+                if (enabled)
+                    r.enabled = _explorationRenderersWereEnabled[i];
+                else
+                    r.enabled = false;
+            }
+        }
+
+        if (_explorationCanvases != null)
+        {
+            for (var i = 0; i < _explorationCanvases.Length; i++)
+            {
+                var c = _explorationCanvases[i];
+                if (c == null)
+                    continue;
+
+                if (enabled)
+                    c.enabled = _explorationCanvasesWereEnabled[i];
+                else
+                    c.enabled = false;
+            }
+        }
     }
 }
