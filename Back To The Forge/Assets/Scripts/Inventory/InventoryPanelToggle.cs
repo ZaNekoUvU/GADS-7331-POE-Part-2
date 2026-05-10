@@ -9,6 +9,12 @@ public class InventoryPanelToggle : MonoBehaviour
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TMP_Text inventoryText;
 
+    private void Awake()
+    {
+        if (inventory == null)
+            inventory = FindFirstObjectByType<Inventory>();
+    }
+
     private void OnEnable()
     {
         if (inventoryAction != null)
@@ -34,14 +40,22 @@ public class InventoryPanelToggle : MonoBehaviour
 
     private void Update()
     {
-        if (inventoryAction == null || panelRoot == null)
+        if (panelRoot == null)
             return;
 
-        var held = inventoryAction.action.IsPressed();
+        var held = IsInventoryHeld();
         panelRoot.SetActive(held);
 
         if (held)
             RefreshText();
+    }
+
+    private bool IsInventoryHeld()
+    {
+        if (inventoryAction != null && inventoryAction.action != null)
+            return inventoryAction.action.IsPressed();
+
+        return Keyboard.current != null && Keyboard.current.tabKey.isPressed;
     }
 
     private void RefreshText()

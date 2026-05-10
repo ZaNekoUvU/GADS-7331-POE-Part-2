@@ -61,7 +61,7 @@ public class PlayerMiningController : MonoBehaviour
             return;
         }
 
-        if (!interactAction.action.IsPressed())
+        if (!IsInteractHeld())
         {
             _mineAccumulator = 0f;
             return;
@@ -110,5 +110,13 @@ public class PlayerMiningController : MonoBehaviour
         }
 
         return best;
+    }
+
+    private bool IsInteractHeld()
+    {
+        if (interactAction != null && interactAction.action != null)
+            return interactAction.action.IsPressed();
+
+        return Keyboard.current != null && Keyboard.current.eKey.isPressed;
     }
 }

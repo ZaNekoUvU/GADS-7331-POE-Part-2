@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 2319464251307601672}
   - component: {fileID: 83949042872391989}
   - component: {fileID: 870438584397927842}
+  - component: {fileID: 881102030405060708}
+  - component: {fileID: 881102030405060709}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -182,6 +184,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement2D
   moveAction: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   moveSpeed: 5
+--- !u!114 &881102030405060708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836394787678868948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c3d4e5f60718293a4b5c6d7e8f9012, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Inventory
+--- !u!114 &881102030405060709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836394787678868948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f60718293a4b5c6d70891a2b3c4d5e6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMiningController
+  interactAction: {fileID: 0}
+  inventory: {fileID: 881102030405060708}
 --- !u!1 &997066532484814596
 GameObject:
   m_ObjectHideFlags: 0
