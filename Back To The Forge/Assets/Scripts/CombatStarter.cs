@@ -20,8 +20,14 @@ public class CombatStarter : MonoBehaviour
     {
         CombatSession.EncounterId = encounterId;
 
+        var party = FindAnyObjectByType<ExplorationCombatParty>();
+        if (party != null)
+            party.ApplyToCombatSession();
+        else
+            CombatSession.ResetAllyPartyDefaults();
+
         if (coordinator == null)
-            coordinator = FindFirstObjectByType<CombatAdditiveCoordinator>();
+            coordinator = FindAnyObjectByType<CombatAdditiveCoordinator>();
 
         if (coordinator == null)
         {

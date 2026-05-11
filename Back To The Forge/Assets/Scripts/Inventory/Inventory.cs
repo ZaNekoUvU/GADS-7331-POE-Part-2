@@ -72,6 +72,15 @@ public class Inventory : MonoBehaviour
 
     public ReadOnlySpan<Slot> GetSlots() => _slots;
 
+    /// <summary>Removes all stacks (e.g. after selling to the blacksmith).</summary>
+    public void ClearAll()
+    {
+        for (var i = 0; i < MaxSlots; i++)
+            _slots[i] = default;
+
+        NotifyChanged();
+    }
+
     private int FindFirstEmptySlot()
     {
         for (var i = 0; i < MaxSlots; i++)

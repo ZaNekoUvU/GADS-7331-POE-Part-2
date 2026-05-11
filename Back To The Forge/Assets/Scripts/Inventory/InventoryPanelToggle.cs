@@ -12,7 +12,7 @@ public class InventoryPanelToggle : MonoBehaviour
     private void Awake()
     {
         if (inventory == null)
-            inventory = FindFirstObjectByType<Inventory>();
+            inventory = FindAnyObjectByType<Inventory>();
     }
 
     private void OnEnable()

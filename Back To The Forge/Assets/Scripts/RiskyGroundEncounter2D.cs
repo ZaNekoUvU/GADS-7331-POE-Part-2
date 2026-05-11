@@ -61,13 +61,13 @@ public class RiskyGroundEncounter2D : MonoBehaviour
                 break;
 
             if (coordinator == null)
-                coordinator = FindFirstObjectByType<CombatAdditiveCoordinator>();
+                coordinator = FindAnyObjectByType<CombatAdditiveCoordinator>();
 
             if (coordinator != null && coordinator.IsCombatActiveOrLoading)
                 continue;
 
             if (combatStarter == null)
-                combatStarter = FindFirstObjectByType<CombatStarter>();
+                combatStarter = FindAnyObjectByType<CombatStarter>();
 
             if (combatStarter == null)
             {
