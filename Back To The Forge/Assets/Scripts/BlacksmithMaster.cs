@@ -92,6 +92,9 @@ public class BlacksmithMaster : MonoBehaviour
 
     private void Update()
     {
+        if (SimpleRpgDialogueUI.IsDialogueOpen)
+            return;
+
         if (_playerOverlapCount <= 0)
             return;
 
@@ -107,6 +110,9 @@ public class BlacksmithMaster : MonoBehaviour
 
     private bool WasInteractPressedThisFrame()
     {
+        if (SimpleRpgDialogueUI.InteractConsumedByDialogueFrame == Time.frameCount)
+            return false;
+
         if (interactAction != null && interactAction.action != null)
             return interactAction.action.WasPressedThisFrame();
 

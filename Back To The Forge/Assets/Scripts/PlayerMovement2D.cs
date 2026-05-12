@@ -29,6 +29,12 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (moveAction == null)
             return;
 

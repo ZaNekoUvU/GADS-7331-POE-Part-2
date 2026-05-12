@@ -51,6 +51,12 @@ public class PlayerMiningController : MonoBehaviour
 
     private void Update()
     {
+        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        {
+            _mineAccumulator = 0f;
+            return;
+        }
+
         if (interactAction == null || inventory == null)
             return;
 
