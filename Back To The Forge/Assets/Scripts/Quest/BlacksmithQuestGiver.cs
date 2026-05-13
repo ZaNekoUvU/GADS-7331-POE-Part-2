@@ -5,9 +5,9 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Ollama quest blacksmith: commissions a invented mineral, spawns pickup via <see cref="QuestMineralSpawner"/>,
-/// turn-ins pay gold while the same commission stays active until the player ends the day or keeps gathering.
-/// Ending the day clears the commission, heals the player, closes dialogue, and returns them to their session start;
-/// the next commission is offered the next time they speak with the blacksmith.
+/// turn-ins pay gold while the same commission stays active until the player ends the day (new ore spawn) or
+/// continuing. Ending the day heals the player, rolls the next commission without staying in dialogue,
+/// closes the dialogue UI, and returns the player to their session start position.
 /// Uses <see cref="ForgeQuestManager"/> for cross-scene state.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
@@ -106,13 +106,11 @@ public class BlacksmithQuestGiver : MonoBehaviour
         _sessionBusy = false;
     }
 
-    /// <summary>Requests a new commission (first talk or after a day with no active quest). Does not manage <see cref="_sessionBusy"/>.</summary>
+    /// <summary>Requests a new commission (after a day reset or first talk). Does not manage <see cref="_sessionBusy"/>.</summary>
     private IEnumerator OfferNewQuestContentRoutine()
     {
         if (ollamaService == null)
             ollamaService = OllamaDialogueService.GetOrCreate();
-        if (dialogueUi == null)
-            dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
 
         if (ollamaService.IsBusy)
         {
@@ -161,17 +159,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
         _sessionBusy = false;
     }
 
-    /// <summary>
-    /// Clears the forge commission for the day, heals the player, closes blacksmith dialogue, and teleports to session start.
-    /// A new commission is offered the next time the player talks to the blacksmith here.
-    /// </summary>
+    /// <summary>Clears today's forge commission, heals the player, starts tomorrow's Ollama request.</summary>
     private IEnumerator EndForgingDayRoutine()
     {
-        if (dialogueUi == null)
-            dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
-
-        dialogueUi.AbortDialogue();
-
         var q = ForgeQuestManager.Instance;
         if (q != null)
             q.ClearForNewDay(playerInventory);
@@ -181,26 +171,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (playerHealth != null)
             playerHealth.ResetToFullHealth();
 
-        dialogueUi.AbortDialogue();
-
-        yield return null;
-
-        TeleportPlayerToSessionStart();
-    }
-
-    private void TeleportPlayerToSessionStart()
-    {
-        var go = GameObject.FindGameObjectWithTag(playerTag);
-        if (go == null)
-            return;
-
-        var rb = go.GetComponent<Rigidbody2D>();
-        if (go.GetComponent<PlayerSessionStartRecorder>() == null)
-            Debug.LogWarning(
-                $"{nameof(BlacksmithQuestGiver)}: Player has no {nameof(PlayerSessionStartRecorder)} — add it so end-of-day can return them to the session start position.",
-                this);
-
-        PlayerSessionStartRecorder.ResetToRecordedStart(go.transform, rb);
+        yield return StartCoroutine(OfferNewQuestContentRoutine());
     }
 
     private IEnumerator TurnInRoutine()
