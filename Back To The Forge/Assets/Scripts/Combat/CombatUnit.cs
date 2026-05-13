@@ -61,6 +61,7 @@ public class CombatUnit : MonoBehaviour
             return;
 
         _currentHp = Mathf.Max(0, _currentHp - amount);
+        CombatDamagePopup.SpawnAt(transform.position + Vector3.up * 0.55f, amount, _isAlly);
         HpChanged?.Invoke(_currentHp, MaxHp);
         if (!IsAlive)
             ApplyDefeatPresentation();

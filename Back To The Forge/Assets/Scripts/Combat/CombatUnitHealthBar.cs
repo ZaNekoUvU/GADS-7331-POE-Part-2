@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,7 @@ public class CombatUnitHealthBar : MonoBehaviour
 {
     [SerializeField] private bool showOnlyForEnemies;
     [SerializeField] private Image fillImage;
+    [SerializeField] private TextMeshProUGUI hpText;
 
     [Header("Fill colour by HP % (high → low)")]
     [SerializeField] private Color fullHealthColor = new(0.25f, 0.92f, 0.38f, 1f);
@@ -15,10 +17,12 @@ public class CombatUnitHealthBar : MonoBehaviour
     [SerializeField] private Color emptyHealthColor = new(0.04f, 0.04f, 0.04f, 1f);
 
     private CombatUnit _unit;
+    private bool _hpLabelCreated;
 
     private void Awake()
     {
         _unit = GetComponentInParent<CombatUnit>();
+        EnsureHpLabel();
     }
 
     private void OnEnable()
@@ -29,6 +33,7 @@ public class CombatUnitHealthBar : MonoBehaviour
         if (_unit != null)
         {
             _unit.HpChanged += OnHpChanged;
+            EnsureHpLabel();
             Refresh(_unit.CurrentHp, _unit.MaxHp);
         }
     }
@@ -49,6 +54,8 @@ public class CombatUnitHealthBar : MonoBehaviour
         if (_unit == null)
             _unit = GetComponentInParent<CombatUnit>();
 
+        EnsureHpLabel();
+
         if (showOnlyForEnemies && _unit != null && _unit.IsAlly)
         {
             gameObject.SetActive(false);
@@ -64,6 +71,48 @@ public class CombatUnitHealthBar : MonoBehaviour
         t = Mathf.Clamp01(t);
         fillImage.fillAmount = t;
         fillImage.color = HealthToColor(t);
+
+        if (hpText != null)
+            hpText.text = max > 0 ? $"{current}/{max}" : string.Empty;
+    }
+
+    private void EnsureHpLabel()
+    {
+        if (hpText != null || fillImage == null || _hpLabelCreated)
+            return;
+
+        var canvas = fillImage.GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return;
+
+        canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1 |
+                                            AdditionalCanvasShaderChannels.TexCoord2 |
+                                            AdditionalCanvasShaderChannels.Normal |
+                                            AdditionalCanvasShaderChannels.Tangent;
+
+        var go = new GameObject("HpText", typeof(RectTransform));
+        go.transform.SetParent(canvas.transform, false);
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 1f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.anchoredPosition = new Vector2(0f, 14f);
+        rt.sizeDelta = new Vector2(140f, 22f);
+
+        hpText = go.AddComponent<TextMeshProUGUI>();
+        hpText.fontSize = 11;
+        hpText.fontStyle = FontStyles.Bold;
+        hpText.alignment = TextAlignmentOptions.Center;
+        hpText.textWrappingMode = TextWrappingModes.NoWrap;
+        hpText.color = new Color(1f, 1f, 1f, 0.95f);
+        hpText.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+        {
+            hpText.font = TMP_Settings.defaultFontAsset;
+            hpText.fontSharedMaterial = TMP_Settings.defaultFontAsset.material;
+        }
+
+        _hpLabelCreated = true;
     }
 
     /// <summary>100%–50%: green → red. 50%–0%: red → black.</summary>
