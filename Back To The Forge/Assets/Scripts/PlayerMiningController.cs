@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Put on the player (needs <see cref="Rigidbody2D"/> + non-trigger collider). Mines the nearest <see cref="IronVein"/>
-/// while Interact is held: one ore per full second (scaled time).
+/// Put on the player (needs <see cref="Rigidbody2D"/> + non-trigger collider). While Interact is held, adds items from the
+/// nearest in-range <see cref="IronVein"/> (ore, wood, stone, etc.): one unit per full second (scaled time).
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMiningController : MonoBehaviour
@@ -86,7 +86,7 @@ public class PlayerMiningController : MonoBehaviour
             var leftover = inventory.TryAdd(vein.OreDefinition, vein.OrePerTick);
             if (leftover > 0)
             {
-                Debug.LogWarning("Inventory full — cannot add more ore.", this);
+                Debug.LogWarning("Inventory full — cannot add more.", this);
                 break;
             }
 

@@ -249,7 +249,7 @@ public class SimpleRpgDialogueUI : MonoBehaviour
         lineRt.offsetMin = new Vector2(24f, 24f);
         lineRt.offsetMax = new Vector2(-24f, -56f);
         lineLabel.alignment = TextAlignmentOptions.TopLeft;
-        lineLabel.enableWordWrapping = true;
+        lineLabel.textWrappingMode = TextWrappingModes.Normal;
     }
 
     private RectTransform CreatePanel(out Image image)

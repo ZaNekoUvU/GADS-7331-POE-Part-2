@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Place on an iron vein with a trigger <see cref="Collider2D"/>. Player mines by holding Interact (E) while in range.
+/// World resource node (iron vein, tree, stone pile, etc.): trigger <see cref="Collider2D"/>,
+/// assign a <see cref="ItemDefinition"/>. Player gathers by holding Interact while in range (see <see cref="PlayerMiningController"/>).
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class IronVein : MonoBehaviour
@@ -45,6 +46,6 @@ public class IronVein : MonoBehaviour
     {
         var col = GetComponent<Collider2D>();
         if (col != null && !col.isTrigger)
-            Debug.LogWarning($"{nameof(IronVein)} on '{name}': Collider2D should be a trigger so the player can enter.", this);
+            Debug.LogWarning($"{nameof(IronVein)} on '{name}': Collider2D should be a trigger so the player can overlap.", this);
     }
 }

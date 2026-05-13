@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,10 +11,14 @@ public class CombatTurnManager : MonoBehaviour
 {
     [SerializeField] private CombatUnitSpawner spawner;
 
+    [Tooltip("Real-time wait before an enemy uses Basic Attack (exploration may use timeScale 0).")]
+    [SerializeField] private float enemyAttackDelaySeconds = 1f;
+
     private CombatSceneController _sceneController;
 
     private readonly List<CombatUnit> _order = new();
     private int _turnIndex;
+    private bool _enemyTurnRoutineActive;
 
     public CombatUnit CurrentActor =>
         _order.Count > 0 && _turnIndex >= 0 && _turnIndex < _order.Count ? _order[_turnIndex] : null;
@@ -56,14 +61,71 @@ public class CombatTurnManager : MonoBehaviour
 
         BuildTurnOrder();
         LogTurnState();
+        TryScheduleEnemyTurn();
+    }
+
+    private void OnDestroy()
+    {
+        StopAllCoroutines();
+        _enemyTurnRoutineActive = false;
     }
 
     /// <summary>
-    /// Hook your **Basic Attack** UI Button <c>OnClick</c> here (no argument). Performs strike then advances turn.
+    /// Allies only: performs Basic Attack then advances. Enemies act automatically after a delay.
     /// </summary>
     public void OnBasicAttackButtonPressed()
     {
-        PerformBasicAttackAndAdvanceTurn();
+        var actor = CurrentActor;
+        if (actor == null || !actor.IsAlive)
+        {
+            Debug.LogWarning("[Combat] Basic Attack: no active fighter.", this);
+            return;
+        }
+
+        if (!actor.IsAlly)
+            return;
+
+        var victory = PerformBasicAttackAndAdvanceTurn();
+        if (!victory)
+            TryScheduleEnemyTurn();
+    }
+
+    /// <summary>If the current fighter is an enemy, wait <see cref="enemyAttackDelaySeconds"/> then Basic Attack and advance.</summary>
+    private void TryScheduleEnemyTurn()
+    {
+        if (_enemyTurnRoutineActive)
+            return;
+
+        var a = CurrentActor;
+        if (a == null || !a.IsAlive || a.IsAlly)
+            return;
+
+        StartCoroutine(EnemyTurnSequence());
+    }
+
+    private IEnumerator EnemyTurnSequence()
+    {
+        _enemyTurnRoutineActive = true;
+        yield return new WaitForSecondsRealtime(enemyAttackDelaySeconds);
+
+        var actor = CurrentActor;
+        if (actor == null || !actor.IsAlive || actor.IsAlly)
+        {
+            _enemyTurnRoutineActive = false;
+            TryScheduleEnemyTurn();
+            yield break;
+        }
+
+        var victory = PerformBasicAttackCurrentActor();
+        if (victory)
+        {
+            _enemyTurnRoutineActive = false;
+            yield break;
+        }
+
+        AdvanceTurn();
+        _enemyTurnRoutineActive = false;
+        TryScheduleEnemyTurn();
     }
 
     private void BuildTurnOrder()
@@ -114,12 +176,13 @@ public class CombatTurnManager : MonoBehaviour
         LogTurnState();
     }
 
-    /// <summary>Strike with the current actor, then advance turn (typical single **Basic Attack** button flow).</summary>
-    public void PerformBasicAttackAndAdvanceTurn()
+    /// <summary>Strike with the current actor, then advance turn. Returns true if combat ended (victory unload).</summary>
+    public bool PerformBasicAttackAndAdvanceTurn()
     {
         var victory = PerformBasicAttackCurrentActor();
         if (!victory)
             AdvanceTurn();
+        return victory;
     }
 
     /// <summary>Basic attack from current actor toward first living opponent. Returns true if combat ended (victory unload started).</summary>

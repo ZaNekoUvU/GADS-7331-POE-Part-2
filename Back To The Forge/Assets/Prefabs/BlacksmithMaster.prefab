@@ -94,6 +94,10 @@ MonoBehaviour:
   playerInventory: {fileID: 0}
   dailyQuestPool:
   - {fileID: 11400000, guid: e50118293a4b5c6d70891a2b3c4d5e6f, type: 2}
+  - {fileID: 11400000, guid: c1d2e3f405162738495a6b7c8d9e0f11, type: 2}
+  - {fileID: 11400000, guid: d2e3f405162738495a6b7c8d9e0f1223, type: 2}
+  - {fileID: 11400000, guid: e3f405162738495a6b7c8d9e0f123456, type: 2}
+  - {fileID: 11400000, guid: f405162738495a6b7c8d9e0f12345678, type: 2}
   questItemSellMultiplier: 2
   startingDay: 1
   startingGold: 0

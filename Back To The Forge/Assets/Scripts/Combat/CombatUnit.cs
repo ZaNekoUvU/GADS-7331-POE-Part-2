@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -25,6 +26,9 @@ public class CombatUnit : MonoBehaviour
     public bool IsPlayerCharacter => _isPlayerCharacter;
     public int SlotIndex => _slotIndex;
 
+    /// <summary>Args: current HP, max HP. Fired after <see cref="Initialize"/> and after <see cref="TakeDamage"/>.</summary>
+    public event Action<int, int> HpChanged;
+
     public void Initialize(
         UnitDefinition definition,
         MoveRegistry moveRegistry,
@@ -40,6 +44,7 @@ public class CombatUnit : MonoBehaviour
         _currentHp = definition != null ? definition.MaxHp : 0;
 
         gameObject.name = $"{(isAlly ? "Ally" : "Enemy")}_{definition.DisplayName}_{slotIndex}";
+        HpChanged?.Invoke(_currentHp, MaxHp);
     }
 
     public int GetBasicStrikeDamage()
@@ -56,6 +61,7 @@ public class CombatUnit : MonoBehaviour
             return;
 
         _currentHp = Mathf.Max(0, _currentHp - amount);
+        HpChanged?.Invoke(_currentHp, MaxHp);
         if (!IsAlive)
             ApplyDefeatPresentation();
     }

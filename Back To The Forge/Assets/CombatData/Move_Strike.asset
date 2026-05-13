@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveId: 100
   displayName: Strike
-  baseDamage: 6
+  baseDamage: 0

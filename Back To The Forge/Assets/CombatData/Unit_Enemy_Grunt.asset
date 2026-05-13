@@ -15,7 +15,7 @@ MonoBehaviour:
   unitId: 10
   displayName: Grunt
   maxHp: 28
-  attackDamage: 7
+  attackDamage: 2
   moveIds:
   - 100
   moves: []

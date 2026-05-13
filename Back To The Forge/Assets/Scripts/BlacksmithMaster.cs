@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Daily quest + end-of-day sell flow. Assign the player <see cref="Inventory"/> and a pool of
-/// <see cref="ItemDefinition"/>s the blacksmith can request (for now only iron ore).
+/// <see cref="ItemDefinition"/>s the blacksmith can request (configured on the prefab).
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class BlacksmithMaster : MonoBehaviour
