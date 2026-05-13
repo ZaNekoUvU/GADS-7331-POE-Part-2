@@ -47,7 +47,7 @@ public class NpcRandomDialogue : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
         if (_playerOverlapCount <= 0)

@@ -42,6 +42,15 @@ public class BlacksmithMaster : MonoBehaviour
     public float QuestItemSellMultiplier => questItemSellMultiplier;
     public bool PlayerInRange => _playerOverlapCount > 0;
 
+    public void AddGold(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        _playerGold += amount;
+        OnEconomyChanged?.Invoke();
+    }
+
     public string GetQuestSummary()
     {
         if (_todaysQuestItem == null)
@@ -92,7 +101,7 @@ public class BlacksmithMaster : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
         if (_playerOverlapCount <= 0)

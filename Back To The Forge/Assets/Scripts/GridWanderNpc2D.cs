@@ -58,7 +58,7 @@ public class GridWanderNpc2D : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
         if (_stepping)

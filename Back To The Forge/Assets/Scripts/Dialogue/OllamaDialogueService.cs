@@ -49,6 +49,192 @@ public class OllamaDialogueService : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>Plain chat reply (sanitized like NPC dialogue). Use for turn-in flavor and small talk.</summary>
+    public IEnumerator RequestRoleplayLineCoroutine(string systemPrompt, string userPrompt, Action<string> onSuccess, Action<string> onError)
+    {
+        if (_busy)
+        {
+            onError?.Invoke("busy");
+            yield break;
+        }
+
+        _busy = true;
+
+        try
+        {
+            var jsonBody = BuildChatJsonManual(systemPrompt, userPrompt);
+            var url = $"{Host}/api/chat";
+
+            if (logRequestsAndErrors)
+                Debug.Log($"[Ollama] POST {url} (roleplay line)\n{Truncate(jsonBody, 600)}", this);
+
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = Timeout;
+
+            yield return req.SendWebRequest();
+
+            var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
+            var code = req.responseCode;
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                var detail = string.IsNullOrEmpty(req.error) ? req.result.ToString() : req.error;
+                if (logRequestsAndErrors || !string.IsNullOrEmpty(raw))
+                    Debug.LogWarning($"[Ollama] HTTP error code={code} {detail}\n{Truncate(raw, 1200)}", this);
+                onError?.Invoke($"{detail}");
+                yield break;
+            }
+
+            var err = TryParseError(raw);
+            if (!string.IsNullOrEmpty(err))
+            {
+                onError?.Invoke(err);
+                yield break;
+            }
+
+            var content = TryParseAssistantMessage(raw);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                onError?.Invoke("Empty model reply.");
+                yield break;
+            }
+
+            onSuccess?.Invoke(SanitizeLine(content));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>Asks for strict JSON: materialName, requestLine (Ollama-invented ore + blacksmith ask).</summary>
+    public IEnumerator RequestForgeQuestOfferCoroutine(
+        string blacksmithName,
+        string personaSummary,
+        Action<ForgeQuestOfferDto> onSuccess,
+        Action<string> onError)
+    {
+        if (_busy)
+        {
+            onError?.Invoke("busy");
+            yield break;
+        }
+
+        _busy = true;
+
+        try
+        {
+            var systemContent =
+                "You output ONLY valid JSON with exactly two string keys: materialName and requestLine. " +
+                "No markdown, no code fences, no extra keys, no commentary. " +
+                "materialName: one invented fantasy ore or mineral name (2–6 words, no quotes inside the string). " +
+                "requestLine: what the blacksmith says out loud asking the traveler to fetch it (1–3 short sentences, direct speech, " +
+                "same character voice as your persona — no meta, no 'the user').";
+
+            var userContent =
+                $"You are {blacksmithName}, a blacksmith quest giver.\nPersona: {personaSummary}\n" +
+                "The traveler just came to the counter. Output the JSON now for a new mining commission.";
+
+            var jsonBody = BuildChatJsonManual(systemContent, userContent);
+
+            var url = $"{Host}/api/chat";
+
+            if (logRequestsAndErrors)
+                Debug.Log($"[Ollama] POST {url} (forge quest JSON)\n{Truncate(jsonBody, 800)}", this);
+
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = Timeout;
+
+            yield return req.SendWebRequest();
+
+            var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                onError?.Invoke(string.IsNullOrEmpty(req.error) ? req.result.ToString() : req.error);
+                yield break;
+            }
+
+            var apiErr = TryParseError(raw);
+            if (!string.IsNullOrEmpty(apiErr))
+            {
+                onError?.Invoke(apiErr);
+                yield break;
+            }
+
+            var content = TryParseAssistantMessage(raw);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                onError?.Invoke("Empty quest JSON.");
+                yield break;
+            }
+
+            if (!TryParseForgeQuestOffer(content, out var dto))
+            {
+                if (logRequestsAndErrors)
+                    Debug.LogWarning($"[Ollama] Bad quest JSON:\n{Truncate(content, 800)}", this);
+                onError?.Invoke("Model did not return valid quest JSON.");
+                yield break;
+            }
+
+            onSuccess?.Invoke(dto);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static bool TryParseForgeQuestOffer(string modelText, out ForgeQuestOfferDto dto)
+    {
+        dto = null;
+        var t = StripMarkdownCodeFence(modelText).Trim();
+        if (string.IsNullOrEmpty(t))
+            return false;
+
+        try
+        {
+            dto = JsonUtility.FromJson<ForgeQuestOfferDto>(t);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        if (dto == null ||
+            string.IsNullOrWhiteSpace(dto.materialName) ||
+            string.IsNullOrWhiteSpace(dto.requestLine))
+            return false;
+
+        dto.materialName = dto.materialName.Trim();
+        dto.requestLine = dto.requestLine.Trim();
+        return true;
+    }
+
+    private static string StripMarkdownCodeFence(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+            return s;
+
+        var t = s.Trim();
+        if (!t.StartsWith("```"))
+            return t;
+
+        var firstNl = t.IndexOf('\n');
+        if (firstNl >= 0)
+            t = t.Substring(firstNl + 1);
+        var end = t.LastIndexOf("```", StringComparison.Ordinal);
+        if (end >= 0)
+            t = t.Substring(0, end);
+        return t.Trim();
+    }
+
     private void OnDestroy()
     {
         if (Instance == this)

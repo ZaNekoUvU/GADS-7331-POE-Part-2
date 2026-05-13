@@ -46,7 +46,7 @@ public class NpcOllamaDialogue : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
         if (_playerOverlap <= 0 || _requestRunning)

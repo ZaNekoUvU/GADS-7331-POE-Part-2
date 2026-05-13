@@ -72,6 +72,55 @@ public class Inventory : MonoBehaviour
 
     public ReadOnlySpan<Slot> GetSlots() => _slots;
 
+    public int CountItem(ItemDefinition item)
+    {
+        if (item == null)
+            return 0;
+
+        var n = 0;
+        for (var i = 0; i < MaxSlots; i++)
+        {
+            var slot = _slots[i];
+            if (slot.IsEmpty || slot.item != item)
+                continue;
+            n += slot.count;
+        }
+
+        return n;
+    }
+
+    /// <summary>Removes up to <paramref name="amount"/> of item; returns how many were removed.</summary>
+    public int TryRemove(ItemDefinition item, int amount)
+    {
+        if (item == null || amount <= 0)
+            return 0;
+
+        var toRemove = amount;
+        var removed = 0;
+
+        for (var i = 0; i < MaxSlots && toRemove > 0; i++)
+        {
+            var slot = _slots[i];
+            if (slot.IsEmpty || slot.item != item)
+                continue;
+
+            var take = Mathf.Min(slot.count, toRemove);
+            slot.count -= take;
+            removed += take;
+            toRemove -= take;
+
+            if (slot.count <= 0)
+                slot = default;
+
+            _slots[i] = slot;
+        }
+
+        if (removed > 0)
+            NotifyChanged();
+
+        return removed;
+    }
+
     /// <summary>Removes all stacks (e.g. after selling to the blacksmith).</summary>
     public void ClearAll()
     {

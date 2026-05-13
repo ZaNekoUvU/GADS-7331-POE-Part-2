@@ -51,7 +51,7 @@ public class PlayerMiningController : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
         {
             _mineAccumulator = 0f;
             return;

@@ -29,7 +29,7 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
         {
             rb.linearVelocity = Vector2.zero;
             return;
