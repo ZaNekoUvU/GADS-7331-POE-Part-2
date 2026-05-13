@@ -14,7 +14,8 @@ GameObject:
   - component: {fileID: 8415359411625216078}
   - component: {fileID: 3461489410764039396}
   - component: {fileID: 4345102138214359968}
-  - component: {fileID: 7496343630414610417}
+  - component: {fileID: 1939659753576783215}
+  - component: {fileID: 713949008275631483}
   m_Layer: 0
   m_Name: Blacksmith
   m_TagString: Player
@@ -238,7 +239,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3, y: 3}
   m_EdgeRadius: 0
---- !u!114 &7496343630414610417
+--- !u!114 &1939659753576783215
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -247,12 +248,42 @@ MonoBehaviour:
   m_GameObject: {fileID: 1038170687001635061}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8999d08193efa864ca76ed49ba9594f9, type: 3}
+  m_Script: {fileID: 11500000, guid: 15fa6431007f0e6458bcf8ffb603dbf4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NpcOllamaDialogue
-  profile: {fileID: 11400000, guid: 661e8530f21da0a418e4e97ccdc08dba, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::BlacksmithQuestGiver
+  profile: {fileID: 11400000, guid: 1fcd7eb01d637b649b84288daf54d09e, type: 2}
+  questMineralDefinition: {fileID: 11400000, guid: f7e8d9c0b1a2436586978091a2b3c4d5, type: 2}
+  goldRewardPerUnit: 22
+  blacksmith: {fileID: 0}
+  playerInventory: {fileID: 0}
   ollamaService: {fileID: 0}
   dialogueUi: {fileID: 0}
-  waitingEllipsis: "\u2026"
+  choiceUi: {fileID: 0}
+  offerFallback: "Need a favor \u2014 bring me back any strange ore you find in the
+    eastern tunnels. I'll make it worth your while."
+  turnInThanksFallback: Aye, this is what I needed. Here's your coin.
+  turnInEmptyFallback: You brought nothing I asked for. Come back when you have the
+    ore.
   playerTag: Player
   interactAction: {fileID: 0}
+--- !u!114 &713949008275631483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038170687001635061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aabbccddeeff001122334455667788aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlacksmithMaster
+  playerInventory: {fileID: 0}
+  dailyQuestPool: []
+  questItemSellMultiplier: 2
+  startingDay: 1
+  startingGold: 0
+  playerTag: Player
+  interactAction: {fileID: 0}
+  endDayOnInteractWhileInRange: 1
+  debugLogs: 1

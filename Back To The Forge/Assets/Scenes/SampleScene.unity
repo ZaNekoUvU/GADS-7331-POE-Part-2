@@ -256,7 +256,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OllamaDialogueService
   projectSettings: {fileID: 0}
   hostBaseUrl: http://127.0.0.1:11434
-  model: qwen3:8b
+  model: llama3.2:3b
   requestTimeoutSeconds: 45
   maxTokens: 140
   temperature: 0.85
@@ -570,6 +570,79 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1348018312}
   m_SourcePrefab: {fileID: 100100000, guid: d3a4eaa53a1d20d42bc68be2290ea644, type: 3}
+--- !u!1001 &357313165
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 713949008275631483, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1733526239}
+    - target: {fileID: 1038170687001635061, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_Name
+      value: Blacksmith
+      objectReference: {fileID: 0}
+    - target: {fileID: 1939659753576783215, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: blacksmith
+      value: 
+      objectReference: {fileID: 1537063594}
+    - target: {fileID: 1939659753576783215, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: ollamaService
+      value: 
+      objectReference: {fileID: 65184195}
+    - target: {fileID: 1939659753576783215, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1733526239}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -5.1827292
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -8.424324
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272249225978159250, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
 --- !u!1 &411165384
 GameObject:
   m_ObjectHideFlags: 0
@@ -905,6 +978,17 @@ MonoBehaviour:
   waitingEllipsis: "\u2026"
   playerTag: Player
   interactAction: {fileID: 0}
+--- !u!114 &1537063594 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 713949008275631483, guid: ddad0bf64f7e78047b391d464c3fac52, type: 3}
+  m_PrefabInstance: {fileID: 357313165}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aabbccddeeff001122334455667788aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlacksmithMaster
 --- !u!114 &1733526239 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 881102030405060708, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
@@ -1169,3 +1253,4 @@ SceneRoots:
   - {fileID: 1188525080}
   - {fileID: 183448002}
   - {fileID: 264218189}
+  - {fileID: 357313165}
