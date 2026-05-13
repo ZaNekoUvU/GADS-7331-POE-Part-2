@@ -34,16 +34,24 @@ public class CombatUnit : MonoBehaviour
         MoveRegistry moveRegistry,
         bool isAlly,
         bool isPlayerCharacter,
-        int slotIndex)
+        int slotIndex,
+        int? startingHpOverride = null)
     {
         _definition = definition;
         _moveRegistry = moveRegistry;
         _isAlly = isAlly;
         _isPlayerCharacter = isPlayerCharacter;
         _slotIndex = slotIndex;
-        _currentHp = definition != null ? definition.MaxHp : 0;
 
-        gameObject.name = $"{(isAlly ? "Ally" : "Enemy")}_{definition.DisplayName}_{slotIndex}";
+        if (definition == null)
+            _currentHp = 0;
+        else if (startingHpOverride.HasValue)
+            _currentHp = Mathf.Clamp(startingHpOverride.Value, 1, definition.MaxHp);
+        else
+            _currentHp = definition.MaxHp;
+
+        var label = definition != null ? definition.DisplayName : "?";
+        gameObject.name = $"{(isAlly ? "Ally" : "Enemy")}_{label}_{slotIndex}";
         HpChanged?.Invoke(_currentHp, MaxHp);
     }
 

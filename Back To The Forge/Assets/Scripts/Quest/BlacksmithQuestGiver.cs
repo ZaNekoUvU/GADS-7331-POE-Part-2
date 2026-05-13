@@ -5,7 +5,10 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Ollama quest blacksmith: commissions a invented mineral, spawns pickup via <see cref="QuestMineralSpawner"/>,
-/// then lets the player turn in for gold or chat. Uses <see cref="ForgeQuestManager"/> for cross-scene state.
+/// turn-ins pay gold while the same commission stays active until the player ends the day or keeps gathering.
+/// Ending the day clears the commission, heals the player, closes dialogue, and returns them to their session start;
+/// the next commission is offered the next time they speak with the blacksmith.
+/// Uses <see cref="ForgeQuestManager"/> for cross-scene state.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class BlacksmithQuestGiver : MonoBehaviour
@@ -22,6 +25,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
     [Header("Services")]
     [SerializeField] private BlacksmithMaster blacksmith;
     [SerializeField] private Inventory playerInventory;
+    [SerializeField] private PlayerPersistentCombatHealth playerHealth;
     [SerializeField] private OllamaDialogueService ollamaService;
     [SerializeField] private SimpleRpgDialogueUI dialogueUi;
     [SerializeField] private ForgeQuestChoiceUI choiceUi;
@@ -85,6 +89,8 @@ public class BlacksmithQuestGiver : MonoBehaviour
             playerInventory = FindAnyObjectByType<Inventory>();
         if (blacksmith == null)
             blacksmith = FindAnyObjectByType<BlacksmithMaster>();
+        if (playerHealth == null)
+            playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
 
         var q = ForgeQuestManager.Instance;
         if (q != null && q.QuestActive)
@@ -96,11 +102,22 @@ public class BlacksmithQuestGiver : MonoBehaviour
     private IEnumerator SessionOfferNewQuestRoutine()
     {
         _sessionBusy = true;
+        yield return StartCoroutine(OfferNewQuestContentRoutine());
+        _sessionBusy = false;
+    }
+
+    /// <summary>Requests a new commission (first talk or after a day with no active quest). Does not manage <see cref="_sessionBusy"/>.</summary>
+    private IEnumerator OfferNewQuestContentRoutine()
+    {
+        if (ollamaService == null)
+            ollamaService = OllamaDialogueService.GetOrCreate();
+        if (dialogueUi == null)
+            dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
 
         if (ollamaService.IsBusy)
         {
+            ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, goldRewardPerUnit);
             dialogueUi.Show(profile.CharacterName, offerFallback);
-            _sessionBusy = false;
             yield break;
         }
 
@@ -117,31 +134,73 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         if (dto != null)
         {
-            ForgeQuestManager.Instance.BeginQuest(dto.materialName, questMineralDefinition, goldRewardPerUnit);
+            ForgeQuestManager.GetOrCreate().BeginQuest(dto.materialName, questMineralDefinition, goldRewardPerUnit);
             dialogueUi.SetDialogueLineAndAllowAdvance(dto.requestLine);
         }
         else
         {
             Debug.LogWarning($"[ForgeQuest] Offer failed: {err}. Using fallback.", this);
-            ForgeQuestManager.Instance.BeginQuest("Raw Emberglass", questMineralDefinition, goldRewardPerUnit);
+            ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, goldRewardPerUnit);
             dialogueUi.SetDialogueLineAndAllowAdvance(offerFallback);
         }
-
-        _sessionBusy = false;
     }
 
     private IEnumerator SessionWhenQuestActiveRoutine()
     {
         _sessionBusy = true;
 
-        yield return StartCoroutine(choiceUi.RunRoutine("Turn in materials", "Just chat"));
+        yield return StartCoroutine(choiceUi.RunRoutine("Turn in materials", "Just chat", "End the day"));
 
         if (choiceUi.LastChoice == 0)
             yield return StartCoroutine(TurnInRoutine());
-        else
+        else if (choiceUi.LastChoice == 1)
             yield return StartCoroutine(SmallTalkRoutine());
+        else if (choiceUi.LastChoice == 2)
+            yield return StartCoroutine(EndForgingDayRoutine());
 
         _sessionBusy = false;
+    }
+
+    /// <summary>
+    /// Clears the forge commission for the day, heals the player, closes blacksmith dialogue, and teleports to session start.
+    /// A new commission is offered the next time the player talks to the blacksmith here.
+    /// </summary>
+    private IEnumerator EndForgingDayRoutine()
+    {
+        if (dialogueUi == null)
+            dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
+
+        dialogueUi.AbortDialogue();
+
+        var q = ForgeQuestManager.Instance;
+        if (q != null)
+            q.ClearForNewDay(playerInventory);
+
+        if (playerHealth == null)
+            playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
+        if (playerHealth != null)
+            playerHealth.ResetToFullHealth();
+
+        dialogueUi.AbortDialogue();
+
+        yield return null;
+
+        TeleportPlayerToSessionStart();
+    }
+
+    private void TeleportPlayerToSessionStart()
+    {
+        var go = GameObject.FindGameObjectWithTag(playerTag);
+        if (go == null)
+            return;
+
+        var rb = go.GetComponent<Rigidbody2D>();
+        if (go.GetComponent<PlayerSessionStartRecorder>() == null)
+            Debug.LogWarning(
+                $"{nameof(BlacksmithQuestGiver)}: Player has no {nameof(PlayerSessionStartRecorder)} — add it so end-of-day can return them to the session start position.",
+                this);
+
+        PlayerSessionStartRecorder.ResetToRecordedStart(go.transform, rb);
     }
 
     private IEnumerator TurnInRoutine()
@@ -170,6 +229,16 @@ public class BlacksmithQuestGiver : MonoBehaviour
             dialogueUi.Show(profile.CharacterName, line);
         else
             dialogueUi.Show(profile.CharacterName, unitsRemoved > 0 ? turnInThanksFallback : turnInEmptyFallback);
+
+        if (unitsRemoved <= 0)
+            yield break;
+
+        yield return new WaitUntil(() => !SimpleRpgDialogueUI.IsDialogueOpen);
+
+        yield return StartCoroutine(choiceUi.RunRoutine("End the day", "Keep gathering"));
+
+        if (choiceUi.LastChoice == 0)
+            yield return StartCoroutine(EndForgingDayRoutine());
     }
 
     private IEnumerator SmallTalkRoutine()

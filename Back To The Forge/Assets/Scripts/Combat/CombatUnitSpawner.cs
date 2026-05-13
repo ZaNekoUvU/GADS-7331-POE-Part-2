@@ -149,7 +149,7 @@ public class CombatUnitSpawner : MonoBehaviour
             }
 
             var isPlayer = i == 0 && id == CombatSession.PlayerUnitId;
-            var unit = SpawnUnit(prefab, anchor, def, true, isPlayer, i);
+            var unit = SpawnUnit(prefab, anchor, def, moveRegistry, true, isPlayer, i);
             if (unit != null)
                 _allies.Add(unit);
         }
@@ -179,7 +179,7 @@ public class CombatUnitSpawner : MonoBehaviour
                 continue;
             }
 
-            var unit = SpawnUnit(prefab, anchor, def, false, false, i);
+            var unit = SpawnUnit(prefab, anchor, def, moveRegistry, false, false, i);
             if (unit != null)
                 _enemies.Add(unit);
         }
@@ -187,14 +187,29 @@ public class CombatUnitSpawner : MonoBehaviour
         _spawnedEnemyCount = _enemies.Count;
     }
 
-    private CombatUnit SpawnUnit(GameObject prefab, Transform anchor, UnitDefinition def, bool ally, bool isPlayer, int slot)
+    private CombatUnit SpawnUnit(
+        GameObject prefab,
+        Transform anchor,
+        UnitDefinition def,
+        MoveRegistry registry,
+        bool ally,
+        bool isPlayer,
+        int slot)
     {
         var instance = Instantiate(prefab, anchor.position, Quaternion.identity, anchor);
         var cu = instance.GetComponent<CombatUnit>();
         if (cu == null)
             cu = instance.AddComponent<CombatUnit>();
 
-        cu.Initialize(def, moveRegistry, ally, isPlayer, slot);
+        int? startHp = null;
+        if (isPlayer)
+        {
+            var persist = FindAnyObjectByType<PlayerPersistentCombatHealth>();
+            if (persist != null && def != null)
+                startHp = persist.GetHpForCombatStart(def.MaxHp);
+        }
+
+        cu.Initialize(def, registry, ally, isPlayer, slot, startHp);
         return cu;
     }
 }

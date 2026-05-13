@@ -73,8 +73,8 @@ public sealed class ForgeQuestManager : MonoBehaviour
     }
 
     /// <summary>
-    /// If the player has at least one quest item, removes all of that item, pays, and clears the quest.
-    /// Otherwise returns 0 and leaves the quest active.
+    /// If the player has at least one quest item, removes all of that item, pays gold, keeps the same
+    /// commission active, and resets ore pickup so a new vein can spawn. Returns 0 if nothing to turn in.
     /// </summary>
     public int TurnInAndPay(Inventory inv, BlacksmithMaster payTo, out int goldPaid)
     {
@@ -91,11 +91,25 @@ public sealed class ForgeQuestManager : MonoBehaviour
         if (payTo != null && goldPaid > 0)
             payTo.AddGold(goldPaid);
 
+        OrePickedUp = false;
+        OnForgeQuestChanged?.Invoke();
+        return c;
+    }
+
+    /// <summary>
+    /// Ends the forging day: removes any leftover commissioned ore, clears quest state, notifies listeners.
+    /// Call before starting a new Ollama commission for the next day.
+    /// </summary>
+    public void ClearForNewDay(Inventory inv)
+    {
+        if (QuestActive && QuestItemAsset != null && inv != null)
+            inv.TryRemove(QuestItemAsset, inv.CountItem(QuestItemAsset));
+
         QuestActive = false;
         OrePickedUp = false;
         QuestMaterialName = null;
         QuestItemAsset = null;
         GoldRewardPerUnit = 0;
         OnForgeQuestChanged?.Invoke();
-        return c;
-    }}
+    }
+}
