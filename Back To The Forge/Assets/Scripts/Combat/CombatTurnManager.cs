@@ -256,7 +256,25 @@ public class CombatTurnManager : MonoBehaviour
         }
 
         Debug.Log("[Combat] All enemies defeated — unloading combat scene.", this);
+<<<<<<< Updated upstream
         CombatSession.MarkVictoryLootPending();
+=======
+
+        if (spawner != null)
+        {
+            foreach (var a in spawner.SpawnedAllies)
+            {
+                if (a == null || !a.IsPlayerCharacter)
+                    continue;
+
+                var persist = FindAnyObjectByType<PlayerPersistentCombatHealth>();
+                if (persist != null)
+                    persist.RecordHpAfterCombat(a.CurrentHp);
+                break;
+            }
+        }
+
+>>>>>>> Stashed changes
         _sceneController.EndCombat();
         return true;
     }
