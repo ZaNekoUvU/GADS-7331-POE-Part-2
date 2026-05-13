@@ -9,13 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2000000111122223333444455556666, type: 3}
-  m_Name: Unit_Player
+  m_Script: {fileID: 11500000, guid: a1f2e3d4c5b6978049382716a5b4c3d2, type: 3}
+  m_Name: Fabric
   m_EditorClassIdentifier: 
-  unitId: 1
-  displayName: Hero
-  maxHp: 45
-  attackDamage: 20
-  moveIds:
-  - 100
-  moves: []
+  itemId: 9
+  displayName: Fabric
+  baseSellPrice: 7

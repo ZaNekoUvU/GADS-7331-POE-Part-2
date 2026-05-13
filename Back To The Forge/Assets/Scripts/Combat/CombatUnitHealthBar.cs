@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 /// <summary>
@@ -9,7 +10,6 @@ public class CombatUnitHealthBar : MonoBehaviour
 {
     [SerializeField] private bool showOnlyForEnemies;
     [SerializeField] private Image fillImage;
-    [SerializeField] private TextMeshProUGUI hpText;
 
     [Header("Fill colour by HP % (high → low)")]
     [SerializeField] private Color fullHealthColor = new(0.25f, 0.92f, 0.38f, 1f);
@@ -17,12 +17,12 @@ public class CombatUnitHealthBar : MonoBehaviour
     [SerializeField] private Color emptyHealthColor = new(0.04f, 0.04f, 0.04f, 1f);
 
     private CombatUnit _unit;
+    private TextMeshProUGUI _hpTmp;
     private bool _hpLabelCreated;
 
     private void Awake()
     {
         _unit = GetComponentInParent<CombatUnit>();
-        EnsureHpLabel();
     }
 
     private void OnEnable()
@@ -33,7 +33,6 @@ public class CombatUnitHealthBar : MonoBehaviour
         if (_unit != null)
         {
             _unit.HpChanged += OnHpChanged;
-            EnsureHpLabel();
             Refresh(_unit.CurrentHp, _unit.MaxHp);
         }
     }
@@ -54,8 +53,6 @@ public class CombatUnitHealthBar : MonoBehaviour
         if (_unit == null)
             _unit = GetComponentInParent<CombatUnit>();
 
-        EnsureHpLabel();
-
         if (showOnlyForEnemies && _unit != null && _unit.IsAlly)
         {
             gameObject.SetActive(false);
@@ -64,52 +61,57 @@ public class CombatUnitHealthBar : MonoBehaviour
 
         gameObject.SetActive(true);
 
-        if (fillImage == null)
-            return;
+        if (fillImage != null)
+        {
+            var t = max > 0 ? (float)current / max : 0f;
+            t = Mathf.Clamp01(t);
+            fillImage.fillAmount = t;
+            fillImage.color = HealthToColor(t);
+        }
 
-        var t = max > 0 ? (float)current / max : 0f;
-        t = Mathf.Clamp01(t);
-        fillImage.fillAmount = t;
-        fillImage.color = HealthToColor(t);
-
-        if (hpText != null)
-            hpText.text = max > 0 ? $"{current}/{max}" : string.Empty;
+        EnsureHpLabel();
+        if (_hpTmp != null)
+            _hpTmp.text = max > 0 ? $"{current}/{max}" : string.Empty;
     }
 
+    /// <summary>TMP on the same world canvas as the bar (shared scale) so numbers fit inside the strip.</summary>
     private void EnsureHpLabel()
     {
-        if (hpText != null || fillImage == null || _hpLabelCreated)
+        if (_hpTmp != null || fillImage == null || _hpLabelCreated)
             return;
 
-        var canvas = fillImage.GetComponentInParent<Canvas>();
-        if (canvas == null)
+        var barCanvas = fillImage.canvas;
+        if (barCanvas == null)
             return;
 
-        canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1 |
-                                            AdditionalCanvasShaderChannels.TexCoord2 |
-                                            AdditionalCanvasShaderChannels.Normal |
-                                            AdditionalCanvasShaderChannels.Tangent;
+        barCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
 
-        var go = new GameObject("HpText", typeof(RectTransform));
-        go.transform.SetParent(canvas.transform, false);
-        var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 1f);
-        rt.anchorMax = new Vector2(0.5f, 1f);
-        rt.pivot = new Vector2(0.5f, 0f);
-        rt.anchoredPosition = new Vector2(0f, 14f);
-        rt.sizeDelta = new Vector2(140f, 22f);
+        var host = new GameObject("HpText", typeof(RectTransform));
+        host.transform.SetParent(barCanvas.transform, false);
+        host.transform.SetAsLastSibling();
 
-        hpText = go.AddComponent<TextMeshProUGUI>();
-        hpText.fontSize = 11;
-        hpText.fontStyle = FontStyles.Bold;
-        hpText.alignment = TextAlignmentOptions.Center;
-        hpText.textWrappingMode = TextWrappingModes.NoWrap;
-        hpText.color = new Color(1f, 1f, 1f, 0.95f);
-        hpText.raycastTarget = false;
+        var rt = host.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = new Vector2(2f, 1f);
+        rt.offsetMax = new Vector2(-2f, -1f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = Vector2.zero;
+        rt.localScale = Vector3.one;
+        rt.localRotation = Quaternion.identity;
+
+        _hpTmp = host.AddComponent<TextMeshProUGUI>();
+        _hpTmp.raycastTarget = false;
+        _hpTmp.textWrappingMode = TextWrappingModes.NoWrap;
+        _hpTmp.fontSize = 9f;
+        _hpTmp.fontStyle = FontStyles.Bold;
+        _hpTmp.alignment = TextAlignmentOptions.Center;
+        _hpTmp.margin = Vector4.zero;
+        _hpTmp.color = new Color(1f, 1f, 1f, 0.95f);
         if (TMP_Settings.defaultFontAsset != null)
         {
-            hpText.font = TMP_Settings.defaultFontAsset;
-            hpText.fontSharedMaterial = TMP_Settings.defaultFontAsset.material;
+            _hpTmp.font = TMP_Settings.defaultFontAsset;
+            _hpTmp.fontSharedMaterial = TMP_Settings.defaultFontAsset.material;
         }
 
         _hpLabelCreated = true;

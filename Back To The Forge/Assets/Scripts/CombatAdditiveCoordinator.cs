@@ -13,6 +13,16 @@ public class CombatAdditiveCoordinator : MonoBehaviour
     [Tooltip("Pauses scaled time while combat is shown. Combat UI/logic must use unscaled time (e.g. Animator Update Mode Unscaled, WaitForSecondsRealtime, UI Toolkit unscaled).")]
     [SerializeField] private bool pauseExplorationWithTimeScale = true;
 
+    [Header("Victory loot (after combat)")]
+    [Tooltip("If empty, finds an Inventory in loaded scenes. Usually the player.")]
+    [SerializeField] private Inventory playerInventory;
+
+    [Tooltip("Random picks (with replacement) for each of 1–3 drops after a won fight.")]
+    [SerializeField] private ItemDefinition[] combatDropPool;
+
+    [SerializeField] private int minDropsOnVictory = 1;
+    [SerializeField] private int maxDropsOnVictory = 3;
+
     private AsyncOperation _loadOp;
     private float _savedTimeScale = 1f;
 
@@ -165,7 +175,68 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         if (pauseExplorationWithTimeScale)
             Time.timeScale = _savedTimeScale;
 
+        if (CombatSession.PeekVictoryLootPending())
+        {
+            CombatSession.ClearVictoryLootPending();
+            TryGrantVictoryCombatLoot();
+        }
+
         CombatSession.RaiseCombatEnded();
+        CombatSession.Clear();
+    }
+
+    private void TryGrantVictoryCombatLoot()
+    {
+        var pool = BuildDropPool();
+        if (pool.Count == 0)
+        {
+            Debug.LogWarning($"{nameof(CombatAdditiveCoordinator)}: No items in {nameof(combatDropPool)} — skipping victory loot.", this);
+            return;
+        }
+
+        var inv = playerInventory != null ? playerInventory : FindAnyObjectByType<Inventory>();
+        if (inv == null)
+        {
+            Debug.LogWarning($"{nameof(CombatAdditiveCoordinator)}: No {nameof(Inventory)} found — cannot grant victory loot.", this);
+            return;
+        }
+
+        var lo = Mathf.Max(1, minDropsOnVictory);
+        var hi = Mathf.Max(lo, maxDropsOnVictory);
+        var planned = Random.Range(lo, hi + 1);
+        var added = 0;
+
+        for (var i = 0; i < planned; i++)
+        {
+            var item = pool[Random.Range(0, pool.Count)];
+            var overflow = inv.TryAdd(item, 1);
+            if (overflow > 0)
+            {
+                Debug.LogWarning(
+                    $"{nameof(CombatAdditiveCoordinator)}: Inventory full — could not add all victory loot ({item.DisplayName} lost).",
+                    this);
+                break;
+            }
+
+            added++;
+        }
+
+        Debug.Log($"[Combat] Victory loot: added {added}/{planned} random drop(s) (pool has {pool.Count} item type(s)).", this);
+    }
+
+    private List<ItemDefinition> BuildDropPool()
+    {
+        var list = new List<ItemDefinition>();
+        if (combatDropPool == null)
+            return list;
+
+        foreach (var def in combatDropPool)
+        {
+            if (def != null)
+                list.Add(def);
+        }
+
+        return list;
     }
 
     private void SetExplorationOutputEnabled(bool enabled)

@@ -256,6 +256,7 @@ public class CombatTurnManager : MonoBehaviour
         }
 
         Debug.Log("[Combat] All enemies defeated — unloading combat scene.", this);
+        CombatSession.MarkVictoryLootPending();
         _sceneController.EndCombat();
         return true;
     }

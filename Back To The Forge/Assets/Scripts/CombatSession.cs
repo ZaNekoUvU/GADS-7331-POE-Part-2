@@ -30,6 +30,15 @@ public static class CombatSession
         AllyUnitIds[2] = 0;
     }
 
+    /// <summary>Set when all enemies are defeated; consumed when exploration applies victory loot.</summary>
+    private static bool _victoryLootPending;
+
+    public static void MarkVictoryLootPending() => _victoryLootPending = true;
+
+    public static bool PeekVictoryLootPending() => _victoryLootPending;
+
+    public static void ClearVictoryLootPending() => _victoryLootPending = false;
+
     /// <summary>Fired after the combat scene has fully unloaded.</summary>
     public static event Action CombatEnded;
 
@@ -42,5 +51,6 @@ public static class CombatSession
     {
         EncounterId = 0;
         ResetAllyPartyDefaults();
+        _victoryLootPending = false;
     }
 }
