@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Increases enemy combat stats based on exploration day. Day advances when
-/// <see cref="BlacksmithMaster.SellAllAndEndDay"/> runs (same <see cref="BlacksmithMaster.CurrentDay"/>).
+/// Increases enemy combat stats based on exploration day (<see cref="BlacksmithMaster.CurrentDay"/>), which advances
+/// only when the player ends the day through <see cref="BlacksmithQuestGiver"/> dialogue (when <see cref="BlacksmithMaster.SellAllAndEndDay"/> runs).
 /// Add to your exploration Game Manager (or any active scene object); tune growth in the inspector.
 /// </summary>
 public class CombatEnemyDifficulty : MonoBehaviour
@@ -42,7 +42,7 @@ public class CombatEnemyDifficulty : MonoBehaviour
 
     private static int ResolveDayIndex()
     {
-        var blacksmith = FindAnyObjectByType<BlacksmithMaster>();
+        var blacksmith = BlacksmithMaster.ResolveEconomy();
         if (blacksmith != null)
             return Mathf.Max(1, blacksmith.CurrentDay);
 

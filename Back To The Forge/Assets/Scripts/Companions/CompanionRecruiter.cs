@@ -285,7 +285,7 @@ public class CompanionRecruiter : MonoBehaviour
         if (choiceUi == null)
             choiceUi = ForgeQuestChoiceUI.GetOrCreate();
         if (blacksmith == null)
-            blacksmith = FindAnyObjectByType<BlacksmithMaster>();
+            blacksmith = BlacksmithMaster.ResolveEconomy();
 
         StartCoroutine(HireRoutine());
     }

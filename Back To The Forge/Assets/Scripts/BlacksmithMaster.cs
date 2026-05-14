@@ -2,30 +2,65 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 /// <summary>
-/// Daily quest + end-of-day sell flow. Assign the player <see cref="Inventory"/> and a pool of
-/// <see cref="ItemDefinition"/>s the blacksmith can request (configured on the prefab).
+/// Daily quest + sell-all end-of-day (<see cref="SellAllAndEndDay"/>). Day advances only from
+/// <see cref="BlacksmithQuestGiver"/> dialogue — not from standing in range and pressing Interact here.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class BlacksmithMaster : MonoBehaviour
 {
     private const string LogPrefix = "[Blacksmith]";
 
+    private static bool _warnedMultipleEconomyActors;
+
+    /// <summary>
+    /// The blacksmith that should receive gold and UI updates. When a <see cref="BlacksmithQuestGiver"/> exists (combined
+    /// forge NPC prefab), returns the <see cref="BlacksmithMaster"/> on that same object so payouts match the HUD.
+    /// Otherwise returns any instance (e.g. exploration scene with a standalone smith only).
+    /// </summary>
+    public static BlacksmithMaster ResolveEconomy()
+    {
+        var giver = FindAnyObjectByType<BlacksmithQuestGiver>();
+        if (giver != null)
+        {
+            var paired = giver.GetComponent<BlacksmithMaster>();
+            if (paired != null)
+            {
+                WarnIfMultiple(paired);
+                return paired;
+            }
+        }
+
+        var fallback = FindAnyObjectByType<BlacksmithMaster>();
+        WarnIfMultiple(fallback);
+        return fallback;
+    }
+
+    private static void WarnIfMultiple(BlacksmithMaster chosen)
+    {
+        if (chosen == null || _warnedMultipleEconomyActors)
+            return;
+
+        var all = FindObjectsByType<BlacksmithMaster>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (all.Length <= 1)
+            return;
+
+        _warnedMultipleEconomyActors = true;
+        Debug.LogWarning(
+            $"{LogPrefix} {all.Length} {nameof(BlacksmithMaster)} components are loaded — using economy on '{chosen.name}'. " +
+            $"If gold stays at 0 in the UI, remove duplicate standalone smith objects or leave only one smith per scene.",
+            chosen);
+    }
+
     [Header("Core")]
     [SerializeField] private Inventory playerInventory;
     [SerializeField] private ItemDefinition[] dailyQuestPool;
-    [Tooltip("Sell price multiplier for today's quested item only.")]
+    [Tooltip("Sell price multiplier for today's daily special and for forge-commission ore (turn-in + end-of-day).")]
     [SerializeField] private float questItemSellMultiplier = 2f;
 
     [SerializeField] private int startingDay = 1;
     [SerializeField] private int startingGold;
-
-    [Header("Proximity & interact")]
-    [SerializeField] private InputActionReference interactAction;
-    [Tooltip("While the player is in this object's trigger and presses Interact (E), sell all and advance the day.")]
-    [SerializeField] private bool endDayOnInteractWhileInRange = true;
 
     [Header("Debug")]
     [SerializeField] private bool debugLogs = true;
@@ -65,6 +100,36 @@ public class BlacksmithMaster : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Gold per unit for one stack of <paramref name="item"/> using the same rules as end-of-day selling:
+    /// base price, or base × <see cref="questItemSellMultiplier"/> if it is today's daily special or forge commission ore.
+    /// Set <paramref name="quoteForgeCommissionOre"/> when starting a forge quest to quote the rate that will apply at turn-in.
+    /// </summary>
+    public int GetUnitSellPrice(ItemDefinition item, bool quoteForgeCommissionOre = false)
+    {
+        if (item == null)
+            return 0;
+
+        var basePrice = Mathf.Max(0, item.BaseSellPrice);
+        var forge = ForgeQuestManager.Instance;
+        ItemDefinition forgeAsset = null;
+        if (forge != null && forge.QuestActive)
+            forgeAsset = forge.QuestItemAsset;
+        var matchesLiveForge =
+            forgeAsset != null && item != null
+            && (item == forgeAsset
+                || (forgeAsset.ItemId > 0 && item.ItemId > 0 && forgeAsset.ItemId == item.ItemId));
+        var treatAsForgeOre = quoteForgeCommissionOre || matchesLiveForge;
+        var isDailySpecial =
+            _todaysQuestItem != null && item != null
+            && (item == _todaysQuestItem
+                || (_todaysQuestItem.ItemId > 0 && item.ItemId > 0 && _todaysQuestItem.ItemId == item.ItemId));
+        if (!isDailySpecial && !treatAsForgeOre)
+            return Mathf.Max(1, basePrice);
+
+        return Mathf.Max(1, Mathf.RoundToInt(basePrice * Mathf.Max(1f, questItemSellMultiplier)));
+    }
+
     public string GetQuestSummary()
     {
         if (_todaysQuestItem == null)
@@ -78,8 +143,7 @@ public class BlacksmithMaster : MonoBehaviour
 
     private void Awake()
     {
-        if (playerInventory == null)
-            playerInventory = FindAnyObjectByType<Inventory>();
+        EnsurePlayerInventory();
 
         _collider2D = GetComponent<Collider2D>();
         if (_collider2D != null && !_collider2D.isTrigger && debugLogs)
@@ -89,22 +153,45 @@ public class BlacksmithMaster : MonoBehaviour
         _playerGold = startingGold;
     }
 
-    private void OnEnable()
+    /// <summary>Resolves the player's bag (may run before the player exists in Awake; call again before selling).</summary>
+    public Inventory EnsurePlayerInventory()
     {
-        if (interactAction != null)
-            interactAction.action.Enable();
+        var pm = PlayerMovement2D.Instance;
+        if (pm != null)
+        {
+            if (pm.TryGetComponent<Inventory>(out var onPlayer))
+            {
+                playerInventory = onPlayer;
+                return playerInventory;
+            }
+
+            var onHierarchy = pm.GetComponentInChildren<Inventory>(true);
+            if (onHierarchy == null)
+                onHierarchy = pm.GetComponentInParent<Inventory>();
+
+            if (onHierarchy != null)
+            {
+                playerInventory = onHierarchy;
+                return playerInventory;
+            }
+        }
+
+        if (playerInventory != null)
+            return playerInventory;
+
+        playerInventory = FindAnyObjectByType<Inventory>();
+        return playerInventory;
     }
 
     private void OnDisable()
     {
-        if (interactAction != null)
-            interactAction.action.Disable();
-
         _playerProximity.Clear();
     }
 
     private void Start()
     {
+        EnsurePlayerInventory();
+
         if (dailyQuestPool == null || dailyQuestPool.Length == 0)
         {
             Debug.LogWarning($"{nameof(BlacksmithMaster)}: No items in {nameof(dailyQuestPool)} — assign at least one ItemDefinition.", this);
@@ -113,54 +200,6 @@ public class BlacksmithMaster : MonoBehaviour
 
         if (_todaysQuestItem == null)
             RollDailyQuest();
-    }
-
-    private void Update()
-    {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
-            return;
-
-        if (_playerProximity.Count <= 0)
-            return;
-
-        if (!WasInteractPressedThisFrame())
-            return;
-
-        if (debugLogs)
-            Debug.Log($"{LogPrefix} Interact pressed while in range of '{name}'.", this);
-
-        if (endDayOnInteractWhileInRange)
-            TryEndDayViaInteract();
-    }
-
-    private bool WasInteractPressedThisFrame()
-    {
-        if (SimpleRpgDialogueUI.InteractConsumedByDialogueFrame == Time.frameCount)
-            return false;
-
-        if (interactAction != null && interactAction.action != null)
-            return interactAction.action.WasPressedThisFrame();
-
-        return Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame;
-    }
-
-    private void TryEndDayViaInteract()
-    {
-        var result = SellAllAndEndDay();
-
-        if (!debugLogs)
-            return;
-
-        if (result.TotalGold == 0 && string.IsNullOrEmpty(result.BreakdownLines))
-        {
-            Debug.Log($"{LogPrefix} End of day — inventory was empty (Day is now {CurrentDay}, gold {_playerGold}).", this);
-            return;
-        }
-
-        Debug.Log(
-            $"{LogPrefix} End of day — sold for {result.TotalGold}g (quest items: {result.QuestItemGold}g, other: {result.OtherGold}g). " +
-            $"Total gold now {_playerGold}. New day: {CurrentDay}.\n{result.BreakdownLines}",
-            this);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -221,12 +260,13 @@ public class BlacksmithMaster : MonoBehaviour
         OnEconomyChanged?.Invoke();
     }
 
-    /// <summary>Sells every stack in the inventory, applies quest bonus to the quest item, clears bags, advances the day, rolls the next quest.</summary>
+    /// <summary>Sells every stack in the inventory using <see cref="GetUnitSellPrice"/> (daily special + active forge ore share the same bonus), clears bags, advances the day, rolls the next quest.</summary>
     public SellDayResult SellAllAndEndDay()
     {
+        EnsurePlayerInventory();
         if (playerInventory == null)
         {
-            Debug.LogError($"{nameof(BlacksmithMaster)}: No {nameof(Inventory)} assigned or found.", this);
+            Debug.LogError($"{nameof(BlacksmithMaster)}: No {nameof(Inventory)} assigned or found — assign the player's inventory or ensure the player is in the scene before selling.", this);
             return default;
         }
 
@@ -248,14 +288,23 @@ public class BlacksmithMaster : MonoBehaviour
             if (slot.IsEmpty)
                 continue;
 
-            var unitBase = Mathf.Max(0, slot.item.BaseSellPrice);
-            var isQuest = _todaysQuestItem != null && slot.item == _todaysQuestItem;
-            var mult = isQuest ? Mathf.Max(1f, questItemSellMultiplier) : 1f;
-            var unitSold = Mathf.RoundToInt(unitBase * mult);
+            var unitSold = GetUnitSellPrice(slot.item, quoteForgeCommissionOre: false);
             var stackGold = unitSold * slot.count;
             total += stackGold;
 
-            if (isQuest)
+            var isQuestTagged =
+                (_todaysQuestItem != null
+                    && (slot.item == _todaysQuestItem
+                        || (_todaysQuestItem.ItemId > 0 && slot.item != null && slot.item.ItemId == _todaysQuestItem.ItemId)))
+                || (ForgeQuestManager.Instance != null
+                    && ForgeQuestManager.Instance.QuestActive
+                    && ForgeQuestManager.Instance.QuestItemAsset != null
+                    && slot.item != null
+                    && (slot.item == ForgeQuestManager.Instance.QuestItemAsset
+                        || (ForgeQuestManager.Instance.QuestItemAsset.ItemId > 0
+                            && slot.item.ItemId == ForgeQuestManager.Instance.QuestItemAsset.ItemId)));
+
+            if (isQuestTagged)
                 questGold += stackGold;
             else
                 otherGold += stackGold;
@@ -282,6 +331,7 @@ public class BlacksmithMaster : MonoBehaviour
     /// <summary>Gold you would get if you sold now (does not modify inventory).</summary>
     public int PreviewSellTotal()
     {
+        EnsurePlayerInventory();
         if (playerInventory == null)
             return 0;
 
@@ -294,10 +344,7 @@ public class BlacksmithMaster : MonoBehaviour
             if (slot.IsEmpty)
                 continue;
 
-            var unitBase = Mathf.Max(0, slot.item.BaseSellPrice);
-            var isQuest = _todaysQuestItem != null && slot.item == _todaysQuestItem;
-            var mult = isQuest ? Mathf.Max(1f, questItemSellMultiplier) : 1f;
-            total += Mathf.RoundToInt(unitBase * mult) * slot.count;
+            total += GetUnitSellPrice(slot.item, quoteForgeCommissionOre: false) * slot.count;
         }
 
         return total;

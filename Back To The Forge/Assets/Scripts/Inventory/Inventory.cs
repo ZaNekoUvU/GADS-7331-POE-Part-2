@@ -89,6 +89,24 @@ public class Inventory : MonoBehaviour
         return n;
     }
 
+    /// <summary>Counts stacked units across any slot whose <see cref="ItemDefinition.ItemId"/> matches (handles duplicate SO instances).</summary>
+    public int CountItemWithId(int itemId)
+    {
+        if (itemId <= 0)
+            return 0;
+
+        var n = 0;
+        for (var i = 0; i < MaxSlots; i++)
+        {
+            var slot = _slots[i];
+            if (slot.IsEmpty || slot.item == null || slot.item.ItemId != itemId)
+                continue;
+            n += slot.count;
+        }
+
+        return n;
+    }
+
     /// <summary>Removes up to <paramref name="amount"/> of item; returns how many were removed.</summary>
     public int TryRemove(ItemDefinition item, int amount)
     {
@@ -102,6 +120,38 @@ public class Inventory : MonoBehaviour
         {
             var slot = _slots[i];
             if (slot.IsEmpty || slot.item != item)
+                continue;
+
+            var take = Mathf.Min(slot.count, toRemove);
+            slot.count -= take;
+            removed += take;
+            toRemove -= take;
+
+            if (slot.count <= 0)
+                slot = default;
+
+            _slots[i] = slot;
+        }
+
+        if (removed > 0)
+            NotifyChanged();
+
+        return removed;
+    }
+
+    /// <summary>Removes up to <paramref name="amount"/> across stacks that match <paramref name="itemId"/>.</summary>
+    public int TryRemoveItemWithId(int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0)
+            return 0;
+
+        var toRemove = amount;
+        var removed = 0;
+
+        for (var i = 0; i < MaxSlots && toRemove > 0; i++)
+        {
+            var slot = _slots[i];
+            if (slot.IsEmpty || slot.item == null || slot.item.ItemId != itemId)
                 continue;
 
             var take = Mathf.Min(slot.count, toRemove);

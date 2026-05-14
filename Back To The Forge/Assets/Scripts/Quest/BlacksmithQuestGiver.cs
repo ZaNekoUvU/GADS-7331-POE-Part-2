@@ -7,8 +7,8 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Ollama quest blacksmith: commissions a invented mineral, spawns pickup via <see cref="QuestMineralSpawner"/>,
 /// turn-ins pay gold while the same commission stays active until the player ends the day (new ore spawn) or
-/// continuing. Ending the day heals the player, rolls the next commission without staying in dialogue,
-/// closes the dialogue UI, and returns the player to their session start position.
+/// continuing. Ending the day only happens when the player chooses that option in dialogue here; it heals the player,
+/// runs the blacksmith sell-all / day advance, clears hired companions, and starts the next commission.
 /// Uses <see cref="ForgeQuestManager"/> for cross-scene state.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
@@ -18,9 +18,13 @@ public class BlacksmithQuestGiver : MonoBehaviour
     [SerializeField] private NpcDialogueProfile profile;
 
     [Header("Quest")]
-    [Tooltip("Inventory item granted by QuestMineralPickup — display name for HUD is this asset; spoken name comes from the LLM.")]
+    [Tooltip("Commission item from pickups (Quest Mineral) — separate from iron mined from veins.")]
     [SerializeField] private ItemDefinition questMineralDefinition;
 
+    [Tooltip("Iron (or other standard ore) the smith also takes when you turn in the commission; must match mine vein oreDefinition.")]
+    [SerializeField] private ItemDefinition forgeIronTurnInDefinition;
+
+    [Tooltip("Fallback gold/unit if no BlacksmithMaster is in the scene. Normally pay uses quest mineral BaseSellPrice × the blacksmith bonus.")]
     [SerializeField] private int goldRewardPerUnit = 22;
 
     [Header("Services")]
@@ -36,7 +40,8 @@ public class BlacksmithQuestGiver : MonoBehaviour
         "Need a favor — bring me back any strange ore you find in the eastern tunnels. I'll make it worth your while.";
 
     [SerializeField] private string turnInThanksFallback = "Aye, this is what I needed. Here's your coin.";
-    [SerializeField] private string turnInEmptyFallback = "You brought nothing I asked for. Come back when you have the ore.";
+    [SerializeField] private string turnInEmptyFallback =
+        "You need the strange ore I asked for and your iron ingots before I can pay you.";
 
     [Header("Proximity")]
     [SerializeField] private InputActionReference interactAction;
@@ -69,12 +74,30 @@ public class BlacksmithQuestGiver : MonoBehaviour
         _playerProximity.Clear();
     }
 
+    /// <summary>
+    /// Uses <see cref="BlacksmithMaster"/> on this GameObject when present (combined forge NPC); otherwise falls back
+    /// to the serialized reference or <see cref="BlacksmithMaster.ResolveEconomy"/>.
+    /// </summary>
+    private void EnsureBlacksmithResolved()
+    {
+        var onSelf = GetComponent<BlacksmithMaster>();
+        if (onSelf != null)
+        {
+            blacksmith = onSelf;
+            return;
+        }
+
+        if (blacksmith == null)
+            blacksmith = BlacksmithMaster.ResolveEconomy();
+    }
+
     private void Update()
     {
         if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
-        if (_playerProximity.Count <= 0 || _sessionBusy || profile == null || questMineralDefinition == null)
+        if (_playerProximity.Count <= 0 || _sessionBusy || profile == null || questMineralDefinition == null
+            || forgeIronTurnInDefinition == null)
             return;
 
         if (!WasInteractPressedThisFrame())
@@ -88,8 +111,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
             choiceUi = ForgeQuestChoiceUI.GetOrCreate();
         if (playerInventory == null)
             playerInventory = FindAnyObjectByType<Inventory>();
-        if (blacksmith == null)
-            blacksmith = FindAnyObjectByType<BlacksmithMaster>();
+        EnsureBlacksmithResolved();
         if (playerHealth == null)
             playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
 
@@ -115,7 +137,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         if (ollamaService.IsBusy)
         {
-            ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, goldRewardPerUnit);
+            ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
             dialogueUi.Show(profile.CharacterName, offerFallback);
             yield break;
         }
@@ -133,15 +155,50 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         if (dto != null)
         {
-            ForgeQuestManager.GetOrCreate().BeginQuest(dto.materialName, questMineralDefinition, goldRewardPerUnit);
+            ForgeQuestManager.GetOrCreate().BeginQuest(dto.materialName, questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
             dialogueUi.SetDialogueLineAndAllowAdvance(dto.requestLine);
         }
         else
         {
             Debug.LogWarning($"[ForgeQuest] Offer failed: {err}. Using fallback.", this);
-            ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, goldRewardPerUnit);
+            ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
             dialogueUi.SetDialogueLineAndAllowAdvance(offerFallback);
         }
+    }
+
+    private Inventory ResolvePlayerInventory()
+    {
+        var pm = PlayerMovement2D.Instance;
+        if (pm != null)
+        {
+            if (pm.TryGetComponent<Inventory>(out var onPlayer))
+                return onPlayer;
+
+            var onHierarchy = pm.GetComponentInChildren<Inventory>(true);
+            if (onHierarchy == null)
+                onHierarchy = pm.GetComponentInParent<Inventory>();
+            if (onHierarchy != null)
+                return onHierarchy;
+        }
+
+        if (playerInventory != null)
+            return playerInventory;
+
+        return FindAnyObjectByType<Inventory>();
+    }
+
+    private int CommissionGoldPerUnitHint()
+    {
+        if (questMineralDefinition == null)
+            return Mathf.Max(1, goldRewardPerUnit);
+
+        EnsureBlacksmithResolved();
+
+        if (blacksmith == null)
+            return Mathf.Max(1, goldRewardPerUnit);
+
+        var p = blacksmith.GetUnitSellPrice(questMineralDefinition, quoteForgeCommissionOre: true);
+        return p > 0 ? p : Mathf.Max(1, goldRewardPerUnit);
     }
 
     private IEnumerator SessionWhenQuestActiveRoutine()
@@ -160,14 +217,24 @@ public class BlacksmithQuestGiver : MonoBehaviour
         _sessionBusy = false;
     }
 
-    /// <summary>Clears today's forge commission, heals the player, starts tomorrow's Ollama request.</summary>
+    /// <summary>Runs <see cref="BlacksmithMaster.SellAllAndEndDay"/> while forge state is still active (so commission ore is paid),
+    /// then clears forge quest state. Called only when the player picks end day in dialogue.</summary>
     private IEnumerator EndForgingDayRoutine()
     {
+        EnsureBlacksmithResolved();
+        if (blacksmith != null)
+            blacksmith.SellAllAndEndDay();
+        else
+        {
+            Debug.LogWarning(
+                $"{nameof(BlacksmithQuestGiver)}: No {nameof(BlacksmithMaster)} — end day cleared forge state only; economy day did not advance.",
+                this);
+            HiredCompanionManager.Instance?.ClearHiresForNewDay();
+        }
+
         var q = ForgeQuestManager.Instance;
         if (q != null)
-            q.ClearForNewDay(playerInventory);
-
-        HiredCompanionManager.Instance?.ClearHiresForNewDay();
+            q.ClearForNewDay(ResolvePlayerInventory());
 
         if (playerHealth == null)
             playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
@@ -180,7 +247,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
     private IEnumerator TurnInRoutine()
     {
         var q = ForgeQuestManager.Instance;
-        var inv = playerInventory;
+        var inv = ResolvePlayerInventory();
         if (q == null || inv == null)
         {
             dialogueUi.Show(profile.CharacterName, turnInEmptyFallback);
@@ -191,8 +258,10 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         dialogueUi.ShowAwaitingLine(profile.CharacterName, "…");
 
-        var unitsRemoved = q.TurnInAndPay(inv, blacksmith, out var goldPaid);
-        var sys = BuildTurnInSystemPrompt(materialName, unitsRemoved, goldPaid);
+        EnsureBlacksmithResolved();
+
+        var unitsQuest = q.TurnInAndPay(inv, blacksmith, out var goldPaid, out var ironUnits);
+        var sys = BuildTurnInSystemPrompt(materialName, unitsQuest, ironUnits, goldPaid);
         var user = "Speak your line to the traveler now (their reply ends the conversation).";
 
         string line = null;
@@ -202,9 +271,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(line))
             dialogueUi.Show(profile.CharacterName, line);
         else
-            dialogueUi.Show(profile.CharacterName, unitsRemoved > 0 ? turnInThanksFallback : turnInEmptyFallback);
+            dialogueUi.Show(profile.CharacterName, unitsQuest > 0 ? turnInThanksFallback : turnInEmptyFallback);
 
-        if (unitsRemoved <= 0)
+        if (unitsQuest <= 0)
             yield break;
 
         yield return new WaitUntil(() => !SimpleRpgDialogueUI.IsDialogueOpen);
@@ -244,16 +313,16 @@ public class BlacksmithQuestGiver : MonoBehaviour
             dialogueUi.Show(profile.CharacterName, "Mind the forge — and those tunnels.");
     }
 
-    private string BuildTurnInSystemPrompt(string materialName, int unitsRemoved, int goldPaid)
+    private string BuildTurnInSystemPrompt(string materialName, int questMineralUnits, int ironUnits, int goldPaid)
     {
         var sb = new StringBuilder(512);
         sb.AppendLine(BuildPersonaHeader());
         sb.AppendLine("Facts (must follow):");
-        sb.AppendLine($"- You asked for material called: {materialName}");
-        sb.AppendLine($"- The traveler brought {unitsRemoved} unit(s) of that ore.");
+        sb.AppendLine($"- You asked for a special material called: {materialName}");
+        sb.AppendLine($"- The traveler hands over {questMineralUnits} unit(s) of that strange ore and {ironUnits} unit(s) of standard iron.");
         sb.AppendLine($"- You pay them {goldPaid} gold total for this handoff (already settled in the till).");
         sb.AppendLine(
-            "Reply with one short in-character line only: grateful and warm if units > 0, disappointed but fair if 0. " +
+            "Reply with one short in-character line only: grateful and warm if they brought materials, disappointed but fair if not. " +
             "No meta, no 'the user', no JSON.");
         return sb.ToString();
     }
@@ -291,4 +360,13 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         _playerProximity.Remove(other);
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (questMineralDefinition != null && forgeIronTurnInDefinition != null
+            && questMineralDefinition == forgeIronTurnInDefinition)
+            Debug.LogWarning($"{nameof(BlacksmithQuestGiver)}: Assign different assets for quest mineral vs forge iron.", this);
+    }
+#endif
 }
