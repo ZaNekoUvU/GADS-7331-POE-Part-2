@@ -17,10 +17,23 @@ public class CombatUnit : MonoBehaviour
     private bool _isPlayerCharacter;
     private int _slotIndex;
     private int _currentHp;
+    private int _runtimeMaxHp;
+    private int _runtimeEnemyStrikeDamage;
+    private bool _enemyDifficultyApplied;
 
     public UnitDefinition Definition => _definition;
     public int CurrentHp => _currentHp;
-    public int MaxHp => _definition != null ? _definition.MaxHp : 0;
+    public int MaxHp
+    {
+        get
+        {
+            if (_definition == null)
+                return 0;
+            if (_enemyDifficultyApplied)
+                return _runtimeMaxHp;
+            return _definition.MaxHp;
+        }
+    }
     public bool IsAlive => _currentHp > 0;
     public bool IsAlly => _isAlly;
     public bool IsPlayerCharacter => _isPlayerCharacter;
@@ -42,13 +55,36 @@ public class CombatUnit : MonoBehaviour
         _isAlly = isAlly;
         _isPlayerCharacter = isPlayerCharacter;
         _slotIndex = slotIndex;
+        _enemyDifficultyApplied = false;
+        _runtimeMaxHp = 0;
+        _runtimeEnemyStrikeDamage = 0;
 
         if (definition == null)
+        {
             _currentHp = 0;
-        else if (startingHpOverride.HasValue)
-            _currentHp = Mathf.Clamp(startingHpOverride.Value, 1, definition.MaxHp);
+        }
         else
-            _currentHp = definition.MaxHp;
+        {
+            var maxHpCap = definition.MaxHp;
+            if (!isAlly)
+            {
+                var mul = CombatEnemyDifficulty.GetEnemyStatMultiplier();
+                _runtimeMaxHp = Mathf.Max(1, Mathf.RoundToInt(definition.MaxHp * mul));
+                var baseStrike = definition.GetBasicStrikeDamage(moveRegistry);
+                _runtimeEnemyStrikeDamage = Mathf.Max(1, Mathf.RoundToInt(baseStrike * mul));
+                _enemyDifficultyApplied = true;
+                maxHpCap = _runtimeMaxHp;
+            }
+            else
+            {
+                _runtimeMaxHp = definition.MaxHp;
+            }
+
+            if (startingHpOverride.HasValue)
+                _currentHp = Mathf.Clamp(startingHpOverride.Value, 1, maxHpCap);
+            else
+                _currentHp = maxHpCap;
+        }
 
         var label = definition != null ? definition.DisplayName : "?";
         gameObject.name = $"{(isAlly ? "Ally" : "Enemy")}_{label}_{slotIndex}";
@@ -59,6 +95,9 @@ public class CombatUnit : MonoBehaviour
     {
         if (_definition == null)
             return 0;
+
+        if (_enemyDifficultyApplied)
+            return _runtimeEnemyStrikeDamage;
 
         return _definition.GetBasicStrikeDamage(_moveRegistry);
     }
