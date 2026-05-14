@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -8,7 +9,6 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class RiskyGroundEncounter2D : MonoBehaviour
 {
-    [SerializeField] private string playerTag = "Player";
     [SerializeField] private CombatStarter combatStarter;
     [SerializeField] private CombatAdditiveCoordinator coordinator;
     [SerializeField] private int encounterId;
@@ -16,7 +16,7 @@ public class RiskyGroundEncounter2D : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float chancePerRoll = 0.1f;
 
-    private int _playerOverlapCount;
+    private readonly HashSet<Collider2D> _playerProximity = new();
     private Coroutine _riskRoutine;
 
     private void Awake()
@@ -26,23 +26,33 @@ public class RiskyGroundEncounter2D : MonoBehaviour
             Debug.LogWarning($"{nameof(RiskyGroundEncounter2D)}: Collider2D on '{name}' should be a trigger.", this);
     }
 
+    private void OnDisable()
+    {
+        _playerProximity.Clear();
+        if (_riskRoutine != null)
+        {
+            StopCoroutine(_riskRoutine);
+            _riskRoutine = null;
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        if (++_playerOverlapCount == 1 && _riskRoutine == null)
+        if (_playerProximity.Add(other) && _playerProximity.Count == 1 && _riskRoutine == null)
             _riskRoutine = StartCoroutine(RiskLoop());
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _playerOverlapCount = Mathf.Max(0, _playerOverlapCount - 1);
+        _playerProximity.Remove(other);
 
-        if (_playerOverlapCount == 0 && _riskRoutine != null)
+        if (_playerProximity.Count == 0 && _riskRoutine != null)
         {
             StopCoroutine(_riskRoutine);
             _riskRoutine = null;
@@ -53,11 +63,11 @@ public class RiskyGroundEncounter2D : MonoBehaviour
     {
         var wait = new WaitForSeconds(rollIntervalSeconds);
 
-        while (_playerOverlapCount > 0)
+        while (_playerProximity.Count > 0)
         {
             yield return wait;
 
-            if (_playerOverlapCount <= 0)
+            if (_playerProximity.Count <= 0)
                 break;
 
             if (coordinator == null)

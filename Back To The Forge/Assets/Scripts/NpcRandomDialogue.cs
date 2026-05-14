@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,10 +21,9 @@ public class NpcRandomDialogue : MonoBehaviour
     [SerializeField] private SimpleRpgDialogueUI dialogueUi;
 
     [Header("Proximity & interact")]
-    [SerializeField] private string playerTag = "Player";
     [SerializeField] private InputActionReference interactAction;
 
-    private int _playerOverlapCount;
+    private readonly HashSet<Collider2D> _playerProximity = new();
     private Collider2D _collider2D;
 
     private void Awake()
@@ -43,6 +43,8 @@ public class NpcRandomDialogue : MonoBehaviour
     {
         if (interactAction != null)
             interactAction.action.Disable();
+
+        _playerProximity.Clear();
     }
 
     private void Update()
@@ -50,7 +52,7 @@ public class NpcRandomDialogue : MonoBehaviour
         if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
-        if (_playerOverlapCount <= 0)
+        if (_playerProximity.Count <= 0)
             return;
 
         if (!WasInteractPressedThisFrame())
@@ -81,17 +83,17 @@ public class NpcRandomDialogue : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _playerOverlapCount++;
+        _playerProximity.Add(other);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _playerOverlapCount = Mathf.Max(0, _playerOverlapCount - 1);
+        _playerProximity.Remove(other);
     }
 }

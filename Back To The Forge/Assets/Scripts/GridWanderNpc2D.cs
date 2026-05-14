@@ -49,8 +49,21 @@ public class GridWanderNpc2D : MonoBehaviour
             spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
+    private void OnEnable()
+    {
+        if (_body == null)
+            return;
+
+        SnapPositionToGrid();
+        _cellStart = _cellEnd = _body.position;
+        _stepping = false;
+        _stepT = 0f;
+        _idleUntil = Time.time + RandomIdleDelay();
+    }
+
     private void Start()
     {
+        // First frame after OnEnable; keeps parity if anything moved the transform before Start.
         SnapPositionToGrid();
         _cellStart = _cellEnd = _body.position;
         _idleUntil = Time.time + RandomIdleDelay();

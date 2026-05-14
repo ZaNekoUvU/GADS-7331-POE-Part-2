@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -22,7 +23,6 @@ public class BlacksmithMaster : MonoBehaviour
     [SerializeField] private int startingGold;
 
     [Header("Proximity & interact")]
-    [SerializeField] private string playerTag = "Player";
     [SerializeField] private InputActionReference interactAction;
     [Tooltip("While the player is in this object's trigger and presses Interact (E), sell all and advance the day.")]
     [SerializeField] private bool endDayOnInteractWhileInRange = true;
@@ -33,14 +33,14 @@ public class BlacksmithMaster : MonoBehaviour
     private int _currentDay;
     private int _playerGold;
     private ItemDefinition _todaysQuestItem;
-    private int _playerOverlapCount;
+    private readonly HashSet<Collider2D> _playerProximity = new();
     private Collider2D _collider2D;
 
     public int CurrentDay => _currentDay;
     public int PlayerGold => _playerGold;
     public ItemDefinition TodaysQuestItem => _todaysQuestItem;
     public float QuestItemSellMultiplier => questItemSellMultiplier;
-    public bool PlayerInRange => _playerOverlapCount > 0;
+    public bool PlayerInRange => _playerProximity.Count > 0;
 
     public void AddGold(int amount)
     {
@@ -49,6 +49,20 @@ public class BlacksmithMaster : MonoBehaviour
 
         _playerGold += amount;
         OnEconomyChanged?.Invoke();
+    }
+
+    /// <summary>Spends player gold if available. Does not go negative.</summary>
+    public bool TrySpendGold(int amount)
+    {
+        if (amount <= 0)
+            return true;
+
+        if (_playerGold < amount)
+            return false;
+
+        _playerGold -= amount;
+        OnEconomyChanged?.Invoke();
+        return true;
     }
 
     public string GetQuestSummary()
@@ -85,6 +99,8 @@ public class BlacksmithMaster : MonoBehaviour
     {
         if (interactAction != null)
             interactAction.action.Disable();
+
+        _playerProximity.Clear();
     }
 
     private void Start()
@@ -104,7 +120,7 @@ public class BlacksmithMaster : MonoBehaviour
         if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
-        if (_playerOverlapCount <= 0)
+        if (_playerProximity.Count <= 0)
             return;
 
         if (!WasInteractPressedThisFrame())
@@ -149,21 +165,19 @@ public class BlacksmithMaster : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        if (++_playerOverlapCount == 1 && debugLogs)
+        if (_playerProximity.Add(other) && _playerProximity.Count == 1 && debugLogs)
             Debug.Log($"{LogPrefix} Player entered range of '{name}'.", this);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _playerOverlapCount = Mathf.Max(0, _playerOverlapCount - 1);
-
-        if (_playerOverlapCount == 0 && debugLogs)
+        if (_playerProximity.Remove(other) && _playerProximity.Count == 0 && debugLogs)
             Debug.Log($"{LogPrefix} Player left range of '{name}'.", this);
     }
 
@@ -252,6 +266,8 @@ public class BlacksmithMaster : MonoBehaviour
         _playerGold += total;
         playerInventory.ClearAll();
         _currentDay++;
+
+        HiredCompanionManager.Instance?.ClearHiresForNewDay();
 
         RollDailyQuest();
 

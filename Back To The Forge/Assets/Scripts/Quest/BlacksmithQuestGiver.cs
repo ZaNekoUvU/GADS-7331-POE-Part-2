@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -38,10 +39,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
     [SerializeField] private string turnInEmptyFallback = "You brought nothing I asked for. Come back when you have the ore.";
 
     [Header("Proximity")]
-    [SerializeField] private string playerTag = "Player";
     [SerializeField] private InputActionReference interactAction;
 
-    private int _overlap;
+    private readonly HashSet<Collider2D> _playerProximity = new();
     private bool _sessionBusy;
 
     private void Awake()
@@ -66,6 +66,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         StopAllCoroutines();
         _sessionBusy = false;
+        _playerProximity.Clear();
     }
 
     private void Update()
@@ -73,7 +74,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
-        if (_overlap <= 0 || _sessionBusy || profile == null || questMineralDefinition == null)
+        if (_playerProximity.Count <= 0 || _sessionBusy || profile == null || questMineralDefinition == null)
             return;
 
         if (!WasInteractPressedThisFrame())
@@ -165,6 +166,8 @@ public class BlacksmithQuestGiver : MonoBehaviour
         var q = ForgeQuestManager.Instance;
         if (q != null)
             q.ClearForNewDay(playerInventory);
+
+        HiredCompanionManager.Instance?.ClearHiresForNewDay();
 
         if (playerHealth == null)
             playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
@@ -275,17 +278,17 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _overlap++;
+        _playerProximity.Add(other);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _overlap = Mathf.Max(0, _overlap - 1);
+        _playerProximity.Remove(other);
     }
 }

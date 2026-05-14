@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Simple round-robin turn order across living allies and enemies (ally slots then enemy slots interleaved by index).
+/// Turn order: all living allies in party order (player then companions), then all enemies. Each ally uses Basic Attack when active; enemies act automatically.
 /// Extend later with speed stats or initiative.
 /// </summary>
 [DefaultExecutionOrder(-40)]
@@ -135,19 +135,11 @@ public class CombatTurnManager : MonoBehaviour
         if (spawner == null)
             return;
 
-        for (var i = 0; i < 3; i++)
-        {
-            if (i < spawner.SpawnedAllies.Count)
-                TryAddLiving(spawner.SpawnedAllies[i]);
-            if (i < spawner.SpawnedEnemies.Count)
-                TryAddLiving(spawner.SpawnedEnemies[i]);
-        }
+        foreach (var a in spawner.SpawnedAllies)
+            TryAddLiving(a);
 
-        for (var i = 3; i < spawner.SpawnedAllies.Count; i++)
-            TryAddLiving(spawner.SpawnedAllies[i]);
-
-        for (var i = 3; i < spawner.SpawnedEnemies.Count; i++)
-            TryAddLiving(spawner.SpawnedEnemies[i]);
+        foreach (var e in spawner.SpawnedEnemies)
+            TryAddLiving(e);
 
         _turnIndex = _order.Count > 0 ? 0 : -1;
     }

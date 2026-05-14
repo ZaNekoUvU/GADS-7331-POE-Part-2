@@ -207,6 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ExplorationCombatParty
   companionSlot1UnitId: 0
   companionSlot2UnitId: 0
+  companionSlot3UnitId: 0
 --- !u!114 &65184193
 MonoBehaviour:
   m_ObjectHideFlags: 0

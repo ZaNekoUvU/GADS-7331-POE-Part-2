@@ -16,6 +16,9 @@ MonoBehaviour:
   - unitId: 1
     definition: {fileID: 11400000, guid: 555566667777888899990000111122ee, type: 2}
     prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 2
+    definition: {fileID: 11400000, guid: e0e1d2c3b4a5968778695a4b3c2d1e0f, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
   - unitId: 10
     definition: {fileID: 11400000, guid: 666677778888999900001111222233ff, type: 2}
     prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}

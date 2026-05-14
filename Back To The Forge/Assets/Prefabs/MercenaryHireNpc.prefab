@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1038170687001635061
+--- !u!1 &7711001122334455666
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,43 +8,41 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3272249225978159250}
-  - component: {fileID: 3911632234227457526}
-  - component: {fileID: 3673866324460104200}
-  - component: {fileID: 8415359411625216078}
-  - component: {fileID: 3461489410764039396}
-  - component: {fileID: 4345102138214359968}
-  - component: {fileID: 7496343630414610417}
+  - component: {fileID: 7711001122334455667}
+  - component: {fileID: 7711001122334455668}
+  - component: {fileID: 7711001122334455669}
+  - component: {fileID: 7711001122334455670}
+  - component: {fileID: 7711001122334455671}
   m_Layer: 0
-  m_Name: NPC
+  m_Name: MercenaryHireNpc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3272249225978159250
+--- !u!4 &7711001122334455667
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
+  m_GameObject: {fileID: 7711001122334455666}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.11, y: -4.35, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &3911632234227457526
+--- !u!212 &7711001122334455668
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
+  m_GameObject: {fileID: 7711001122334455666}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -87,7 +85,7 @@ SpriteRenderer:
   m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.23619473, g: 0, b: 1, a: 1}
+  m_Color: {r: 0.85, g: 0.45, b: 0.15, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -96,15 +94,15 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!50 &3673866324460104200
+--- !u!50 &7711001122334455669
 Rigidbody2D:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
-  m_BodyType: 0
+  m_GameObject: {fileID: 7711001122334455666}
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -123,82 +121,13 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &8415359411625216078
+--- !u!61 &7711001122334455670
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
---- !u!114 &3461489410764039396
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3cc0c42a264d7b4a84c18bdcf4cf7ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GridWanderNpc2D
-  gridSize: 1
-  stepDuration: 0.45
-  minIdleSeconds: 0.9
-  maxIdleSeconds: 2.8
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  obstacleCheckRadius: 0.22
-  ignoreTriggersForBlocking: 1
-  spriteRenderer: {fileID: 0}
-  flipXWhenFacingLeft: 1
---- !u!61 &4345102138214359968
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
+  m_GameObject: {fileID: 7711001122334455666}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -236,23 +165,31 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3, y: 3}
+  m_Size: {x: 2.5, y: 2.5}
   m_EdgeRadius: 0
---- !u!114 &7496343630414610417
+--- !u!114 &7711001122334455671
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038170687001635061}
+  m_GameObject: {fileID: 7711001122334455666}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8999d08193efa864ca76ed49ba9594f9, type: 3}
+  m_Script: {fileID: 11500000, guid: c0ffeefeed0011223344556677889904, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NpcOllamaDialogue
-  profile: {fileID: 11400000, guid: 661e8530f21da0a418e4e97ccdc08dba, type: 2}
-  ollamaService: {fileID: 0}
+  m_EditorClassIdentifier: 
+  offer: {fileID: 11400000, guid: d0d1d2d3d4d5d6d7d8d9dadbdcdddedf, type: 2}
+  partySlotIndex: 0
+  blacksmith: {fileID: 0}
+  choiceUi: {fileID: 0}
   dialogueUi: {fileID: 0}
-  waitingEllipsis: "\u2026"
+  npcDisplayName: Mercenary
+  companionSpeakerOverride: 
+  openingLine: Need muscle? I fight for coin — fair wage, until tomorrow.
+  hireButtonCustomText: 
+  declineButtonText: No thanks
+  cannotAffordLine: Your purse is too light. Come back when you can pay.
+  companionJoinLine: I'm with you. Point me at the trouble.
   playerTag: Player
   interactAction: {fileID: 0}

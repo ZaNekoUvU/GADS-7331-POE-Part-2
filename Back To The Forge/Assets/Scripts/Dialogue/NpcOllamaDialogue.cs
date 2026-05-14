@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,10 +17,9 @@ public class NpcOllamaDialogue : MonoBehaviour
     [SerializeField] private string waitingEllipsis = "…";
 
     [Header("Proximity & interact")]
-    [SerializeField] private string playerTag = "Player";
     [SerializeField] private InputActionReference interactAction;
 
-    private int _playerOverlap;
+    private readonly HashSet<Collider2D> _playerProximity = new();
     private bool _requestRunning;
 
     private void Awake()
@@ -42,6 +42,7 @@ public class NpcOllamaDialogue : MonoBehaviour
 
         StopAllCoroutines();
         _requestRunning = false;
+        _playerProximity.Clear();
     }
 
     private void Update()
@@ -49,7 +50,7 @@ public class NpcOllamaDialogue : MonoBehaviour
         if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
             return;
 
-        if (_playerOverlap <= 0 || _requestRunning)
+        if (_playerProximity.Count <= 0 || _requestRunning)
             return;
 
         if (!WasInteractPressedThisFrame())
@@ -112,17 +113,17 @@ public class NpcOllamaDialogue : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _playerOverlap++;
+        _playerProximity.Add(other);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
-        _playerOverlap = Mathf.Max(0, _playerOverlap - 1);
+        _playerProximity.Remove(other);
     }
 }

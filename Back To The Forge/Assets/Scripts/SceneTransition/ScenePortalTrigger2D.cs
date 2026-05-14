@@ -18,7 +18,6 @@ public sealed class ScenePortalTrigger2D : MonoBehaviour
     [SerializeField] private PortalMode mode = PortalMode.ForwardToScene;
     [Tooltip("Scene name as in File > Build Settings. Used only in Forward mode.")]
     [SerializeField] private string targetSceneName;
-    [SerializeField] private string playerTag = "Player";
 
     private bool _used;
 
@@ -31,7 +30,7 @@ public sealed class ScenePortalTrigger2D : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
         if (IsTransitionBlocked())

@@ -11,8 +11,8 @@ public class CombatUnitSpawner : MonoBehaviour
     [SerializeField] private UnitPrefabRegistry unitPrefabRegistry;
     [SerializeField] private EncounterCatalog encounterCatalog;
     [SerializeField] private MoveRegistry moveRegistry;
-    [Tooltip("Optional: assign 3 ally anchors (left to right). If empty, tries names Ally, Ally (1), Ally (2).")]
-    [SerializeField] private Transform[] allyAnchors = new Transform[3];
+    [Tooltip("Optional: assign 4 ally anchors (left to right). If empty, tries names Ally, Ally (1), Ally (2), Ally (3).")]
+    [SerializeField] private Transform[] allyAnchors = new Transform[4];
     [Tooltip("Optional: assign 3 enemy anchors. If empty, tries Enemy, Enemy (1), Enemy (2).")]
     [SerializeField] private Transform[] enemyAnchors = new Transform[3];
 
@@ -68,7 +68,7 @@ public class CombatUnitSpawner : MonoBehaviour
     /// <summary>Keeps transforms active so anchors stay valid; hides old placeholder art only.</summary>
     private void HidePlaceholderSpritesOnly()
     {
-        foreach (var n in new[] { "Ally", "Ally (1)", "Ally (2)", "Enemy", "Enemy (1)", "Enemy (2)" })
+        foreach (var n in new[] { "Ally", "Ally (1)", "Ally (2)", "Ally (3)", "Enemy", "Enemy (1)", "Enemy (2)" })
         {
             var go = FindInOwnScene(n);
             if (go == null)
@@ -81,11 +81,21 @@ public class CombatUnitSpawner : MonoBehaviour
 
     private void FillAnchorsIfNeeded()
     {
-        for (var i = 0; i < 3; i++)
+        if (allyAnchors == null)
+            allyAnchors = new Transform[4];
+        else if (allyAnchors.Length < 4)
+            System.Array.Resize(ref allyAnchors, 4);
+
+        if (enemyAnchors == null)
+            enemyAnchors = new Transform[3];
+        else if (enemyAnchors.Length < 3)
+            System.Array.Resize(ref enemyAnchors, 3);
+
+        for (var i = 0; i < 4; i++)
         {
             if (allyAnchors[i] == null)
                 allyAnchors[i] = FindAnchor($"Ally{(i == 0 ? "" : $" ({i})")}");
-            if (enemyAnchors[i] == null)
+            if (i < 3 && enemyAnchors[i] == null)
                 enemyAnchors[i] = FindAnchor($"Enemy{(i == 0 ? "" : $" ({i})")}");
         }
     }
@@ -129,7 +139,7 @@ public class CombatUnitSpawner : MonoBehaviour
 
         var allyIds = CombatSession.GetAllyUnitIds();
 
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < 4 && i < allyIds.Length; i++)
         {
             var id = allyIds[i];
             if (id <= 0)

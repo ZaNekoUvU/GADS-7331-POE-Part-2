@@ -6,8 +6,6 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class QuestMineralPickup : MonoBehaviour
 {
-    [SerializeField] private string playerTag = "Player";
-
     private void Reset()
     {
         var c = GetComponent<Collider2D>();
@@ -16,14 +14,15 @@ public class QuestMineralPickup : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
 
         var q = ForgeQuestManager.Instance;
         if (q == null || !q.QuestActive || q.QuestItemAsset == null)
             return;
 
-        var inv = other.GetComponent<Inventory>();
+        var rb = other.attachedRigidbody;
+        var inv = rb != null ? rb.GetComponent<Inventory>() : other.GetComponent<Inventory>();
         if (inv == null)
             return;
 
