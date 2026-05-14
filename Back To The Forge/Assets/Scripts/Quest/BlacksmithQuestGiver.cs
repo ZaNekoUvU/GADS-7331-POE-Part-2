@@ -93,7 +93,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_playerProximity.Count <= 0 || _sessionBusy || profile == null || questMineralDefinition == null

@@ -69,7 +69,7 @@ public sealed class ScenePortalTrigger2D : MonoBehaviour
 
     private static bool IsTransitionBlocked()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return true;
 
         var coordinator = Object.FindAnyObjectByType<CombatAdditiveCoordinator>();

@@ -46,7 +46,7 @@ public class CompanionFollower2D : MonoBehaviour
         if (target == null)
             return;
 
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_combatCoordinator == null)

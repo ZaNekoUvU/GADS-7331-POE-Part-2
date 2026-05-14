@@ -271,7 +271,7 @@ public class CompanionRecruiter : MonoBehaviour
         if (mgr != null && mgr.GetCompanionSlotUnitId(partySlotIndex) > 0)
             return;
 
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_playerProximity.Count <= 0 || _busy || offer == null)

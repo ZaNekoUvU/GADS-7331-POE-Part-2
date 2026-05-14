@@ -40,7 +40,7 @@ public class InventoryPanelToggle : MonoBehaviour
 
     private void Update()
     {
-        if (panelRoot == null)
+        if (panelRoot == null || PauseMenuController.IsOpen)
             return;
 
         var held = IsInventoryHeld();
