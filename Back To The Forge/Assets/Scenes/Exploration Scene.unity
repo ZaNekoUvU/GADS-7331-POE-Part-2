@@ -1343,12 +1343,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1beb8239cecbd6488cdaf567bd4534a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OllamaDialogueService
-  projectSettings: {fileID: 0}
-  hostBaseUrl: http://127.0.0.1:11434
-  model: qwen3:8b
+  projectSettings: {fileID: 11400000, guid: 9d8a6a06e72b4b70b32ff78e7a7fbe10, type: 2}
+  apiBaseUrl: https://your-ai-server.example.com
+  apiKeyHeaderName: X-Game-Api-Key
+  apiKey: 
   requestTimeoutSeconds: 45
-  maxTokens: 140
-  temperature: 0.85
+  npcLineEndpoint: /api/npc/line
+  blacksmithRoleplayEndpoint: /api/blacksmith/roleplay
+  blacksmithOfferEndpoint: /api/blacksmith/offer
   logRequestsAndErrors: 1
 --- !u!114 &65184196
 MonoBehaviour:

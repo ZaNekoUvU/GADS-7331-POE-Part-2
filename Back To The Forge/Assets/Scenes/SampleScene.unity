@@ -260,12 +260,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1beb8239cecbd6488cdaf567bd4534a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OllamaDialogueService
-  projectSettings: {fileID: 0}
-  hostBaseUrl: http://127.0.0.1:11434
-  model: llama3.2:3b
+  projectSettings: {fileID: 11400000, guid: 9d8a6a06e72b4b70b32ff78e7a7fbe10, type: 2}
+  apiBaseUrl: https://your-ai-server.example.com
+  apiKeyHeaderName: X-Game-Api-Key
+  apiKey: 
   requestTimeoutSeconds: 45
-  maxTokens: 140
-  temperature: 0.85
+  npcLineEndpoint: /api/npc/line
+  blacksmithRoleplayEndpoint: /api/blacksmith/roleplay
+  blacksmithOfferEndpoint: /api/blacksmith/offer
   logRequestsAndErrors: 1
 --- !u!114 &65184196
 MonoBehaviour:
@@ -966,7 +968,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcOllamaDialogue
   profile: {fileID: 11400000, guid: 661e8530f21da0a418e4e97ccdc08dba, type: 2}
-  ollamaService: {fileID: 65184195}
+  aiService: {fileID: 65184195}
   dialogueUi: {fileID: 0}
   waitingEllipsis: "\u2026"
   playerTag: Player
@@ -1234,7 +1236,7 @@ PrefabInstance:
       value: Blacksmith
       objectReference: {fileID: 0}
     - target: {fileID: 5158849962728822010, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
-      propertyPath: ollamaService
+      propertyPath: aiService
       value: 
       objectReference: {fileID: 65184195}
     - target: {fileID: 5158849962728822010, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
