@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="CombatBattleHud.uss" />
+    <ui:VisualElement name="battle-root" class="battle-hud">
+        <ui:VisualElement name="panel-allies" class="hud-panel hud-panel--allies">
+            <ui:VisualElement name="allies-list" class="unit-list" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel-commands" class="hud-panel hud-panel--commands">
+            <ui:VisualElement name="commands-list" class="command-list" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel-enemies" class="hud-panel hud-panel--enemies">
+            <ui:VisualElement name="enemies-list" class="unit-list" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

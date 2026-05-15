@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3000000111122223333444455556666, type: 3}
-  m_Name: MoveRegistry
+  m_Script: {fileID: 11500000, guid: a1000000111122223333444455556666, type: 3}
+  m_Name: Move_PowerStrike
   m_EditorClassIdentifier: 
-  moves:
-  - {fileID: 11400000, guid: 111122223333444455556666777788aa, type: 2}
-  - {fileID: 11400000, guid: 222233334444555566667777888899aa, type: 2}
+  moveId: 101
+  displayName: Power Strike
+  baseDamage: 0
+  damageMultiplier: 1.5

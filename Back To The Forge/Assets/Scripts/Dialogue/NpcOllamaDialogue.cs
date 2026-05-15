@@ -27,9 +27,7 @@ public class NpcOllamaDialogue : MonoBehaviour
 
     private void Awake()
     {
-        var c = GetComponent<Collider2D>();
-        if (c != null && !c.isTrigger)
-            Debug.LogWarning($"{nameof(NpcOllamaDialogue)}: Collider on '{name}' should be a trigger.", this);
+        Collider2DTriggerUtil.WarnIfNoTalkTrigger(gameObject, nameof(NpcOllamaDialogue));
     }
 
     private void OnEnable()

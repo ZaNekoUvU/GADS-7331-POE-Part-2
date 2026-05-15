@@ -18,4 +18,5 @@ MonoBehaviour:
   attackDamage: 20
   moveIds:
   - 100
+  - 101
   moves: []

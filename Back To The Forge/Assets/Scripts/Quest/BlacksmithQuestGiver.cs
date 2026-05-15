@@ -52,9 +52,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     private void Awake()
     {
-        var c = GetComponent<Collider2D>();
-        if (c != null && !c.isTrigger)
-            Debug.LogWarning($"{nameof(BlacksmithQuestGiver)}: use a trigger collider for talk range.", this);
+        Collider2DTriggerUtil.WarnIfNoTalkTrigger(gameObject, nameof(BlacksmithQuestGiver));
     }
 
     private void OnEnable()

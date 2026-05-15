@@ -42,7 +42,7 @@ public class BlacksmithMaster : MonoBehaviour
         if (chosen == null || _warnedMultipleEconomyActors)
             return;
 
-        var all = FindObjectsByType<BlacksmithMaster>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var all = FindObjectsByType<BlacksmithMaster>(FindObjectsInactive.Exclude);
         if (all.Length <= 1)
             return;
 
@@ -146,8 +146,8 @@ public class BlacksmithMaster : MonoBehaviour
         EnsurePlayerInventory();
 
         _collider2D = GetComponent<Collider2D>();
-        if (_collider2D != null && !_collider2D.isTrigger && debugLogs)
-            Debug.LogWarning($"{LogPrefix} Collider2D on '{name}' should be a trigger for range detection.", this);
+        if (debugLogs)
+            Collider2DTriggerUtil.WarnIfNoTalkTrigger(gameObject, LogPrefix);
 
         _currentDay = startingDay;
         _playerGold = startingGold;
