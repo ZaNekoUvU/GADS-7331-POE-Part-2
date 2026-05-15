@@ -85,8 +85,11 @@ public class RiskyGroundEncounter2D : MonoBehaviour
                 yield break;
             }
 
+            if (combatStarter.IsRandomEncounterIntroPlaying)
+                continue;
+
             if (Random.value < chancePerRoll)
-                combatStarter.StartFightWithId(encounterId);
+                combatStarter.StartRandomEncounterWithLlmIntro(encounterId);
         }
 
         _riskRoutine = null;
