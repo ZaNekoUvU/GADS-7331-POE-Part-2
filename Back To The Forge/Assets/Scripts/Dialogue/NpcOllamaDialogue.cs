@@ -2,18 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 /// <summary>
-/// Requests server-backed NPC dialogue using a <see cref="NpcDialogueProfile"/>.
-/// Falls back to profile lines if the AI gateway is offline or busy.
+/// Talks to local Ollama using a <see cref="NpcDialogueProfile"/> (unique name + persona). Falls back to profile lines if the model is offline or busy.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class NpcOllamaDialogue : MonoBehaviour
 {
     [SerializeField] private NpcDialogueProfile profile;
-    [FormerlySerializedAs("ollamaService")]
-    [SerializeField] private AiDialogueService aiService;
+    [SerializeField] private OllamaDialogueService ollamaService;
     [SerializeField] private SimpleRpgDialogueUI dialogueUi;
 
     [Header("UI")]
@@ -65,7 +62,7 @@ public class NpcOllamaDialogue : MonoBehaviour
             return;
         }
 
-        var service = aiService != null ? aiService : AiDialogueService.GetOrCreate();
+        var service = ollamaService != null ? ollamaService : OllamaDialogueService.GetOrCreate();
         var ui = dialogueUi != null ? dialogueUi : SimpleRpgDialogueUI.GetOrCreate();
 
         if (service.IsBusy)
@@ -77,7 +74,7 @@ public class NpcOllamaDialogue : MonoBehaviour
         StartCoroutine(TalkRoutine(ui, service));
     }
 
-    private IEnumerator TalkRoutine(SimpleRpgDialogueUI ui, AiDialogueService service)
+    private IEnumerator TalkRoutine(SimpleRpgDialogueUI ui, OllamaDialogueService service)
     {
         _requestRunning = true;
 
@@ -93,7 +90,7 @@ public class NpcOllamaDialogue : MonoBehaviour
             e => err = e));
 
         if (!string.IsNullOrWhiteSpace(err))
-            Debug.LogWarning($"[AI Gateway] {profile.CharacterName}: {err}", this);
+            Debug.LogWarning($"[Ollama] {profile.CharacterName}: {err}", this);
 
         if (!string.IsNullOrWhiteSpace(ok))
             ui.SetDialogueLineAndAllowAdvance(ok);

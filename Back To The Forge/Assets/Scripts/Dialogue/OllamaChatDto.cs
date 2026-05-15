@@ -1,48 +1,40 @@
 using System;
+using UnityEngine;
 
-/// <summary>Serializable payloads exchanged with the hosted AI gateway.</summary>
+/// <summary>JSON DTOs for Ollama <c>/api/chat</c> (non-streaming).</summary>
 [Serializable]
-public class AiNpcLineRequestDto
+public class OllamaChatRequestDto
 {
-    public string characterName;
-    public string personaDescription;
-    public string localKnowledge;
+    public string model;
+    public OllamaMessageDto[] messages;
+    public bool stream;
+    public OllamaOptionsDto options;
 }
 
 [Serializable]
-public class ForgeQuestOfferRequestDto
+public class OllamaMessageDto
 {
-    public string blacksmithName;
-    public string personaSummary;
+    public string role;
+    public string content;
+    /// <summary>Some models (e.g. Qwen reasoning builds) may put text here when <see cref="content"/> is empty.</summary>
+    public string thinking;
 }
 
 [Serializable]
-public class BlacksmithRoleplayRequestDto
+public class OllamaOptionsDto
 {
-    public string mode;
-    public string blacksmithName;
-    public string personaDescription;
-    public string localKnowledge;
-    public string questMaterialName;
-    public int questMineralUnits;
-    public int ironUnits;
-    public int goldPaid;
-}
-
-public static class BlacksmithRoleplayModes
-{
-    public const string SmallTalk = "smallTalk";
-    public const string TurnIn = "turnIn";
+    public int num_predict;
+    public float temperature;
 }
 
 [Serializable]
-public class AiTextResponseDto
+public class OllamaChatResponseDto
 {
-    public string text;
+    public OllamaMessageDto message;
 }
 
 [Serializable]
-public class AiErrorResponseDto
+public class OllamaErrorResponseDto
 {
     public string error;
 }

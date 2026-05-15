@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 /// <summary>
-/// AI-backed quest blacksmith: commissions an invented mineral, spawns pickup via <see cref="QuestMineralSpawner"/>,
+/// Ollama quest blacksmith: commissions a invented mineral, spawns pickup via <see cref="QuestMineralSpawner"/>,
 /// turn-ins pay gold while the same commission stays active until the player ends the day (new ore spawn) or
 /// continuing. Ending the day only happens when the player chooses that option in dialogue here; it heals the player,
 /// runs the blacksmith sell-all / day advance, clears hired companions, and starts the next commission.
@@ -14,7 +14,7 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Collider2D))]
 public class BlacksmithQuestGiver : MonoBehaviour
 {
-    [Header("Character (AI persona)")]
+    [Header("Character (Ollama persona)")]
     [SerializeField] private NpcDialogueProfile profile;
 
     [Header("Quest")]
@@ -31,8 +31,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
     [SerializeField] private BlacksmithMaster blacksmith;
     [SerializeField] private Inventory playerInventory;
     [SerializeField] private PlayerPersistentCombatHealth playerHealth;
-    [FormerlySerializedAs("ollamaService")]
-    [SerializeField] private AiDialogueService aiService;
+    [SerializeField] private OllamaDialogueService ollamaService;
     [SerializeField] private SimpleRpgDialogueUI dialogueUi;
     [SerializeField] private ForgeQuestChoiceUI choiceUi;
 
@@ -104,8 +103,8 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (!WasInteractPressedThisFrame())
             return;
 
-        if (aiService == null)
-            aiService = AiDialogueService.GetOrCreate();
+        if (ollamaService == null)
+            ollamaService = OllamaDialogueService.GetOrCreate();
         if (dialogueUi == null)
             dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
         if (choiceUi == null)
@@ -133,10 +132,10 @@ public class BlacksmithQuestGiver : MonoBehaviour
     /// <summary>Requests a new commission (after a day reset or first talk). Does not manage <see cref="_sessionBusy"/>.</summary>
     private IEnumerator OfferNewQuestContentRoutine()
     {
-        if (aiService == null)
-            aiService = AiDialogueService.GetOrCreate();
+        if (ollamaService == null)
+            ollamaService = OllamaDialogueService.GetOrCreate();
 
-        if (aiService.IsBusy)
+        if (ollamaService.IsBusy)
         {
             ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
             dialogueUi.Show(profile.CharacterName, offerFallback);
@@ -148,7 +147,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         dialogueUi.ShowAwaitingLine(profile.CharacterName, "…");
 
-        yield return StartCoroutine(aiService.RequestForgeQuestOfferCoroutine(
+        yield return StartCoroutine(ollamaService.RequestForgeQuestOfferCoroutine(
             profile.CharacterName,
             profile.PersonaDescription,
             d => dto = d,
@@ -247,9 +246,6 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     private IEnumerator TurnInRoutine()
     {
-        if (aiService == null)
-            aiService = AiDialogueService.GetOrCreate();
-
         var q = ForgeQuestManager.Instance;
         var inv = ResolvePlayerInventory();
         if (q == null || inv == null)
@@ -265,24 +261,12 @@ public class BlacksmithQuestGiver : MonoBehaviour
         EnsureBlacksmithResolved();
 
         var unitsQuest = q.TurnInAndPay(inv, blacksmith, out var goldPaid, out var ironUnits);
-        var request = new BlacksmithRoleplayRequestDto
-        {
-            mode = BlacksmithRoleplayModes.TurnIn,
-            blacksmithName = profile.CharacterName,
-            personaDescription = profile.PersonaDescription,
-            localKnowledge = profile.LocalKnowledge,
-            questMaterialName = materialName,
-            questMineralUnits = unitsQuest,
-            ironUnits = ironUnits,
-            goldPaid = goldPaid
-        };
+        var sys = BuildTurnInSystemPrompt(materialName, unitsQuest, ironUnits, goldPaid);
+        var user = "Speak your line to the traveler now (their reply ends the conversation).";
 
         string line = null;
         string err = null;
-        yield return StartCoroutine(aiService.RequestBlacksmithRoleplayLineCoroutine(request, s => line = s, e => err = e));
-
-        if (!string.IsNullOrWhiteSpace(err))
-            Debug.LogWarning($"[ForgeQuest] Turn-in reply failed: {err}", this);
+        yield return StartCoroutine(ollamaService.RequestRoleplayLineCoroutine(sys, user, s => line = s, e => err = e));
 
         if (!string.IsNullOrWhiteSpace(line))
             dialogueUi.Show(profile.CharacterName, line);
@@ -302,9 +286,6 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     private IEnumerator SmallTalkRoutine()
     {
-        if (aiService == null)
-            aiService = AiDialogueService.GetOrCreate();
-
         var q = ForgeQuestManager.Instance;
         if (q == null || !q.QuestActive)
         {
@@ -314,26 +295,43 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         dialogueUi.ShowAwaitingLine(profile.CharacterName, "…");
 
-        var request = new BlacksmithRoleplayRequestDto
-        {
-            mode = BlacksmithRoleplayModes.SmallTalk,
-            blacksmithName = profile.CharacterName,
-            personaDescription = profile.PersonaDescription,
-            localKnowledge = profile.LocalKnowledge,
-            questMaterialName = q.QuestMaterialName
-        };
+        var sb = new StringBuilder(384);
+        sb.AppendLine(BuildPersonaHeader());
+        sb.AppendLine(
+            $"The traveler is here for small talk. You already asked them to fetch \"{q.QuestMaterialName}\" — do not repeat the full commission speech. " +
+            "One or two short casual sentences.");
+        var sys = sb.ToString();
+        var user = "Say your line only.";
 
         string line = null;
         string err = null;
-        yield return StartCoroutine(aiService.RequestBlacksmithRoleplayLineCoroutine(request, s => line = s, e => err = e));
-
-        if (!string.IsNullOrWhiteSpace(err))
-            Debug.LogWarning($"[ForgeQuest] Small-talk reply failed: {err}", this);
+        yield return StartCoroutine(ollamaService.RequestRoleplayLineCoroutine(sys, user, s => line = s, e => err = e));
 
         if (!string.IsNullOrWhiteSpace(line))
             dialogueUi.Show(profile.CharacterName, line);
         else
             dialogueUi.Show(profile.CharacterName, "Mind the forge — and those tunnels.");
+    }
+
+    private string BuildTurnInSystemPrompt(string materialName, int questMineralUnits, int ironUnits, int goldPaid)
+    {
+        var sb = new StringBuilder(512);
+        sb.AppendLine(BuildPersonaHeader());
+        sb.AppendLine("Facts (must follow):");
+        sb.AppendLine($"- You asked for a special material called: {materialName}");
+        sb.AppendLine($"- The traveler hands over {questMineralUnits} unit(s) of that strange ore and {ironUnits} unit(s) of standard iron.");
+        sb.AppendLine($"- You pay them {goldPaid} gold total for this handoff (already settled in the till).");
+        sb.AppendLine(
+            "Reply with one short in-character line only: grateful and warm if they brought materials, disappointed but fair if not. " +
+            "No meta, no 'the user', no JSON.");
+        return sb.ToString();
+    }
+
+    private string BuildPersonaHeader()
+    {
+        return
+            $"You are {profile.CharacterName}, a blacksmith in the fantasy game Back to the Forge.\n" +
+            $"{profile.PersonaDescription.Trim()}";
     }
 
     private bool WasInteractPressedThisFrame()

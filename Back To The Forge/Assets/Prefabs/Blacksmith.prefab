@@ -258,7 +258,7 @@ MonoBehaviour:
   blacksmith: {fileID: 7372917358147794440}
   playerInventory: {fileID: 0}
   playerHealth: {fileID: 0}
-  aiService: {fileID: 0}
+  ollamaService: {fileID: 0}
   dialogueUi: {fileID: 0}
   choiceUi: {fileID: 0}
   offerFallback: "Need a favor \u2014 bring me back any strange ore you find in the

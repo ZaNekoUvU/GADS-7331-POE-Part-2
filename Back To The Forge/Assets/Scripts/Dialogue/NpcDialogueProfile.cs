@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Unique NPC identity + persona for the hosted AI dialogue gateway.
+/// Unique NPC identity + persona for local LLM prompts. Create via Assets → Create → Back To The Forge → NPC Dialogue Profile.
 /// </summary>
 [CreateAssetMenu(fileName = "NpcDialogueProfile", menuName = "Back To The Forge/NPC Dialogue Profile")]
 public class NpcDialogueProfile : ScriptableObject
@@ -16,7 +16,7 @@ public class NpcDialogueProfile : ScriptableObject
     [Tooltip("Optional: where they are, what they know about (keeps answers grounded).")]
     [SerializeField] [TextArea(2, 6)] private string localKnowledge = "";
 
-    [Header("Fallback (AI unavailable / errors)")]
+    [Header("Fallback (no Ollama / errors)")]
     [SerializeField] [TextArea(2, 4)] private string[] fallbackLines =
     {
         "Can't chat right now — something's wrong with the voices in my head.",

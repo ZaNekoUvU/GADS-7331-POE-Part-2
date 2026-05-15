@@ -5,11 +5,6 @@
 
 .utmp/
 
-# AI gateway backend
-ai-server/bin/
-ai-server/obj/
-ai-server/appsettings.Local.json
-
 # Unity generated folders
 **/[Ll]ibrary/
 **/[Tt]emp/

@@ -104,7 +104,7 @@ public class SimpleRpgDialogueUI : MonoBehaviour
         ShowInternal(speaker, line, advanceInitiallyAllowed: true);
     }
 
-    /// <summary>Show dialogue but ignore advance until <see cref="SetDialogueLineAndAllowAdvance"/> (e.g. waiting on the AI gateway).</summary>
+    /// <summary>Show dialogue but ignore advance until <see cref="SetDialogueLineAndAllowAdvance"/> (e.g. waiting on Ollama).</summary>
     public void ShowAwaitingLine(string speaker, string placeholderLine)
     {
         ShowInternal(speaker, placeholderLine, advanceInitiallyAllowed: false);

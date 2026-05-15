@@ -1,54 +1,260 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Serialization;
 
 /// <summary>
-/// Legacy component name kept for scene compatibility.
-/// The client now talks to a hosted AI gateway instead of a local Ollama runtime.
+/// Calls a local Ollama server (<c>/api/chat</c>, non-streaming). Add one to the scene or it is auto-created by <see cref="NpcOllamaDialogue"/>.
 /// </summary>
-public class OllamaDialogueService : AiDialogueService
+public class OllamaDialogueService : MonoBehaviour
 {
+    public static OllamaDialogueService Instance { get; private set; }
+
     [Tooltip("Optional shared asset; inline fields below apply when this is null.")]
     [SerializeField] private OllamaDialogueSettings projectSettings;
 
     [Header("Inline defaults (when Project Settings is null)")]
-    [FormerlySerializedAs("hostBaseUrl")]
-    [SerializeField] private string apiBaseUrl = "https://your-ai-server.example.com";
-    [SerializeField] private string apiKeyHeaderName = "X-Game-Api-Key";
-    [SerializeField] private string apiKey = "";
+    [SerializeField] private string hostBaseUrl = "http://127.0.0.1:11434";
+    [Tooltip("Exact Ollama model tag, e.g. qwen3:8b (must match `ollama list`).")]
+    [SerializeField] private string model = "qwen3:8b";
     [SerializeField] private int requestTimeoutSeconds = 45;
-    [SerializeField] private string npcLineEndpoint = "/api/npc/line";
-    [SerializeField] private string blacksmithRoleplayEndpoint = "/api/blacksmith/roleplay";
-    [SerializeField] private string blacksmithOfferEndpoint = "/api/blacksmith/offer";
+    [SerializeField] private int maxTokens = 140;
+    [SerializeField] [Range(0.2f, 1.5f)] private float temperature = 0.85f;
 
     [Header("Debug")]
-    [Tooltip("Logs request JSON (truncated) and API errors when the gateway is unavailable or misconfigured.")]
+    [Tooltip("Logs request JSON (truncated) and full errors — turn on if you only see fallback lines.")]
     [SerializeField] private bool logRequestsAndErrors = true;
 
     private bool _busy;
 
-    public override bool IsBusy => _busy;
+    public bool IsBusy => _busy;
 
-    private string ApiBaseUrl => projectSettings != null
-        ? projectSettings.ApiBaseUrl
-        : NormalizeBaseUrl(apiBaseUrl);
+    private string Host => projectSettings != null ? projectSettings.HostBaseUrl : hostBaseUrl.TrimEnd('/');
+    private string Model => projectSettings != null ? projectSettings.Model : model;
+    private int Timeout => projectSettings != null ? projectSettings.RequestTimeoutSeconds : requestTimeoutSeconds;
+    private int MaxTok => projectSettings != null ? projectSettings.MaxTokens : maxTokens;
+    private float Temp => projectSettings != null ? projectSettings.Temperature : temperature;
 
-    private string ApiKeyHeaderName => projectSettings != null
-        ? projectSettings.ApiKeyHeaderName
-        : NormalizeHeader(apiKeyHeaderName, "X-Game-Api-Key");
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-    private string ApiKey => projectSettings != null ? projectSettings.ApiKey : apiKey ?? string.Empty;
-    private int Timeout => projectSettings != null ? projectSettings.RequestTimeoutSeconds : Mathf.Clamp(requestTimeoutSeconds, 5, 120);
-    private string NpcLineEndpoint => projectSettings != null ? projectSettings.NpcLineEndpoint : NormalizePath(npcLineEndpoint, "/api/npc/line");
-    private string BlacksmithRoleplayEndpoint => projectSettings != null ? projectSettings.BlacksmithRoleplayEndpoint : NormalizePath(blacksmithRoleplayEndpoint, "/api/blacksmith/roleplay");
-    private string BlacksmithOfferEndpoint => projectSettings != null ? projectSettings.BlacksmithOfferEndpoint : NormalizePath(blacksmithOfferEndpoint, "/api/blacksmith/offer");
-    private bool LogRequestsAndErrors => projectSettings != null ? projectSettings.LogRequestsAndErrors : logRequestsAndErrors;
+        Instance = this;
+    }
 
-    public override IEnumerator RequestNpcLineCoroutine(NpcDialogueProfile profile, Action<string> onSuccess, Action<string> onError)
+    /// <summary>Plain chat reply (sanitized like NPC dialogue). Use for turn-in flavor and small talk.</summary>
+    public IEnumerator RequestRoleplayLineCoroutine(string systemPrompt, string userPrompt, Action<string> onSuccess, Action<string> onError)
+    {
+        if (_busy)
+        {
+            onError?.Invoke("busy");
+            yield break;
+        }
+
+        _busy = true;
+
+        try
+        {
+            var jsonBody = BuildChatJsonManual(systemPrompt, userPrompt);
+            var url = $"{Host}/api/chat";
+
+            if (logRequestsAndErrors)
+                Debug.Log($"[Ollama] POST {url} (roleplay line)\n{Truncate(jsonBody, 600)}", this);
+
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = Timeout;
+
+            yield return req.SendWebRequest();
+
+            var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
+            var code = req.responseCode;
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                var detail = string.IsNullOrEmpty(req.error) ? req.result.ToString() : req.error;
+                if (logRequestsAndErrors || !string.IsNullOrEmpty(raw))
+                    Debug.LogWarning($"[Ollama] HTTP error code={code} {detail}\n{Truncate(raw, 1200)}", this);
+                onError?.Invoke($"{detail}");
+                yield break;
+            }
+
+            var err = TryParseError(raw);
+            if (!string.IsNullOrEmpty(err))
+            {
+                onError?.Invoke(err);
+                yield break;
+            }
+
+            var content = TryParseAssistantMessage(raw);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                onError?.Invoke("Empty model reply.");
+                yield break;
+            }
+
+            onSuccess?.Invoke(SanitizeLine(content));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>Asks for strict JSON: materialName, requestLine (Ollama-invented ore + blacksmith ask).</summary>
+    public IEnumerator RequestForgeQuestOfferCoroutine(
+        string blacksmithName,
+        string personaSummary,
+        Action<ForgeQuestOfferDto> onSuccess,
+        Action<string> onError)
+    {
+        if (_busy)
+        {
+            onError?.Invoke("busy");
+            yield break;
+        }
+
+        _busy = true;
+
+        try
+        {
+            var systemContent =
+                "You output ONLY valid JSON with exactly two string keys: materialName and requestLine. " +
+                "No markdown, no code fences, no extra keys, no commentary. " +
+                "materialName: one invented fantasy ore or mineral name (2–6 words, no quotes inside the string). " +
+                "requestLine: what the blacksmith says out loud asking the traveler to fetch it (1–3 short sentences, direct speech, " +
+                "same character voice as your persona — no meta, no 'the user').";
+
+            var userContent =
+                $"You are {blacksmithName}, a blacksmith quest giver.\nPersona: {personaSummary}\n" +
+                "The traveler just came to the counter. Output the JSON now for a new mining commission.";
+
+            var jsonBody = BuildChatJsonManual(systemContent, userContent);
+
+            var url = $"{Host}/api/chat";
+
+            if (logRequestsAndErrors)
+                Debug.Log($"[Ollama] POST {url} (forge quest JSON)\n{Truncate(jsonBody, 800)}", this);
+
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = Timeout;
+
+            yield return req.SendWebRequest();
+
+            var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                onError?.Invoke(string.IsNullOrEmpty(req.error) ? req.result.ToString() : req.error);
+                yield break;
+            }
+
+            var apiErr = TryParseError(raw);
+            if (!string.IsNullOrEmpty(apiErr))
+            {
+                onError?.Invoke(apiErr);
+                yield break;
+            }
+
+            var content = TryParseAssistantMessage(raw);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                onError?.Invoke("Empty quest JSON.");
+                yield break;
+            }
+
+            if (!TryParseForgeQuestOffer(content, out var dto))
+            {
+                if (logRequestsAndErrors)
+                    Debug.LogWarning($"[Ollama] Bad quest JSON:\n{Truncate(content, 800)}", this);
+                onError?.Invoke("Model did not return valid quest JSON.");
+                yield break;
+            }
+
+            onSuccess?.Invoke(dto);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static bool TryParseForgeQuestOffer(string modelText, out ForgeQuestOfferDto dto)
+    {
+        dto = null;
+        var t = StripMarkdownCodeFence(modelText).Trim();
+        if (string.IsNullOrEmpty(t))
+            return false;
+
+        try
+        {
+            dto = JsonUtility.FromJson<ForgeQuestOfferDto>(t);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        if (dto == null ||
+            string.IsNullOrWhiteSpace(dto.materialName) ||
+            string.IsNullOrWhiteSpace(dto.requestLine))
+            return false;
+
+        dto.materialName = dto.materialName.Trim();
+        dto.requestLine = dto.requestLine.Trim();
+        return true;
+    }
+
+    private static string StripMarkdownCodeFence(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+            return s;
+
+        var t = s.Trim();
+        if (!t.StartsWith("```"))
+            return t;
+
+        var firstNl = t.IndexOf('\n');
+        if (firstNl >= 0)
+            t = t.Substring(firstNl + 1);
+        var end = t.LastIndexOf("```", StringComparison.Ordinal);
+        if (end >= 0)
+            t = t.Substring(0, end);
+        return t.Trim();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    public static OllamaDialogueService GetOrCreate()
+    {
+        if (Instance != null)
+            return Instance;
+
+        var existing = FindAnyObjectByType<OllamaDialogueService>();
+        if (existing != null)
+            return existing;
+
+        var go = new GameObject($"[{nameof(OllamaDialogueService)}]");
+        return go.AddComponent<OllamaDialogueService>();
+    }
+
+    public IEnumerator RequestNpcLineCoroutine(NpcDialogueProfile profile, Action<string> onSuccess, Action<string> onError)
     {
         if (profile == null)
         {
@@ -66,32 +272,50 @@ public class OllamaDialogueService : AiDialogueService
 
         try
         {
-            var request = new AiNpcLineRequestDto
-            {
-                characterName = profile.CharacterName,
-                personaDescription = profile.PersonaDescription,
-                localKnowledge = profile.LocalKnowledge
-            };
+            var systemContent = BuildSystemPrompt(profile);
+            var userContent = BuildUserPrompt();
+            var jsonBody = BuildChatJsonManual(systemContent, userContent);
 
-            string raw = null;
-            string err = null;
-            yield return StartCoroutine(SendJsonRequestCoroutine(
-                NpcLineEndpoint,
-                JsonUtility.ToJson(request),
-                "npc line",
-                body => raw = body,
-                e => err = e));
+            var url = $"{Host}/api/chat";
 
-            if (!string.IsNullOrWhiteSpace(err))
+            if (logRequestsAndErrors)
+                Debug.Log($"[Ollama] POST {url}\n{Truncate(jsonBody, 800)}", this);
+
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = Timeout;
+
+            yield return req.SendWebRequest();
+
+            var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
+            var code = req.responseCode;
+
+            if (req.result != UnityWebRequest.Result.Success)
             {
+                var detail = string.IsNullOrEmpty(req.error) ? req.result.ToString() : req.error;
+                if (logRequestsAndErrors || !string.IsNullOrEmpty(raw))
+                    Debug.LogWarning($"[Ollama] HTTP error code={code} {detail}\n{Truncate(raw, 1200)}", this);
+                onError?.Invoke($"HTTP {code}: {detail}. Body: {Truncate(raw, 200)}");
+                yield break;
+            }
+
+            var err = TryParseError(raw);
+            if (!string.IsNullOrEmpty(err))
+            {
+                if (logRequestsAndErrors)
+                    Debug.LogWarning($"[Ollama] API error: {err}", this);
                 onError?.Invoke(err);
                 yield break;
             }
 
-            var content = TryParseText(raw);
+            var content = TryParseAssistantMessage(raw);
             if (string.IsNullOrWhiteSpace(content))
             {
-                onError?.Invoke("AI gateway returned an empty NPC reply.");
+                if (logRequestsAndErrors)
+                    Debug.LogWarning($"[Ollama] Unparseable or empty reply. Raw:\n{Truncate(raw, 1200)}", this);
+                onError?.Invoke("Empty model reply (see Console with Debug logging on).");
                 yield break;
             }
 
@@ -103,252 +327,66 @@ public class OllamaDialogueService : AiDialogueService
         }
     }
 
-    public override IEnumerator RequestForgeQuestOfferCoroutine(
-        string blacksmithName,
-        string personaSummary,
-        Action<ForgeQuestOfferDto> onSuccess,
-        Action<string> onError)
+    private static string BuildSystemPrompt(NpcDialogueProfile p)
     {
-        if (_busy)
+        var sb = new StringBuilder(512);
+        sb.Append("You are ");
+        sb.Append(p.CharacterName);
+        sb.Append(", an NPC in the retro fantasy game 'Back to the Forge' (mines, forge, iron ore, risky wilds). ");
+        sb.AppendLine();
+        sb.AppendLine(p.PersonaDescription.Trim());
+
+        var local = p.LocalKnowledge.Trim();
+        if (!string.IsNullOrEmpty(local))
         {
-            onError?.Invoke("busy");
-            yield break;
+            sb.AppendLine();
+            sb.AppendLine("Context you treat as true for your role:");
+            sb.AppendLine(local);
         }
 
-        _busy = true;
-
-        try
-        {
-            var request = new ForgeQuestOfferRequestDto
-            {
-                blacksmithName = blacksmithName,
-                personaSummary = personaSummary
-            };
-
-            string raw = null;
-            string err = null;
-            yield return StartCoroutine(SendJsonRequestCoroutine(
-                BlacksmithOfferEndpoint,
-                JsonUtility.ToJson(request),
-                "blacksmith offer",
-                body => raw = body,
-                e => err = e));
-
-            if (!string.IsNullOrWhiteSpace(err))
-            {
-                onError?.Invoke(err);
-                yield break;
-            }
-
-            if (!TryParseForgeQuestOffer(raw, out var dto))
-            {
-                onError?.Invoke("AI gateway returned invalid quest data.");
-                yield break;
-            }
-
-            onSuccess?.Invoke(dto);
-        }
-        finally
-        {
-            _busy = false;
-        }
+        sb.AppendLine();
+        sb.AppendLine(
+            "CRITICAL — You write ONLY what this character says out loud in the game, 1-3 short sentences. " +
+            "Direct speech only. Do NOT plan, explain, or discuss instructions. Do NOT say: the user, okay, let me think, I need to, I should, " +
+            "wait, hmm, respond as, my reply, or anything about roleplaying or prompts. Never describe the scene from a writer's perspective. " +
+            "Start immediately with words spoken to the traveler.");
+        return sb.ToString();
     }
 
-    public override IEnumerator RequestBlacksmithRoleplayLineCoroutine(
-        BlacksmithRoleplayRequestDto request,
-        Action<string> onSuccess,
-        Action<string> onError)
+    private static string BuildUserPrompt()
     {
-        if (request == null)
-        {
-            onError?.Invoke("Missing blacksmith roleplay request.");
-            yield break;
-        }
-
-        if (_busy)
-        {
-            onError?.Invoke("busy");
-            yield break;
-        }
-
-        _busy = true;
-
-        try
-        {
-            string raw = null;
-            string err = null;
-            yield return StartCoroutine(SendJsonRequestCoroutine(
-                BlacksmithRoleplayEndpoint,
-                JsonUtility.ToJson(request),
-                $"blacksmith roleplay ({request.mode})",
-                body => raw = body,
-                e => err = e));
-
-            if (!string.IsNullOrWhiteSpace(err))
-            {
-                onError?.Invoke(err);
-                yield break;
-            }
-
-            var content = TryParseText(raw);
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                onError?.Invoke("AI gateway returned an empty blacksmith reply.");
-                yield break;
-            }
-
-            onSuccess?.Invoke(SanitizeLine(content));
-        }
-        finally
-        {
-            _busy = false;
-        }
+        return
+            "The traveler is standing with you. Speak your line now — only the words your character says aloud (greeting, gossip, warning, or complaint). " +
+            "Nothing else. No preamble.";
     }
 
-    private IEnumerator SendJsonRequestCoroutine(
-        string endpointPath,
-        string jsonBody,
-        string requestLabel,
-        Action<string> onSuccess,
-        Action<string> onError)
+    /// <summary>Hand-built JSON avoids Unity JsonUtility quirks with nested message arrays.</summary>
+    private string BuildChatJsonManual(string systemContent, string userContent)
     {
-        var url = BuildUrl(endpointPath);
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            onError?.Invoke("AI gateway URL is not configured.");
-            yield break;
-        }
-
-        if (LogRequestsAndErrors)
-            Debug.Log($"[AI Gateway] POST {url} ({requestLabel})\n{Truncate(jsonBody, 800)}", this);
-
-        using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
-        req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-        ApplyAuthHeader(req);
-        req.timeout = Timeout;
-
-        yield return req.SendWebRequest();
-
-        var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
-        var code = req.responseCode;
-
-        if (req.result != UnityWebRequest.Result.Success)
-        {
-            var detail = TryParseError(raw);
-            if (string.IsNullOrWhiteSpace(detail))
-                detail = string.IsNullOrWhiteSpace(req.error) ? req.result.ToString() : req.error;
-
-            if (LogRequestsAndErrors || !string.IsNullOrWhiteSpace(raw))
-                Debug.LogWarning($"[AI Gateway] HTTP error code={code}: {detail}\n{Truncate(raw, 1200)}", this);
-
-            onError?.Invoke($"HTTP {code}: {detail}");
-            yield break;
-        }
-
-        var apiErr = TryParseError(raw);
-        if (!string.IsNullOrWhiteSpace(apiErr))
-        {
-            if (LogRequestsAndErrors)
-                Debug.LogWarning($"[AI Gateway] API error: {apiErr}", this);
-            onError?.Invoke(apiErr);
-            yield break;
-        }
-
-        onSuccess?.Invoke(raw);
+        var sb = new StringBuilder(1024 + systemContent.Length + userContent.Length);
+        sb.Append("{\"model\":\"").Append(EscapeJson(Model)).Append("\",");
+        sb.Append("\"stream\":false,");
+        sb.Append("\"think\":false,");
+        sb.Append("\"messages\":[");
+        sb.Append("{\"role\":\"system\",\"content\":\"").Append(EscapeJson(systemContent)).Append("\"},");
+        sb.Append("{\"role\":\"user\",\"content\":\"").Append(EscapeJson(userContent)).Append("\"}");
+        sb.Append("],\"options\":{");
+        sb.Append("\"num_predict\":").Append(MaxTok).Append(',');
+        sb.Append("\"temperature\":").Append(Temp.ToString(CultureInfo.InvariantCulture));
+        sb.Append("}}");
+        return sb.ToString();
     }
 
-    private void ApplyAuthHeader(UnityWebRequest request)
+    private static string EscapeJson(string s)
     {
-        if (request == null || string.IsNullOrWhiteSpace(ApiKey))
-            return;
+        if (string.IsNullOrEmpty(s))
+            return string.Empty;
 
-        request.SetRequestHeader(ApiKeyHeaderName, ApiKey);
-    }
-
-    private string BuildUrl(string endpointPath)
-    {
-        if (string.IsNullOrWhiteSpace(ApiBaseUrl))
-            return null;
-
-        return ApiBaseUrl + NormalizePath(endpointPath, "/");
-    }
-
-    private static bool TryParseForgeQuestOffer(string rawJson, out ForgeQuestOfferDto dto)
-    {
-        dto = null;
-        if (string.IsNullOrWhiteSpace(rawJson))
-            return false;
-
-        try
-        {
-            dto = JsonUtility.FromJson<ForgeQuestOfferDto>(rawJson);
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-
-        if (dto == null ||
-            string.IsNullOrWhiteSpace(dto.materialName) ||
-            string.IsNullOrWhiteSpace(dto.requestLine))
-            return false;
-
-        dto.materialName = dto.materialName.Trim();
-        dto.requestLine = SanitizeLine(dto.requestLine);
-        return true;
-    }
-
-    private static string TryParseText(string rawJson)
-    {
-        if (string.IsNullOrWhiteSpace(rawJson))
-            return null;
-
-        try
-        {
-            var dto = JsonUtility.FromJson<AiTextResponseDto>(rawJson);
-            return string.IsNullOrWhiteSpace(dto?.text) ? null : dto.text.Trim();
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    private static string TryParseError(string rawJson)
-    {
-        if (string.IsNullOrWhiteSpace(rawJson))
-            return null;
-
-        try
-        {
-            var dto = JsonUtility.FromJson<AiErrorResponseDto>(rawJson);
-            return string.IsNullOrWhiteSpace(dto?.error) ? null : dto.error.Trim();
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    private static string NormalizeBaseUrl(string value)
-    {
-        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().TrimEnd('/');
-    }
-
-    private static string NormalizeHeader(string value, string fallback)
-    {
-        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
-    }
-
-    private static string NormalizePath(string value, string fallback)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return fallback;
-
-        var trimmed = value.Trim();
-        return trimmed.StartsWith("/") ? trimmed : "/" + trimmed;
+        return s.Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\n", "\\n")
+            .Replace("\r", "\\r")
+            .Replace("\t", "\\t");
     }
 
     private static string Truncate(string s, int max)
@@ -358,6 +396,88 @@ public class OllamaDialogueService : AiDialogueService
         if (s.Length <= max)
             return s;
         return s.Substring(0, max) + "…";
+    }
+
+    private static string TryParseError(string rawJson)
+    {
+        if (string.IsNullOrWhiteSpace(rawJson))
+            return null;
+
+        try
+        {
+            var err = JsonUtility.FromJson<OllamaErrorResponseDto>(rawJson);
+            if (err != null && !string.IsNullOrEmpty(err.error))
+                return err.error;
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        return null;
+    }
+
+    private static string TryParseAssistantMessage(string rawJson)
+    {
+        if (string.IsNullOrWhiteSpace(rawJson))
+            return null;
+
+        try
+        {
+            var res = JsonUtility.FromJson<OllamaChatResponseDto>(rawJson);
+            var msg = res?.message;
+            var text = msg?.content?.Trim();
+            if (!string.IsNullOrEmpty(text))
+                return StripInferenceNoise(text);
+
+            var think = msg?.thinking?.Trim();
+            if (!string.IsNullOrEmpty(think))
+                return StripInferenceNoise(think);
+        }
+        catch (Exception)
+        {
+            // fall through to regex
+        }
+
+        // Fallback if JsonUtility failed (rare fields / ordering)
+        var extracted = TryExtractContentWithRegex(rawJson);
+        return string.IsNullOrEmpty(extracted) ? null : StripInferenceNoise(extracted);
+    }
+
+    private static string TryExtractContentWithRegex(string raw)
+    {
+        // Non-greedy content between "content":" and closing quote (escaped quotes inside are best-effort).
+        var m = Regex.Match(raw, "\"content\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"", RegexOptions.Singleline);
+        if (m.Success)
+            return UnescapeJsonString(m.Groups[1].Value);
+        return null;
+    }
+
+    private static string UnescapeJsonString(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+            return s;
+
+        // Captured substring from JSON string; expand common escapes (order matters).
+        const char esc = '\uE000';
+        return s.Replace("\\\\", esc.ToString())
+            .Replace("\\\"", "\"")
+            .Replace("\\n", "\n")
+            .Replace("\\r", "\r")
+            .Replace("\\t", "\t")
+            .Replace(esc.ToString(), "\\");
+    }
+
+    private static string StripInferenceNoise(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return raw;
+
+        var t = raw;
+        // Common Qwen / reasoning-style wrappers Ollama may echo inside content
+        t = Regex.Replace(t, "<think>[\\s\\S]*?</think>", string.Empty, RegexOptions.IgnoreCase);
+        t = Regex.Replace(t, "<thinking>[\\s\\S]*?</thinking>", string.Empty, RegexOptions.IgnoreCase);
+        return t.Trim();
     }
 
     private static string SanitizeLine(string raw)
@@ -377,12 +497,14 @@ public class OllamaDialogueService : AiDialogueService
         return t;
     }
 
+    /// <summary>Removes planning monologue if the model still echoes meta-text (backup when think=false is ignored).</summary>
     private static string StripPlanningMonologue(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return raw;
 
         var t = raw.Trim();
+
         var paras = t.Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
         if (paras.Length >= 2)
         {
@@ -409,15 +531,15 @@ public class OllamaDialogueService : AiDialogueService
         var started = false;
         foreach (var line in lines)
         {
-            var trimmed = line.Trim();
-            if (string.IsNullOrEmpty(trimmed))
+            var L = line.Trim();
+            if (string.IsNullOrEmpty(L))
                 continue;
-            if (!started && LooksLikeMetaLine(trimmed))
+            if (!started && LooksLikeMetaLine(L))
                 continue;
             started = true;
             if (sb.Length > 0)
                 sb.Append(' ');
-            sb.Append(trimmed);
+            sb.Append(L);
         }
 
         var joined = sb.ToString().Trim();
@@ -428,7 +550,6 @@ public class OllamaDialogueService : AiDialogueService
     {
         if (string.IsNullOrEmpty(chunk))
             return false;
-
         return Regex.IsMatch(
             chunk,
             @"\b(the user|user wants|user asked|okay,|ok,|let me |i need to |i'll |i should |wait,|hmm,|hmm\.|respond as|my reply|roleplay|in character as|as instructed)\b",
@@ -439,7 +560,6 @@ public class OllamaDialogueService : AiDialogueService
     {
         if (string.IsNullOrEmpty(line))
             return false;
-
         var lower = line.ToLowerInvariant();
         if (lower.Contains("the user"))
             return true;
@@ -455,7 +575,7 @@ public class OllamaDialogueService : AiDialogueService
             return true;
         if (lower.StartsWith("hmm"))
             return true;
-        if (lower.Contains("respond as") || lower.Contains("user wants"))
+        if (lower.Contains("respond as") || lower.Contains("traveler stops to talk") || lower.Contains("user wants"))
             return true;
         return false;
     }

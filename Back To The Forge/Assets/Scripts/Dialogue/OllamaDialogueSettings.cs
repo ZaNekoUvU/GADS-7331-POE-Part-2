@@ -1,52 +1,28 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
-/// Shared AI gateway settings for shipped builds and local development.
-/// Unity talks to this server, and the server owns provider/model details.
+/// Local Ollama defaults (<c>http://127.0.0.1:11434</c>). Create via Assets → Create → Back To The Forge → Ollama Dialogue Settings.
+/// Run <c>ollama serve</c> and <c>ollama pull &lt;model&gt;</c> before play.
 /// </summary>
-[CreateAssetMenu(fileName = "AiServerSettings", menuName = "Back To The Forge/AI Server Settings")]
+[CreateAssetMenu(fileName = "OllamaDialogueSettings", menuName = "Back To The Forge/Ollama Dialogue Settings")]
 public class OllamaDialogueSettings : ScriptableObject
 {
-    [Tooltip("Public base URL for your AI gateway. No trailing slash.")]
-    [FormerlySerializedAs("hostBaseUrl")]
-    [SerializeField] private string apiBaseUrl = "https://your-ai-server.example.com";
+    [Tooltip("No trailing slash. Same machine = 127.0.0.1")]
+    [SerializeField] private string hostBaseUrl = "http://127.0.0.1:11434";
 
-    [Tooltip("Optional auth header sent to the AI gateway.")]
-    [SerializeField] private string apiKeyHeaderName = "X-Game-Api-Key";
-
-    [Tooltip("Optional shared secret or token for the AI gateway.")]
-    [SerializeField] private string apiKey = "";
+    [Tooltip("Must be installed locally, e.g. ollama pull qwen3:8b")]
+    [SerializeField] private string model = "qwen3:8b";
 
     [SerializeField] private int requestTimeoutSeconds = 45;
 
-    [SerializeField] private string npcLineEndpoint = "/api/npc/line";
-    [SerializeField] private string blacksmithRoleplayEndpoint = "/api/blacksmith/roleplay";
-    [SerializeField] private string blacksmithOfferEndpoint = "/api/blacksmith/offer";
+    [Tooltip("Max tokens for one reply (keep small for snappy RPG lines).")]
+    [SerializeField] private int maxTokens = 140;
 
-    [SerializeField] private bool logRequestsAndErrors = true;
+    [SerializeField] [Range(0.2f, 1.5f)] private float temperature = 0.85f;
 
-    public string ApiBaseUrl => string.IsNullOrWhiteSpace(apiBaseUrl)
-        ? string.Empty
-        : apiBaseUrl.Trim().TrimEnd('/');
-
-    public string ApiKeyHeaderName => string.IsNullOrWhiteSpace(apiKeyHeaderName)
-        ? "X-Game-Api-Key"
-        : apiKeyHeaderName.Trim();
-
-    public string ApiKey => apiKey ?? string.Empty;
+    public string HostBaseUrl => hostBaseUrl?.TrimEnd('/') ?? "http://127.0.0.1:11434";
+    public string Model => model;
     public int RequestTimeoutSeconds => Mathf.Clamp(requestTimeoutSeconds, 5, 120);
-    public string NpcLineEndpoint => NormalizePath(npcLineEndpoint, "/api/npc/line");
-    public string BlacksmithRoleplayEndpoint => NormalizePath(blacksmithRoleplayEndpoint, "/api/blacksmith/roleplay");
-    public string BlacksmithOfferEndpoint => NormalizePath(blacksmithOfferEndpoint, "/api/blacksmith/offer");
-    public bool LogRequestsAndErrors => logRequestsAndErrors;
-
-    private static string NormalizePath(string path, string fallback)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return fallback;
-
-        var trimmed = path.Trim();
-        return trimmed.StartsWith("/") ? trimmed : "/" + trimmed;
-    }
+    public int MaxTokens => Mathf.Clamp(maxTokens, 32, 512);
+    public float Temperature => temperature;
 }

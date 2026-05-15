@@ -251,7 +251,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcOllamaDialogue
   profile: {fileID: 11400000, guid: 661e8530f21da0a418e4e97ccdc08dba, type: 2}
-  aiService: {fileID: 0}
+  ollamaService: {fileID: 0}
   dialogueUi: {fileID: 0}
   waitingEllipsis: "\u2026"
   playerTag: Player
