@@ -15,7 +15,9 @@ public class CompanionRecruiter : MonoBehaviour
     private const string DontDestroySceneName = "DontDestroyOnLoad";
 
     [SerializeField] private HireableCompanionOffer offer;
-    [Tooltip("Hire slot 0–2 → party slots 1–3 (0 is the player).")]
+    [Tooltip("If true, fills the first empty companion slot (max 3). If false, uses partySlotIndex only.")]
+    [SerializeField] private bool autoAssignPartySlot = true;
+    [Tooltip("Used when autoAssignPartySlot is false.")]
     [SerializeField] private int partySlotIndex;
     [SerializeField] private BlacksmithMaster blacksmith;
     [SerializeField] private ForgeQuestChoiceUI choiceUi;
@@ -55,6 +57,26 @@ public class CompanionRecruiter : MonoBehaviour
     private bool _capturedSpawn;
     private bool _isFollowingPlayer;
     private Coroutine _returnHomeRoutine;
+    private int _activePartySlot = -1;
+
+    public void ConfigureFromOffer(HireableCompanionOffer configuredOffer, Color? spriteTint = null)
+    {
+        if (configuredOffer != null)
+        {
+            offer = configuredOffer;
+            npcDisplayName = configuredOffer.NpcDisplayName;
+            openingLine = configuredOffer.OpeningLine ?? string.Empty;
+            cannotAffordLine = configuredOffer.CannotAffordLine;
+            companionJoinLine = configuredOffer.CompanionJoinLine;
+        }
+
+        if (spriteTint.HasValue)
+        {
+            var sprite = GetComponentInChildren<SpriteRenderer>();
+            if (sprite != null)
+                sprite.color = spriteTint.Value;
+        }
+    }
 
     private void Awake()
     {
@@ -116,12 +138,21 @@ public class CompanionRecruiter : MonoBehaviour
     private void ApplyRecruiterWorldVisibility()
     {
         var mgr = HiredCompanionManager.Instance;
-        var deployed = mgr != null && mgr.GetCompanionSlotUnitId(partySlotIndex) > 0;
+        _activePartySlot = -1;
 
-        if (deployed)
-            BeginFollowingPlayer();
-        else
-            RestoreRecruiterAtPost();
+        if (mgr != null && offer != null)
+        {
+            _activePartySlot = mgr.FindSlotWithUnitId(offer.UnitId);
+            if (_activePartySlot >= 0 && mgr.GetPhysicalFollowerRoot(_activePartySlot) == gameObject)
+            {
+                BeginFollowingPlayer();
+                return;
+            }
+
+            _activePartySlot = -1;
+        }
+
+        RestoreRecruiterAtPost();
     }
 
     private void BeginFollowingPlayer()
@@ -137,8 +168,8 @@ public class CompanionRecruiter : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         var mgr = HiredCompanionManager.Instance;
-        if (mgr != null)
-            mgr.BindPhysicalFollowerToSlot(partySlotIndex, gameObject);
+        if (mgr != null && _activePartySlot >= 0)
+            mgr.BindPhysicalFollowerToSlot(_activePartySlot, gameObject);
 
         if (_returnHomeRoutine != null)
         {
@@ -192,7 +223,8 @@ public class CompanionRecruiter : MonoBehaviour
                 playerT = tagged.transform;
         }
 
-        follower.Configure(playerT, partySlotIndex);
+        var slot = _activePartySlot >= 0 ? _activePartySlot : partySlotIndex;
+        follower.Configure(playerT, slot);
     }
 
     private void RestoreRecruiterAtPost()
@@ -208,7 +240,8 @@ public class CompanionRecruiter : MonoBehaviour
         if (_isFollowingPlayer)
         {
             _isFollowingPlayer = false;
-            HiredCompanionManager.Instance?.UnbindPhysicalFollowerSlot(partySlotIndex);
+            if (_activePartySlot >= 0)
+                HiredCompanionManager.Instance?.UnbindPhysicalFollowerSlot(_activePartySlot);
 
             var follower = GetComponent<CompanionFollower2D>();
             if (follower != null)
@@ -268,7 +301,8 @@ public class CompanionRecruiter : MonoBehaviour
     private void Update()
     {
         var mgr = HiredCompanionManager.Instance;
-        if (mgr != null && mgr.GetCompanionSlotUnitId(partySlotIndex) > 0)
+        if (mgr != null && offer != null && mgr.FindSlotWithUnitId(offer.UnitId) >= 0
+            && mgr.GetPhysicalFollowerRoot(mgr.FindSlotWithUnitId(offer.UnitId)) == gameObject)
             return;
 
         if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
@@ -300,15 +334,18 @@ public class CompanionRecruiter : MonoBehaviour
 
         if (uid <= 0 || blacksmith == null)
         {
-            dialogueUi.Show(npcDisplayName, "Something's wrong with this posting.");
+            dialogueUi.Show(ResolveNpcDisplayName(), "Something's wrong with this posting.");
             yield return StartCoroutine(WaitDialogueClosed());
             _busy = false;
             yield break;
         }
 
-        if (!string.IsNullOrWhiteSpace(openingLine))
+        var speaker = ResolveNpcDisplayName();
+        var openLine = ResolveOpeningLine();
+
+        if (!string.IsNullOrWhiteSpace(openLine))
         {
-            dialogueUi.Show(npcDisplayName, openingLine.Trim());
+            dialogueUi.Show(speaker, openLine);
             yield return StartCoroutine(WaitDialogueClosed());
         }
 
@@ -329,20 +366,35 @@ public class CompanionRecruiter : MonoBehaviour
         var mgr = HiredCompanionManager.GetOrCreate();
         if (blacksmith.PlayerGold < cost)
         {
-            dialogueUi.Show(npcDisplayName, cannotAffordLine.Trim());
+            dialogueUi.Show(speaker, ResolveCannotAffordLine());
             yield return StartCoroutine(WaitDialogueClosed());
             _busy = false;
             yield break;
         }
 
-        if (mgr.TryHire(partySlotIndex, uid, cost, blacksmith, gameObject))
+        if (autoAssignPartySlot && mgr.IsPartyFull && mgr.FindSlotWithUnitId(uid) < 0)
         {
-            dialogueUi.Show(CompanionSpeakerName(), companionJoinLine.Trim());
+            dialogueUi.Show(speaker, ResolvePartyFullLine());
+            yield return StartCoroutine(WaitDialogueClosed());
+            _busy = false;
+            yield break;
+        }
+
+        var hired = autoAssignPartySlot
+            ? mgr.TryHireAuto(uid, cost, blacksmith, gameObject, out _activePartySlot)
+            : mgr.TryHire(partySlotIndex, uid, cost, blacksmith, gameObject);
+
+        if (hired)
+        {
+            if (!autoAssignPartySlot)
+                _activePartySlot = partySlotIndex;
+
+            dialogueUi.Show(CompanionSpeakerName(), ResolveCompanionJoinLine());
             yield return StartCoroutine(WaitDialogueClosed());
         }
         else
         {
-            dialogueUi.Show(npcDisplayName, "Couldn't seal the deal. Try again.");
+            dialogueUi.Show(speaker, "Couldn't seal the deal. Try again.");
             yield return StartCoroutine(WaitDialogueClosed());
         }
 
@@ -355,14 +407,51 @@ public class CompanionRecruiter : MonoBehaviour
         yield return new WaitUntil(() => !SimpleRpgDialogueUI.IsDialogueOpen);
     }
 
+    private string ResolveNpcDisplayName()
+    {
+        if (!string.IsNullOrWhiteSpace(npcDisplayName))
+            return npcDisplayName.Trim();
+
+        return offer != null ? offer.NpcDisplayName : "Mercenary";
+    }
+
+    private string ResolveOpeningLine()
+    {
+        if (!string.IsNullOrWhiteSpace(openingLine))
+            return openingLine.Trim();
+
+        return offer != null ? offer.OpeningLine : string.Empty;
+    }
+
+    private string ResolveCannotAffordLine()
+    {
+        if (!string.IsNullOrWhiteSpace(cannotAffordLine))
+            return cannotAffordLine.Trim();
+
+        return offer != null ? offer.CannotAffordLine : "Your purse is too light.";
+    }
+
+    private string ResolveCompanionJoinLine()
+    {
+        if (!string.IsNullOrWhiteSpace(companionJoinLine))
+            return companionJoinLine.Trim();
+
+        return offer != null ? offer.CompanionJoinLine : "I'm with you.";
+    }
+
+    private string ResolvePartyFullLine()
+    {
+        return offer != null && !string.IsNullOrWhiteSpace(offer.PartyFullLine)
+            ? offer.PartyFullLine
+            : "You've already hired three companions. End the day at the forge to refresh your roster.";
+    }
+
     private string CompanionSpeakerName()
     {
         if (!string.IsNullOrWhiteSpace(companionSpeakerOverride))
             return companionSpeakerOverride.Trim();
 
-        return offer.Unit != null && !string.IsNullOrWhiteSpace(offer.Unit.DisplayName)
-            ? offer.Unit.DisplayName
-            : offer.DisplayLabel;
+        return offer != null ? offer.NpcDisplayName : ResolveNpcDisplayName();
     }
 
     private bool WasInteractPressedThisFrame()

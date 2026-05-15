@@ -467,7 +467,8 @@ public class CombatBattleHud : MonoBehaviour
         alliesPanel.AddToClassList("hud-panel");
 
         alliesPanel.AddToClassList("hud-panel--allies");
-
+        alliesPanel.style.minWidth = 150;
+        alliesPanel.style.maxWidth = 210;
         alliesPanel.pickingMode = PickingMode.Ignore;
 
         _alliesList = new VisualElement { name = AlliesListName };
@@ -1040,8 +1041,11 @@ public class CombatBattleHud : MonoBehaviour
 
         nameLabel.AddToClassList("unit-name");
 
-        ApplyHudLabelStyle(nameLabel, 11f, bold: true, HudTextColor);
+        ApplyHudLabelStyle(nameLabel, 10f, bold: true, HudTextColor);
         nameLabel.style.whiteSpace = WhiteSpace.NoWrap;
+        nameLabel.style.flexShrink = 1;
+        nameLabel.style.flexGrow = 1;
+        nameLabel.style.minWidth = 0;
 
         row.Add(nameLabel);
 
@@ -1055,14 +1059,14 @@ public class CombatBattleHud : MonoBehaviour
 
         var hpLabel = new Label($"HP {unit.CurrentHp}/{unit.MaxHp}");
         hpLabel.AddToClassList("unit-hp");
-        ApplyHudLabelStyle(hpLabel, 10f, bold: false, HudTextColor);
+        ApplyHudLabelStyle(hpLabel, 9f, bold: false, HudTextColor);
         statsRow.Add(hpLabel);
 
         if (unit.UsesMana)
         {
             var mpLabel = new Label($"MP {unit.CurrentMana}/{unit.MaxMana}");
             mpLabel.AddToClassList("unit-mp");
-            ApplyHudLabelStyle(mpLabel, 10f, bold: false, HudTextColor);
+            ApplyHudLabelStyle(mpLabel, 9f, bold: false, HudTextColor);
             statsRow.Add(mpLabel);
         }
 

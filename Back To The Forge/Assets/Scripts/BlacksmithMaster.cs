@@ -60,7 +60,7 @@ public class BlacksmithMaster : MonoBehaviour
     [SerializeField] private float questItemSellMultiplier = 2f;
 
     [SerializeField] private int startingDay = 1;
-    [SerializeField] private int startingGold;
+    [SerializeField] private int startingGold = 70;
 
     [Header("Debug")]
     [SerializeField] private bool debugLogs = true;

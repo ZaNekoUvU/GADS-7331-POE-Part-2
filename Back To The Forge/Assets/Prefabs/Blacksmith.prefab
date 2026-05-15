@@ -293,7 +293,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: dd44ee55ff66778899abb011cc22dd33, type: 2}
   questItemSellMultiplier: 2
   startingDay: 1
-  startingGold: 0
+  startingGold: 70
   playerTag: Player
   interactAction: {fileID: 0}
   endDayOnInteractWhileInRange: 1

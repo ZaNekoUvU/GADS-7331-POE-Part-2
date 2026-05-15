@@ -9,9 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0ffeefeed0011223344556677889900, type: 3}
-  m_Name: HireOffer_Mercenary
+  m_Script: {fileID: 11500000, guid: a2000000111122223333444455556666, type: 3}
+  m_Name: Unit_Ally_Brynja
   m_EditorClassIdentifier: 
-  unit: {fileID: 11400000, guid: e0e1d2c3b4a5968778695a4b3c2d1e0f, type: 2}
-  hireCost: 40
-  recruitLabel: 
+  unitId: 4
+  displayName: Brynja
+  maxHp: 53
+  attackDamage: 23
+  moveIds:
+  - 100
+  moves: []
