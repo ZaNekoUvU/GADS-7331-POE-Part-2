@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Classic JRPG-style wandering: idle, then step one tile on the grid (cardinal directions).
-/// Uses a kinematic <see cref="Rigidbody2D"/> and optional sprite flip on horizontal moves.
-/// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class GridWanderNpc2D : MonoBehaviour
 {
@@ -16,12 +12,15 @@ public class GridWanderNpc2D : MonoBehaviour
     [Header("Blocking")]
     [SerializeField] private LayerMask obstacleMask = ~0;
     [SerializeField] private float obstacleCheckRadius = 0.22f;
-    [Tooltip("Ignore trigger colliders when deciding if a tile is blocked.")]
     [SerializeField] private bool ignoreTriggersForBlocking = true;
 
     [Header("Sprite")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private bool flipXWhenFacingLeft = true;
+
+    // ANIMATION:
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
 
     private Rigidbody2D _body;
     private Vector2 _cellStart;
@@ -29,6 +28,7 @@ public class GridWanderNpc2D : MonoBehaviour
     private float _stepT;
     private bool _stepping;
     private float _idleUntil;
+
     private static readonly Vector2[] Cardinals =
     {
         Vector2.up,
@@ -47,6 +47,10 @@ public class GridWanderNpc2D : MonoBehaviour
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // ANIMATION:
+        if (animator == null)
+            animator = GetComponent<Animator>();
     }
 
     private void OnEnable()
@@ -59,11 +63,17 @@ public class GridWanderNpc2D : MonoBehaviour
         _stepping = false;
         _stepT = 0f;
         _idleUntil = Time.time + RandomIdleDelay();
+
+        // ANIMATION: Pause on first frame
+        if (animator != null)
+        {
+            animator.speed = 0f;
+            animator.Play("down", 0, 0f);
+        }
     }
 
     private void Start()
     {
-        // First frame after OnEnable; keeps parity if anything moved the transform before Start.
         SnapPositionToGrid();
         _cellStart = _cellEnd = _body.position;
         _idleUntil = Time.time + RandomIdleDelay();
@@ -82,11 +92,23 @@ public class GridWanderNpc2D : MonoBehaviour
             _body.MovePosition(p);
 
             if (_stepT < 1f)
+            {
+                // ANIMATION: keep playing while stepping
+                if (animator != null) animator.speed = 1f;
                 return;
+            }
 
             _body.MovePosition(_cellEnd);
             _stepping = false;
             _idleUntil = Time.time + RandomIdleDelay();
+
+            // ANIMATION: pause on frame 0 of same direction
+            if (animator != null)
+            {
+                animator.speed = 0f;
+                animator.Play(animator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, 0f);
+            }
+
             return;
         }
 
@@ -107,8 +129,24 @@ public class GridWanderNpc2D : MonoBehaviour
             var next = origin + dir * gridSize;
             if (!IsBlocked(next))
             {
+                // -------------------------------------------------
+                // ANIMATION SWITCHING
+                // -------------------------------------------------
+                if (animator != null)
+                {
+                    if (dir.y > 0.01f)
+                        animator.Play("Up");
+                    else if (dir.y < -0.01f)
+                        animator.Play("Down");
+                    else
+                        animator.Play("Left"); // use left for both ? flipping handles right
+
+                    animator.speed = 1f;
+                }
+
+                // SPRITE FLIP
                 if (flipXWhenFacingLeft && spriteRenderer != null && Mathf.Abs(dir.x) > 0.01f)
-                    spriteRenderer.flipX = dir.x < 0f;
+                    spriteRenderer.flipX = dir.x > 0f; // right should flip
 
                 _cellStart = origin;
                 _cellEnd = next;
@@ -127,18 +165,11 @@ public class GridWanderNpc2D : MonoBehaviour
         for (var i = 0; i < hits.Length; i++)
         {
             var c = hits[i];
-            if (c == null)
-                continue;
-
-            if (c.transform == transform || c.transform.IsChildOf(transform))
-                continue;
-
-            if (ignoreTriggersForBlocking && c.isTrigger)
-                continue;
-
+            if (c == null) continue;
+            if (c.transform == transform || c.transform.IsChildOf(transform)) continue;
+            if (ignoreTriggersForBlocking && c.isTrigger) continue;
             return true;
         }
-
         return false;
     }
 

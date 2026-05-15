@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3595463465266105079
+--- !u!1 &1085510807982076042
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,44 +8,44 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7285118274095268288}
-  - component: {fileID: 5109736313311348546}
-  - component: {fileID: 1217935974851088461}
-  - component: {fileID: 8736747347865476446}
-  - component: {fileID: 6253491418183829155}
-  - component: {fileID: 8807111090113968043}
-  - component: {fileID: 5158849962728822010}
-  - component: {fileID: 7372917358147794440}
+  - component: {fileID: 3998792735328562149}
+  - component: {fileID: 7828038345410670680}
+  - component: {fileID: 4714697323549148983}
+  - component: {fileID: 234933277488792210}
+  - component: {fileID: 1738935236714959918}
+  - component: {fileID: 8768043876422595334}
+  - component: {fileID: 4791965391057352760}
+  - component: {fileID: 6241662754786079714}
   m_Layer: 0
-  m_Name: Blacksmith
+  m_Name: Blacksmith 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7285118274095268288
+--- !u!4 &3998792735328562149
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.1827292, y: -8.424324, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 11.58, y: 0.38, z: 0}
+  m_LocalScale: {x: 1.274, y: 1.274, z: 1.274}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &5109736313311348546
+--- !u!212 &7828038345410670680
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -87,8 +87,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 2514407213013589476, guid: 6a6be86fb1dde28498269b518cd01256, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -97,14 +97,14 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!50 &1217935974851088461
+--- !u!50 &4714697323549148983
 Rigidbody2D:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
@@ -124,13 +124,13 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &8736747347865476446
+--- !u!61 &234933277488792210
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -162,7 +162,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.9, y: 1.13}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -170,14 +170,14 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &6253491418183829155
+--- !u!114 &1738935236714959918
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
-  m_Enabled: 1
+  m_GameObject: {fileID: 1085510807982076042}
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d3cc0c42a264d7b4a84c18bdcf4cf7ed, type: 3}
   m_Name: 
@@ -193,13 +193,14 @@ MonoBehaviour:
   ignoreTriggersForBlocking: 1
   spriteRenderer: {fileID: 0}
   flipXWhenFacingLeft: 1
---- !u!61 &8807111090113968043
+  animator: {fileID: 0}
+--- !u!61 &8768043876422595334
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -231,7 +232,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.9, y: 1.13}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -239,13 +240,13 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3, y: 3}
   m_EdgeRadius: 0
---- !u!114 &5158849962728822010
+--- !u!114 &4791965391057352760
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15fa6431007f0e6458bcf8ffb603dbf4, type: 3}
@@ -255,7 +256,7 @@ MonoBehaviour:
   questMineralDefinition: {fileID: 11400000, guid: f7e8d9c0b1a2436586978091a2b3c4d5, type: 2}
   forgeIronTurnInDefinition: {fileID: 11400000, guid: e50118293a4b5c6d70891a2b3c4d5e6f, type: 2}
   goldRewardPerUnit: 22
-  blacksmith: {fileID: 7372917358147794440}
+  blacksmith: {fileID: 6241662754786079714}
   playerInventory: {fileID: 0}
   playerHealth: {fileID: 0}
   ollamaService: {fileID: 0}
@@ -266,15 +267,14 @@ MonoBehaviour:
   turnInThanksFallback: Aye, this is what I needed. Here's your coin.
   turnInEmptyFallback: You brought nothing I asked for. Come back when you have the
     ore.
-  playerTag: Player
   interactAction: {fileID: 0}
---- !u!114 &7372917358147794440
+--- !u!114 &6241662754786079714
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3595463465266105079}
+  m_GameObject: {fileID: 1085510807982076042}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aabbccddeeff001122334455667788aa, type: 3}
@@ -294,7 +294,4 @@ MonoBehaviour:
   questItemSellMultiplier: 2
   startingDay: 1
   startingGold: 70
-  playerTag: Player
-  interactAction: {fileID: 0}
-  endDayOnInteractWhileInRange: 1
   debugLogs: 1
