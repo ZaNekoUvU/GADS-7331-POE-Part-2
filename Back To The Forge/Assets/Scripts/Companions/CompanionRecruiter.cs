@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,12 @@ public class CompanionRecruiter : MonoBehaviour
     [SerializeField] private BlacksmithMaster blacksmith;
     [SerializeField] private ForgeQuestChoiceUI choiceUi;
     [SerializeField] private SimpleRpgDialogueUI dialogueUi;
+
+    [Header("LLM")]
+    [Tooltip("When true, opening greeting uses Ollama with each offer's persona (Personality Voice / Trait).")]
+    [SerializeField] private bool useOllamaMercenaryOpening = true;
+
+    [SerializeField] private OllamaDialogueService ollamaService;
 
     [Header("Speakers")]
     [SerializeField] private string npcDisplayName = "Mercenary";
@@ -354,11 +361,44 @@ public class CompanionRecruiter : MonoBehaviour
         var speaker = ResolveNpcDisplayName();
         var openLine = ResolveOpeningLine();
 
-        if (!string.IsNullOrWhiteSpace(openLine))
+        var showedOpening = false;
+
+        if (useOllamaMercenaryOpening && offer != null)
+        {
+            var svc = ollamaService != null ? ollamaService : OllamaDialogueService.GetOrCreate();
+            if (!svc.IsBusy)
+            {
+                dialogueUi.ShowAwaitingLine(speaker, "…");
+
+                string ok = null;
+                string err = null;
+                yield return StartCoroutine(YieldMercenaryOpeningFromOllama(svc, speaker, offer, cost, s => ok = s, e => err = e));
+
+                if (!string.IsNullOrWhiteSpace(ok))
+                    dialogueUi.SetDialogueLineAndAllowAdvance(ok);
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(err))
+                        Debug.LogWarning($"[Ollama] {speaker}: {err}", this);
+
+                    dialogueUi.SetDialogueLineAndAllowAdvance(
+                        !string.IsNullOrWhiteSpace(openLine)
+                            ? openLine.Trim()
+                            : "Need muscle? Coin talks.");
+                }
+
+                showedOpening = true;
+            }
+        }
+
+        if (!showedOpening && !string.IsNullOrWhiteSpace(openLine))
         {
             dialogueUi.Show(speaker, openLine);
-            yield return StartCoroutine(WaitDialogueClosed());
+            showedOpening = true;
         }
+
+        if (showedOpening)
+            yield return StartCoroutine(WaitDialogueClosed());
 
         var hireBtn = !string.IsNullOrWhiteSpace(hireButtonCustomText)
             ? hireButtonCustomText.Trim()
@@ -410,6 +450,35 @@ public class CompanionRecruiter : MonoBehaviour
         }
 
         _busy = false;
+    }
+
+    private IEnumerator YieldMercenaryOpeningFromOllama(
+        OllamaDialogueService service,
+        string characterName,
+        HireableCompanionOffer offerDto,
+        int hireCostGold,
+        Action<string> onSuccess,
+        Action<string> onError)
+    {
+        var persona = offerDto.PersonaForLlm;
+        var toneHint = offerDto.OpeningLine;
+        var toneClause = string.IsNullOrWhiteSpace(toneHint)
+            ? string.Empty
+            : $"Designer tone hint (do not quote verbatim; match vibe): {toneHint.Trim()}";
+
+        var systemPrompt =
+            $"You are {characterName}, an NPC mercenary for hire in the retro fantasy game \"Back to the Forge\" (mines, forge, risky roads).\n" +
+            $"Persona:\n{persona}\n" +
+            $"{toneClause}\n\n" +
+            "CRITICAL — Output ONLY what this character says out loud, 1–3 short sentences. Direct speech only. " +
+            "Do NOT plan, explain, or discuss instructions or prompts. Do NOT say: the user, okay, let me think, I should, respond as, my reply. " +
+            "Start immediately with spoken words to the traveler.";
+
+        var userPrompt =
+            $"The traveler just stepped up to your posting. Pitch yourself — your hire fee today is {hireCostGold} gold " +
+            "(mention it only if it fits naturally). Invite them to hire you or ask where they're headed.";
+
+        yield return service.RequestRoleplayLineCoroutine(systemPrompt, userPrompt, onSuccess, onError);
     }
 
     private IEnumerator WaitDialogueClosed()

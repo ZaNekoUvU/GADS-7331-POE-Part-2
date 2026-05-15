@@ -146,7 +146,7 @@ public class CombatAdditiveCoordinator : MonoBehaviour
             return;
 
         _cameraIsolationRestore = new List<(Camera, bool)>();
-        foreach (var cam in FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        foreach (var cam in FindObjectsByType<Camera>(FindObjectsInactive.Include))
         {
             if (cam == null || !cam.gameObject.scene.IsValid())
                 continue;
@@ -157,7 +157,7 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         }
 
         _listenerIsolationRestore = new List<(AudioListener, bool)>();
-        foreach (var listener in FindObjectsByType<AudioListener>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        foreach (var listener in FindObjectsByType<AudioListener>(FindObjectsInactive.Include))
         {
             if (listener == null || !listener.gameObject.scene.IsValid())
                 continue;
@@ -168,7 +168,7 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         }
 
         _rendererIsolationRestore = new List<(Renderer, bool)>();
-        foreach (var renderer in FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        foreach (var renderer in FindObjectsByType<Renderer>(FindObjectsInactive.Include))
         {
             if (renderer == null || !renderer.gameObject.scene.IsValid())
                 continue;
@@ -179,7 +179,7 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         }
 
         _canvasIsolationRestore = new List<(Canvas, bool)>();
-        foreach (var canvas in FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        foreach (var canvas in FindObjectsByType<Canvas>(FindObjectsInactive.Include))
         {
             if (canvas == null || !canvas.gameObject.scene.IsValid())
                 continue;

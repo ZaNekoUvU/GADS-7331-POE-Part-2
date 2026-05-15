@@ -14,6 +14,9 @@ public class HireableCompanionOffer : ScriptableObject
     [Header("Personality & dialogue")]
     [Tooltip("Short trait shown in logs / optional UI.")]
     [SerializeField] private string personalityTrait;
+
+    [Tooltip("Optional fuller voice for the LLM. Empty uses Personality Trait.")]
+    [SerializeField] [TextArea(3, 8)] private string personalityVoice;
     [SerializeField] private string npcDisplayName;
     [TextArea(2, 5)] [SerializeField] private string openingLine;
     [TextArea(2, 3)] [SerializeField] private string cannotAffordLine =
@@ -27,6 +30,20 @@ public class HireableCompanionOffer : ScriptableObject
     public int HireCost => Mathf.Max(0, hireCost);
     public int UnitId => unit != null ? unit.UnitId : 0;
     public string PersonalityTrait => personalityTrait;
+
+    /// <summary>Feeds Ollama: designer-authored persona when set; otherwise <see cref="personalityTrait"/>.</summary>
+    public string PersonaForLlm
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(personalityVoice))
+                return personalityVoice.Trim();
+            if (!string.IsNullOrWhiteSpace(personalityTrait))
+                return personalityTrait.Trim();
+
+            return "A sellsword at a roadside hiring pitch — practical about coin and danger.";
+        }
+    }
 
     public string DisplayLabel =>
         string.IsNullOrWhiteSpace(recruitLabel)

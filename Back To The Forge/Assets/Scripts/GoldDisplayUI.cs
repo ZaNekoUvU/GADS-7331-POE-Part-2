@@ -41,7 +41,8 @@ public class GoldDisplayUI : MonoBehaviour
         if (_document == null)
             _document = gameObject.AddComponent<UIDocument>();
 
-        FfStyleMenuUi.ConfigureDocument(_document, 4000);
+        // Above Inventory panel toggle (4500) so gold stays visible while Tab-held inventory is open.
+        FfStyleMenuUi.ConfigureDocument(_document, 4550);
 
         var root = _document.rootVisualElement;
         root.Clear();
