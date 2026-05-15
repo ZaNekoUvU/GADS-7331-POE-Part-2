@@ -1,0 +1,75 @@
+================================================================================
+BACK TO THE FORGE — HIGH CONCEPT DOCUMENT
+GADS 7331 POE Part 2
+================================================================================
+
+1. IDEATION (HIGH CONCEPT)
+--------------------------------------------------------------------------------
+Back To The Forge is a retro-styled 2D RPG focused on exploration, a village /
+forge economy, risky overworld travel, and turn-based combat. The player mines,
+sells, commissions ore through a blacksmith, hires mercenary companions, and
+enters random encounters that feed an additive combat scene.
+
+Core fantasy: grounded travel and coin — muscle for hire, local LLM-flavored
+dialogue, and systems that feel like a late-SNES / early-PS1 RPG workflow with
+modern tooling (Unity 6, UI Toolkit).
+
+
+2. ROLE OF THE LLM IN THIS PROJECT
+--------------------------------------------------------------------------------
+The game uses a LOCAL large language model (via Ollama) as a creative writer,
+not as a remote service or gameplay authority:
+
+• NPC small talk & persona-driven lines — scripted NPC profiles (name + persona
+  description) generate spoken dialogue while preserving gameplay constraints.
+
+• Blacksmith quest commissioning — structured JSON from the model invents a
+  fantasy ore name and the blacksmith’s ask line; the game parses it strictly.
+
+• Random encounter staging — before bandit fights triggered from risky ground,
+  one terse narrator line sets tone (calibrated toward short, BG3-like prose).
+
+• Mercenary hiring — each hire offer carries designer-authored personality
+  (trait / optional extended voice); the model speaks an opening pitch in that
+  voice, with scripted lines as fallback.
+
+The LLM never rolls dice, moves units, or mutates save-critical state directly.
+All outputs are sanitized, bounded (short lines / JSON schema), and validated
+with fallbacks when Ollama is offline or busy.
+
+
+3. WHY A LOCAL MODEL IS APPROPRIATE
+--------------------------------------------------------------------------------
+• Privacy & ownership — player dialogue and iteration stay on the developer /
+  player machine; no API keys or third-party chat logs for core flavor text.
+
+• Offline & repeatable grading — university / POE submissions can run without
+  cloud dependencies; reproducibility improves when the model tag is pinned.
+
+• Latency & cost — short prompts (single lines, small JSON) suit small local
+  models; no per-token billing for iterative game writing.
+
+• Creative control — temperature and prompts are tuned per feature (strict JSON
+  for quests, loose flavor for gossip); fallbacks keep the game playable if the
+  model refuses or errors.
+
+• Alignment with scope — “assistive authorship” fits a student game pipeline:
+  designers keep narrative authority via ScriptableObjects while the LLM varies
+  surface text.
+
+
+4. DESIGN GUARDRAILS
+--------------------------------------------------------------------------------
+• Strict separation: gameplay logic lives in C#; LLM output is display text or
+  parsed DTOs only.
+
+• Fallback lines everywhere Ollama is called — no hard dependency on a running
+  daemon for a shipped build to function.
+
+• Prompt contracts — system prompts forbid meta-commentary (“as an AI…”) and
+  enforce in-character, short spoken lines where applicable.
+
+
+================================================================================
+END OF HIGH CONCEPT DOCUMENT
+================================================================================
