@@ -12,6 +12,7 @@ Unity 6 **2D RPG** prototype: exploration, forge economy, mercenary companions, 
 | [**Setup guide**](docs/setup.md) | Unity + Ollama install, models, troubleshooting |
 | [**Refinements log**](docs/refinements-changes.md) | Scope changes & AI-assisted decisions |
 | [**Ollama plan**](docs/ollama-plan.md) | Model choice, timing, data flow, prompts, risks |
+| [**Prompt archive**](docs/prompts-used.md) | Tested prompts, examples, iteration notes |
 | **This README** | Overview, install, dependencies, credits |
 
 ---
