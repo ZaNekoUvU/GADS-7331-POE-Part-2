@@ -110,7 +110,10 @@ public class BlacksmithMaster : MonoBehaviour
         if (item == null)
             return 0;
 
-        var basePrice = Mathf.Max(0, item.BaseSellPrice);
+        var market = ResourceMarketPricing.Instance;
+        var basePrice = market != null
+            ? market.GetTodayPrice(item)
+            : Mathf.Max(0, item.BaseSellPrice);
         var forge = ForgeQuestManager.Instance;
         ItemDefinition forgeAsset = null;
         if (forge != null && forge.QuestActive)
@@ -132,6 +135,17 @@ public class BlacksmithMaster : MonoBehaviour
 
     public string GetQuestSummary()
     {
+        var forge = ForgeQuestManager.Instance;
+        if (forge != null && forge.QuestActive)
+        {
+            var ironName = forge.ForgeIronTurnInItem != null
+                ? forge.ForgeIronTurnInItem.DisplayName
+                : "iron";
+            return
+                $"Day {_currentDay}: Forge commission — bring {forge.QuestMaterialName} (commission pickup) " +
+                $"and {ironName} to the smith. Daily special: {(_todaysQuestItem != null ? _todaysQuestItem.DisplayName : "none")}.";
+        }
+
         if (_todaysQuestItem == null)
             return $"Day {_currentDay}: (no quest assigned — add items to {nameof(dailyQuestPool)})";
 
@@ -198,8 +212,12 @@ public class BlacksmithMaster : MonoBehaviour
             return;
         }
 
+        ResourceMarketPricing.GetOrCreate();
+
         if (_todaysQuestItem == null)
             RollDailyQuest();
+        else
+            RollMarketPrices();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -247,17 +265,52 @@ public class BlacksmithMaster : MonoBehaviour
             }
         }
 
+        RollMarketPrices();
+
         if (debugLogs && _todaysQuestItem != null)
         {
+            var market = ResourceMarketPricing.Instance;
+            var todayPrice = market != null
+                ? market.GetTodayPrice(_todaysQuestItem)
+                : _todaysQuestItem.BaseSellPrice;
             Debug.Log(
                 $"{LogPrefix} Daily quest set — Day {_currentDay}: '{_todaysQuestItem.DisplayName}' " +
-                $"(itemId={_todaysQuestItem.ItemId}, base sell {_todaysQuestItem.BaseSellPrice}g/unit, " +
+                $"(itemId={_todaysQuestItem.ItemId}, market {todayPrice}g/unit today, " +
                 $"quest multiplier ×{Mathf.Max(1f, questItemSellMultiplier):0.##}).",
                 this);
         }
 
         OnDailyQuestRolled?.Invoke(_todaysQuestItem);
         OnEconomyChanged?.Invoke();
+    }
+
+    private void RollMarketPrices()
+    {
+        var market = ResourceMarketPricing.GetOrCreate();
+        market.RollPricesForDay(_currentDay, dailyQuestPool);
+
+        if (!debugLogs || dailyQuestPool == null)
+            return;
+
+        var sb = new StringBuilder(256);
+        sb.Append($"{LogPrefix} Day {_currentDay} market prices — ");
+        var first = true;
+        foreach (var item in dailyQuestPool)
+        {
+            if (item == null || item.ItemId <= 0)
+                continue;
+
+            if (!first)
+                sb.Append(", ");
+            first = false;
+            sb.Append(item.DisplayName);
+            sb.Append(' ');
+            sb.Append(market.GetTodayPrice(item));
+            sb.Append('g');
+        }
+
+        if (!first)
+            Debug.Log(sb.ToString(), this);
     }
 
     /// <summary>Sells every stack in the inventory using <see cref="GetUnitSellPrice"/> (daily special + active forge ore share the same bonus), clears bags, advances the day, rolls the next quest.</summary>

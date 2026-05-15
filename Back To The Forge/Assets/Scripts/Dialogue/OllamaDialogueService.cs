@@ -131,7 +131,8 @@ public class OllamaDialogueService : MonoBehaviour
                 "You output ONLY valid JSON with exactly two string keys: materialName and requestLine. " +
                 "No markdown, no code fences, no extra keys, no commentary. " +
                 "materialName: one invented fantasy ore or mineral name (2–6 words, no quotes inside the string). " +
-                "requestLine: what the blacksmith says out loud asking the traveler to fetch it (1–3 short sentences, direct speech, " +
+                "This exact name is what appears in the traveler's inventory when they collect the commission ore. " +
+                "requestLine: what the blacksmith says out loud asking the traveler to fetch that same material by name (1–3 short sentences, direct speech, " +
                 "same character voice as your persona — no meta, no 'the user').";
 
             var userContent =
