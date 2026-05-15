@@ -6,7 +6,7 @@ Continuous record of notable adjustments and **AI-assisted** implementation deci
 
 ## Rendering & additive combat
 
-| Date / phase | Change | Rationale |
+| Phase | Change | Rationale |
 |--------------|--------|-----------|
 | Combat isolation | **`CombatAdditiveCoordinator`** walks loaded objects and disables **cameras, listeners, renderers, and `Canvas`** whose `gameObject.scene` is **not** the combat scene; restores on unload. | Exploration terrain/sprites stayed visible under additive combat; combat camera drew both scenes. |
 | Scene tweaks | Combat background **Z** normalized; combat camera **occlusion culling** disabled where it hid the BG. | Background disappeared or sorted incorrectly. |
