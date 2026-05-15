@@ -102,6 +102,17 @@ public class CompanionRecruiter : MonoBehaviour
         _capturedSpawn = true;
     }
 
+    /// <summary>
+    /// Call after the instance is placed in-world (e.g. by <see cref="MercenaryCampSpawner"/>) so hire-post and return-home use the real pose.
+    /// Instantiate assigns transform before Awake; this still runs after <see cref="ConfigureFromOffer"/> so roster/UI hooks cannot stamp an incorrect cached pose.
+    /// </summary>
+    public void CommitSpawnPoseSnapshot()
+    {
+        _recruitWorldPosition = transform.position;
+        _recruitWorldRotation = transform.rotation;
+        _capturedSpawn = true;
+    }
+
     private void OnEnable()
     {
         if (interactAction != null)

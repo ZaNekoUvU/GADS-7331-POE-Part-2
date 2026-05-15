@@ -15,23 +15,23 @@ MonoBehaviour:
   recruiterPrefab: {fileID: 7711001122334455671, guid: 6622bb33cc44dd55ee66ff778899aa02, type: 3}
   recruits:
   - offer: {fileID: 11400000, guid: d0d1d2d3d4d5d6d7d8d9dadbdcdddedf, type: 2}
-    worldPosition: {x: -2.5, y: -6.5}
+    worldPosition: {x: 5, y: 8}
     spriteTint: {r: 0.85, g: 0.45, b: 0.15, a: 1}
   - offer: {fileID: 11400000, guid: e2f3a4b5c6d748091a2b3c4d5e702010, type: 2}
-    worldPosition: {x: 2.5, y: -7}
+    worldPosition: {x: 6.2, y: 5.8}
     spriteTint: {r: 0.35, g: 0.75, b: 0.95, a: 1}
   - offer: {fileID: 11400000, guid: e3f4a5b6c7d8491a2b3c4d5e70302000, type: 2}
-    worldPosition: {x: 6.5, y: -4.5}
+    worldPosition: {x: 8.6, y: 6.6}
     spriteTint: {r: 0.75, g: 0.78, b: 0.82, a: 1}
   - offer: {fileID: 11400000, guid: e4f5a6b7c8d94a1a2b3c4d5e70403000, type: 2}
-    worldPosition: {x: 11, y: -2}
+    worldPosition: {x: 8, y: 3.4}
     spriteTint: {r: 0.55, g: 0.4, b: 0.9, a: 1}
   - offer: {fileID: 11400000, guid: e5f6a7b8c9da5b1a2b3c4d5e70504000, type: 2}
-    worldPosition: {x: -6, y: -3.5}
+    worldPosition: {x: 9.9, y: 2.7}
     spriteTint: {r: 0.25, g: 0.3, b: 0.35, a: 1}
   - offer: {fileID: 11400000, guid: e6f7a8b9cad06c1a2b3c4d5e70605000, type: 2}
-    worldPosition: {x: 0, y: -9.5}
+    worldPosition: {x: 11, y: -0.9}
     spriteTint: {r: 0.9, g: 0.7, b: 0.35, a: 1}
   - offer: {fileID: 11400000, guid: e7f8a9bacbd17d1a2b3c4d5e70706000, type: 2}
-    worldPosition: {x: 8, y: 1.5}
+    worldPosition: {x: 14.5, y: -3.2}
     spriteTint: {r: 0.6, g: 0.2, b: 0.55, a: 1}
