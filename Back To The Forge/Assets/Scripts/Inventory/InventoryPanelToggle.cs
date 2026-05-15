@@ -1,18 +1,30 @@
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
+/// <summary>
+/// Hold Tab to show inventory in an FF-style panel (same look as pause / main menu).
+/// </summary>
 public class InventoryPanelToggle : MonoBehaviour
 {
     [SerializeField] private InputActionReference inventoryAction;
     [SerializeField] private Inventory inventory;
-    [SerializeField] private GameObject panelRoot;
-    [SerializeField] private TMP_Text inventoryText;
+
+    private UIDocument _document;
+    private VisualElement _overlay;
+    private VisualElement _slotList;
+    private readonly List<string> _slotLineBuffer = new();
 
     private void Awake()
     {
+        DisableLegacyCanvasChildren();
+
         if (inventory == null)
             inventory = FindAnyObjectByType<Inventory>();
+
+        BuildUi();
+        SetOverlayVisible(false);
     }
 
     private void OnEnable()
@@ -21,12 +33,7 @@ public class InventoryPanelToggle : MonoBehaviour
             inventoryAction.action.Enable();
 
         if (inventory != null)
-            inventory.OnChanged += RefreshText;
-
-        if (panelRoot != null)
-            panelRoot.SetActive(false);
-
-        RefreshText();
+            inventory.OnChanged += OnInventoryChanged;
     }
 
     private void OnDisable()
@@ -35,19 +42,71 @@ public class InventoryPanelToggle : MonoBehaviour
             inventoryAction.action.Disable();
 
         if (inventory != null)
-            inventory.OnChanged -= RefreshText;
+            inventory.OnChanged -= OnInventoryChanged;
+
+        SetOverlayVisible(false);
     }
 
     private void Update()
     {
-        if (panelRoot == null || PauseMenuController.IsOpen)
+        if (ShouldForceHide())
+        {
+            SetOverlayVisible(false);
             return;
+        }
 
         var held = IsInventoryHeld();
-        panelRoot.SetActive(held);
+        SetOverlayVisible(held);
 
         if (held)
-            RefreshText();
+            RefreshSlotRows();
+    }
+
+    private bool ShouldForceHide()
+    {
+        return PauseMenuController.IsOpen
+               || SimpleRpgDialogueUI.IsDialogueOpen
+               || ForgeQuestChoiceUI.IsBlockingGameplay;
+    }
+
+    /// <summary>Hides old uGUI panel from <c>InventoryHUD</c> prefab so it is not stuck on screen.</summary>
+    private void DisableLegacyCanvasChildren()
+    {
+        for (var i = transform.childCount - 1; i >= 0; i--)
+        {
+            var child = transform.GetChild(i);
+            if (child != null)
+                child.gameObject.SetActive(false);
+        }
+
+        var canvas = GetComponent<Canvas>();
+        if (canvas != null)
+            canvas.enabled = false;
+
+        var raycaster = GetComponent<UnityEngine.UI.GraphicRaycaster>();
+        if (raycaster != null)
+            raycaster.enabled = false;
+    }
+
+    private void BuildUi()
+    {
+        _document = GetComponent<UIDocument>();
+        if (_document == null)
+            _document = gameObject.AddComponent<UIDocument>();
+
+        FfStyleMenuUi.ConfigureDocument(_document, 4500);
+
+        _overlay = FfStyleMenuUi.BuildInventoryOverlay(
+            _document.rootVisualElement,
+            "Inventory",
+            "Hold Tab",
+            out _slotList);
+    }
+
+    private void OnInventoryChanged()
+    {
+        if (_overlay != null && _overlay.style.display == DisplayStyle.Flex)
+            RefreshSlotRows();
     }
 
     private bool IsInventoryHeld()
@@ -58,29 +117,34 @@ public class InventoryPanelToggle : MonoBehaviour
         return Keyboard.current != null && Keyboard.current.tabKey.isPressed;
     }
 
-    private void RefreshText()
+    private void SetOverlayVisible(bool visible)
     {
-        if (inventoryText == null || inventory == null)
+        if (_overlay != null)
+            _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    private void RefreshSlotRows()
+    {
+        if (_slotList == null || inventory == null)
             return;
 
+        _slotLineBuffer.Clear();
         var slots = inventory.GetSlots();
-        inventoryText.text = string.Empty;
 
         for (var i = 0; i < Inventory.MaxSlots; i++)
         {
-            string line;
             if (i >= slots.Length || slots[i].IsEmpty)
             {
-                line = $"{i + 1}. —";
-            }
-            else
-            {
-                var unitPrice = GetTodaySellPrice(slots[i].item);
-                line = $"{i + 1}. {GetSlotDisplayName(slots[i].item)} x{slots[i].count} ({unitPrice}g)";
+                _slotLineBuffer.Add($"{i + 1}. —");
+                continue;
             }
 
-            inventoryText.text += line + "\n";
+            var unitPrice = GetTodaySellPrice(slots[i].item);
+            var name = GetSlotDisplayName(slots[i].item);
+            _slotLineBuffer.Add($"{i + 1}. {name}  x{slots[i].count}  ({unitPrice}g)");
         }
+
+        FfStyleMenuUi.RefreshInventorySlotRows(_slotList, _slotLineBuffer);
     }
 
     private static int GetTodaySellPrice(ItemDefinition item)

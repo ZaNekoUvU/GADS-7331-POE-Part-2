@@ -208381,7 +208381,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 901020202020202020, guid: c813293a4b5c6d70891a2b3c4d5e6f05, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 901030303030303033, guid: c813293a4b5c6d70891a2b3c4d5e6f05, type: 3}
       propertyPath: m_fontColor32.rgba
