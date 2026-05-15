@@ -7340,6 +7340,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatStarter
   coordinator: {fileID: 65184189}
   defaultEncounterId: 1
+  useLlmBanditEncounterIntro: 1
+  ollamaService: {fileID: 0}
 --- !u!114 &65184192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31827,6 +31829,63 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1001 &290591031
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 9200334455667788001, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_Name
+      value: IronVein
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 33.86
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 92.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
 --- !u!1 &292378520
 GameObject:
   m_ObjectHideFlags: 0
@@ -77268,6 +77327,75 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1001 &609047528
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 9200334455667788001, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_Name
+      value: StoneDeposit (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.8722426
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.76321226
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.36343443
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 5.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 94.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
 --- !u!1 &609595093
 GameObject:
   m_ObjectHideFlags: 0
@@ -235394,6 +235522,75 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1001 &2110781100
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 9200334455667788001, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_Name
+      value: StoneDeposit
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.8722426
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.76321226
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.36343443
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.99
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 39.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
 --- !u!1 &2111698766
 GameObject:
   m_ObjectHideFlags: 0
@@ -239019,6 +239216,8 @@ MonoBehaviour:
   blacksmith: {fileID: 0}
   choiceUi: {fileID: 0}
   dialogueUi: {fileID: 0}
+  useOllamaMercenaryOpening: 1
+  ollamaService: {fileID: 0}
   npcDisplayName: Mercenary
   companionSpeakerOverride: 
   openingLine: "Need muscle? I fight for coin \u2014 fair wage, until tomorrow."
@@ -239758,3 +239957,6 @@ SceneRoots:
   - {fileID: 449206542}
   - {fileID: 485685658}
   - {fileID: 1539110048}
+  - {fileID: 2110781100}
+  - {fileID: 609047528}
+  - {fileID: 290591031}
