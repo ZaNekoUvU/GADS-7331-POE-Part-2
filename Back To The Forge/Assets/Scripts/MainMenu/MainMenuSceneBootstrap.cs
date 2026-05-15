@@ -11,6 +11,11 @@ public static class MainMenuSceneBootstrap
     private static void RegisterPauseMenuTarget()
     {
         PauseMenuController.SetMainMenuScene(MainMenuSceneName);
-        PauseMenuController.ForceCloseAndResetTime();
+
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.IsValid() && scene.name == MainMenuSceneName)
+            PauseMenuController.ForceCloseAndResetTime();
+        else
+            GameplaySessionReset.PrepareForGameplayScene();
     }
 }

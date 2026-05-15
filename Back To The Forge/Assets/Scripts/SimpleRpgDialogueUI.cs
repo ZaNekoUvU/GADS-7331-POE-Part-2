@@ -128,6 +128,15 @@ public class SimpleRpgDialogueUI : MonoBehaviour
         _advanceAllowed = true;
     }
 
+    /// <summary>Closes any open dialogue and clears the static gameplay block flag.</summary>
+    public static void ForceCloseAll()
+    {
+        if (Instance != null)
+            Instance.AbortDialogue();
+        else
+            IsDialogueOpen = false;
+    }
+
     private void ShowInternal(string speaker, string line, bool advanceInitiallyAllowed)
     {
         if (panelRoot == null || speakerLabel == null || lineLabel == null)

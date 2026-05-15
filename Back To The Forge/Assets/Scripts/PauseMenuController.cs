@@ -1,12 +1,14 @@
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 /// <summary>
-/// Full-screen pause overlay (Esc / P). Pauses scaled time, except this script still receives Update.
-/// Auto-creates at runtime; optionally place a duplicate in a scene to configure <see cref="mainMenuSceneName"/> in the inspector.
+/// Full-screen pause overlay (Esc / P). Pauses scaled time; UI matches the main menu (FF-style blue panel).
 /// </summary>
 [DisallowMultipleComponent]
 public class PauseMenuController : MonoBehaviour
@@ -23,9 +25,11 @@ public class PauseMenuController : MonoBehaviour
     [Tooltip("Scene name exactly as in File > Build Settings (e.g. Main Menu).")]
     [SerializeField] private string mainMenuSceneName = DefaultMainMenuSceneName;
 
-    private GameObject _root;
-    private Button _mainMenuButton;
-    private TMP_Text _mainMenuLabel;
+    private UIDocument _document;
+    private VisualElement _overlay;
+    private VisualElement _commandsList;
+    private readonly List<FfStyleMenuUi.MenuRow> _entries = new();
+    private int _selectedIndex;
     private float _timeScaleBeforePause;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -72,7 +76,6 @@ public class PauseMenuController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Only full scene swaps (e.g. main menu → exploration). Skip additive combat loads.
         if (mode != LoadSceneMode.Single)
             return;
 
@@ -84,6 +87,9 @@ public class PauseMenuController : MonoBehaviour
         if (IsNonPausableScene())
             return;
 
+        if (IsOpen)
+            HandleMenuInput();
+
         if (!WasTogglePausePressedThisFrame())
             return;
 
@@ -91,6 +97,23 @@ public class PauseMenuController : MonoBehaviour
             Resume();
         else
             Open();
+    }
+
+    private void HandleMenuInput()
+    {
+        if (_entries.Count == 0)
+            return;
+
+        var kb = Keyboard.current;
+        if (kb == null)
+            return;
+
+        if (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)
+            MoveSelection(-1);
+        else if (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)
+            MoveSelection(1);
+        else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.zKey.wasPressedThisFrame)
+            ActivateSelection();
     }
 
     private static bool IsNonPausableScene()
@@ -113,8 +136,10 @@ public class PauseMenuController : MonoBehaviour
         IsOpen = true;
         _timeScaleBeforePause = Time.timeScale;
         Time.timeScale = 0f;
-        RefreshMainMenuButton();
-        _root.SetActive(true);
+        _selectedIndex = 0;
+        RebuildEntries();
+        RefreshCommands();
+        SetOverlayVisible(true);
     }
 
     private void Resume()
@@ -123,15 +148,17 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         IsOpen = false;
-        Time.timeScale = _timeScaleBeforePause;
-        _root.SetActive(false);
+        Time.timeScale = _timeScaleBeforePause > 0.01f ? _timeScaleBeforePause : 1f;
+        FfStyleMenuUi.ReleaseFocus(_document);
+        SetOverlayVisible(false);
     }
 
     private void RestartCurrentScene()
     {
         Time.timeScale = 1f;
         IsOpen = false;
-        _root.SetActive(false);
+        FfStyleMenuUi.ReleaseFocus(_document);
+        SetOverlayVisible(false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
@@ -141,6 +168,12 @@ public class PauseMenuController : MonoBehaviour
             ? DefaultMainMenuSceneName
             : mainMenuSceneName.Trim();
 
+        if (!Application.CanStreamedLevelBeLoaded(target))
+        {
+            Debug.LogWarning($"{nameof(PauseMenuController)}: Main menu scene '{target}' is not in Build Settings.", this);
+            return;
+        }
+
         ForceCloseAndResetTime();
         SceneManager.LoadScene(target);
     }
@@ -149,7 +182,7 @@ public class PauseMenuController : MonoBehaviour
     {
         Time.timeScale = 1f;
 #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
+        EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
@@ -165,9 +198,8 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         Instance._timeScaleBeforePause = 1f;
-        if (Instance._root != null)
-            Instance._root.SetActive(false);
-        Instance.RefreshMainMenuButton();
+        FfStyleMenuUi.ReleaseFocus(Instance._document);
+        Instance.SetOverlayVisible(false);
     }
 
     /// <summary>Assign main-menu scene at runtime when using the auto-created pause object (no inspector).</summary>
@@ -181,159 +213,91 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         Instance.mainMenuSceneName = _pendingMainMenuSceneName;
-        Instance.RefreshMainMenuButton();
+        if (IsOpen)
+            Instance.RebuildEntries();
+        Instance.RefreshCommands();
     }
 
-    private void RefreshMainMenuButton()
+    private void RebuildEntries()
     {
-        if (_mainMenuButton == null || _mainMenuLabel == null)
-            return;
+        _entries.Clear();
 
-        var target = string.IsNullOrWhiteSpace(mainMenuSceneName)
+        var mainMenuTarget = string.IsNullOrWhiteSpace(mainMenuSceneName)
             ? DefaultMainMenuSceneName
             : mainMenuSceneName.Trim();
-        var configured = Application.CanStreamedLevelBeLoaded(target);
-        _mainMenuButton.interactable = configured;
-        _mainMenuLabel.text = configured ? "Main menu" : "Main menu (add to build)";
-        _mainMenuLabel.color = configured ? Color.white : new Color(0.65f, 0.65f, 0.7f, 1f);
+        var mainMenuAvailable = Application.CanStreamedLevelBeLoaded(mainMenuTarget);
+
+        _entries.Add(new FfStyleMenuUi.MenuRow("Continue", Resume));
+        _entries.Add(new FfStyleMenuUi.MenuRow("Restart", RestartCurrentScene));
+        _entries.Add(new FfStyleMenuUi.MenuRow(
+            mainMenuAvailable ? "Main menu" : "Main menu (add to build)",
+            LoadMainMenu,
+            mainMenuAvailable));
+        _entries.Add(new FfStyleMenuUi.MenuRow("Quit game", QuitApplication));
     }
 
     private void BuildUi()
     {
-        if (_root != null)
+        _document = GetComponent<UIDocument>();
+        if (_document == null)
+            _document = gameObject.AddComponent<UIDocument>();
+
+        FfStyleMenuUi.ConfigureDocument(_document, 6000);
+        _overlay = FfStyleMenuUi.BuildScreen(
+            _document.rootVisualElement,
+            "Back To The Forge",
+            "— Paused —",
+            out _commandsList);
+
+        RebuildEntries();
+        RefreshCommands();
+        SetOverlayVisible(false);
+    }
+
+    private void RefreshCommands()
+    {
+        FfStyleMenuUi.RefreshCommandRows(
+            _commandsList,
+            _entries,
+            _selectedIndex,
+            index => _selectedIndex = index,
+            _ => ActivateSelection());
+    }
+
+    private void MoveSelection(int delta)
+    {
+        if (_entries.Count == 0)
             return;
 
-        var canvasGo = new GameObject("PauseMenuCanvas", typeof(RectTransform));
-        canvasGo.transform.SetParent(transform, false);
+        var next = _selectedIndex;
+        for (var i = 0; i < _entries.Count; i++)
+        {
+            next = (next + delta + _entries.Count) % _entries.Count;
+            if (_entries[next].Enabled)
+                break;
+        }
 
-        var canvas = canvasGo.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 6000;
-
-        var scaler = canvasGo.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
-
-        canvasGo.AddComponent<GraphicRaycaster>();
-
-        _root = new GameObject("PauseRoot", typeof(RectTransform));
-        _root.transform.SetParent(canvasGo.transform, false);
-        var rootRt = _root.GetComponent<RectTransform>();
-        rootRt.anchorMin = Vector2.zero;
-        rootRt.anchorMax = Vector2.one;
-        rootRt.offsetMin = Vector2.zero;
-        rootRt.offsetMax = Vector2.zero;
-
-        var dim = _root.AddComponent<Image>();
-        dim.color = new Color(0f, 0f, 0f, 0.55f);
-        dim.raycastTarget = true;
-
-        var panel = new GameObject("Panel", typeof(RectTransform));
-        panel.transform.SetParent(_root.transform, false);
-        var panelRt = panel.GetComponent<RectTransform>();
-        panelRt.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRt.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRt.pivot = new Vector2(0.5f, 0.5f);
-        panelRt.sizeDelta = new Vector2(440f, 420f);
-
-        var panelBg = panel.AddComponent<Image>();
-        panelBg.color = new Color(0.06f, 0.07f, 0.12f, 0.98f);
-
-        var font = TMP_Settings.defaultFontAsset;
-        if (font == null)
-            font = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
-
-        var titleGo = new GameObject("Title", typeof(RectTransform));
-        titleGo.transform.SetParent(panel.transform, false);
-        var title = titleGo.AddComponent<TextMeshProUGUI>();
-        if (font != null)
-            title.font = font;
-        title.text = "Paused";
-        title.fontSize = 36f;
-        title.fontStyle = FontStyles.Bold;
-        title.color = new Color(1f, 0.93f, 0.6f, 1f);
-        title.alignment = TextAlignmentOptions.Center;
-        var titleRt = title.rectTransform;
-        titleRt.anchorMin = new Vector2(0f, 1f);
-        titleRt.anchorMax = new Vector2(1f, 1f);
-        titleRt.pivot = new Vector2(0.5f, 1f);
-        titleRt.anchoredPosition = new Vector2(0f, -24f);
-        titleRt.sizeDelta = new Vector2(-32f, 48f);
-
-        var hint = CreateTmpLabel(panel.transform, "Esc / P — toggle", font, 16f, new Color(0.75f, 0.76f, 0.8f, 1f));
-        var hintRt = hint.rectTransform;
-        hintRt.anchorMin = new Vector2(0f, 1f);
-        hintRt.anchorMax = new Vector2(1f, 1f);
-        hintRt.pivot = new Vector2(0.5f, 1f);
-        hintRt.anchoredPosition = new Vector2(0f, -76f);
-        hintRt.sizeDelta = new Vector2(-32f, 28f);
-        hint.alignment = TextAlignmentOptions.Center;
-
-        var y = 24f;
-        var spacing = 62f;
-        AddMenuButton(panel.transform, "Continue", font, y, Resume);
-        y -= spacing;
-        AddMenuButton(panel.transform, "Restart", font, y, RestartCurrentScene);
-        y -= spacing;
-        var mm = AddMenuButton(panel.transform, "Main menu", font, y, LoadMainMenu);
-        _mainMenuButton = mm.Item1;
-        _mainMenuLabel = mm.Item2;
-        y -= spacing;
-        AddMenuButton(panel.transform, "Quit game", font, y, QuitApplication);
-
-        RefreshMainMenuButton();
-        _root.SetActive(false);
+        _selectedIndex = next;
+        RefreshCommands();
     }
 
-    private static TextMeshProUGUI CreateTmpLabel(Transform parent, string text, TMP_FontAsset font, float size, Color color)
+    private void ActivateSelection()
     {
-        var go = new GameObject("Label", typeof(RectTransform));
-        go.transform.SetParent(parent, false);
-        var tmp = go.AddComponent<TextMeshProUGUI>();
-        if (font != null)
-            tmp.font = font;
-        tmp.text = text;
-        tmp.fontSize = size;
-        tmp.color = color;
-        tmp.raycastTarget = false;
-        return tmp;
+        if (_selectedIndex < 0 || _selectedIndex >= _entries.Count)
+            return;
+
+        var entry = _entries[_selectedIndex];
+        if (!entry.Enabled)
+            return;
+
+        entry.OnSelect?.Invoke();
     }
 
-    private static (Button, TMP_Text) AddMenuButton(Transform parent, string label, TMP_FontAsset font, float y, UnityEngine.Events.UnityAction onClick)
+    private void SetOverlayVisible(bool visible)
     {
-        var go = new GameObject($"Btn_{label}", typeof(RectTransform));
-        go.transform.SetParent(parent, false);
+        if (_overlay == null)
+            return;
 
-        var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(360f, 52f);
-        rt.anchoredPosition = new Vector2(0f, y);
-
-        var img = go.AddComponent<Image>();
-        img.color = new Color(0.2f, 0.22f, 0.32f, 1f);
-
-        var btn = go.AddComponent<Button>();
-        btn.targetGraphic = img;
-        btn.onClick.AddListener(onClick);
-
-        var tmpGo = new GameObject("Text", typeof(RectTransform));
-        tmpGo.transform.SetParent(go.transform, false);
-        var tmp = tmpGo.AddComponent<TextMeshProUGUI>();
-        if (font != null)
-            tmp.font = font;
-        tmp.text = label;
-        tmp.fontSize = 22f;
-        tmp.color = Color.white;
-        tmp.alignment = TextAlignmentOptions.Center;
-        var trt = tmp.rectTransform;
-        trt.anchorMin = Vector2.zero;
-        trt.anchorMax = Vector2.one;
-        trt.offsetMin = Vector2.zero;
-        trt.offsetMax = Vector2.zero;
-
-        return (btn, tmp);
+        _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 }

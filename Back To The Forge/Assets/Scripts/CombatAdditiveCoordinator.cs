@@ -203,12 +203,12 @@ public class CombatAdditiveCoordinator : MonoBehaviour
 
         var lo = Mathf.Max(1, minDropsOnVictory);
         var hi = Mathf.Max(lo, maxDropsOnVictory);
-        var planned = Random.Range(lo, hi + 1);
+        var planned = UnityEngine.Random.Range(lo, hi + 1);
         var added = 0;
 
         for (var i = 0; i < planned; i++)
         {
-            var item = pool[Random.Range(0, pool.Count)];
+            var item = pool[UnityEngine.Random.Range(0, pool.Count)];
             var overflow = inv.TryAdd(item, 1);
             if (overflow > 0)
             {
@@ -227,13 +227,26 @@ public class CombatAdditiveCoordinator : MonoBehaviour
     private List<ItemDefinition> BuildDropPool()
     {
         var list = new List<ItemDefinition>();
-        if (combatDropPool == null)
+        if (combatDropPool != null)
+        {
+            foreach (var def in combatDropPool)
+            {
+                if (def != null)
+                    list.Add(def);
+            }
+        }
+
+        if (list.Count > 0)
             return list;
 
-        foreach (var def in combatDropPool)
+        var fallback = Resources.Load<CombatVictoryDropPool>("Combat/VictoryDropPool");
+        if (fallback?.Items != null)
         {
-            if (def != null)
-                list.Add(def);
+            foreach (var def in fallback.Items)
+            {
+                if (def != null)
+                    list.Add(def);
+            }
         }
 
         return list;

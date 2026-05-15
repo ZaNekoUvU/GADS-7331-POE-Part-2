@@ -58,6 +58,19 @@ public class ForgeQuestChoiceUI : MonoBehaviour
         return go.AddComponent<ForgeQuestChoiceUI>();
     }
 
+    /// <summary>Hides any choice overlay and clears the static gameplay block flag.</summary>
+    public static void ForceCloseAll()
+    {
+        IsBlockingGameplay = false;
+
+        if (Instance == null)
+            return;
+
+        Instance._picked = null;
+        if (Instance._panel != null)
+            Instance._panel.SetActive(false);
+    }
+
     /// <param name="buttonCText">If null or empty, only two buttons are shown.</param>
     public IEnumerator RunRoutine(string buttonAText, string buttonBText, string buttonCText = null)
     {

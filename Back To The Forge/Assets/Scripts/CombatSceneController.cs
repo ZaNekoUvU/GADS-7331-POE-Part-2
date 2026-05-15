@@ -34,7 +34,7 @@ public class CombatSceneController : MonoBehaviour
 
         yield return op;
 
-        CombatSession.Clear();
+        // CombatSession.Clear() is handled by CombatAdditiveCoordinator.OnSceneUnloaded after victory loot.
         _unloading = false;
     }
 }
