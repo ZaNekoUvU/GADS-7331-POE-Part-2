@@ -1,24 +1,25 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UIElements;
 
 /// <summary>
-/// Shows <see cref="BlacksmithMaster.PlayerGold"/> on a TMP label whenever economy updates (sell, quest roll, etc.).
+/// Shows <see cref="BlacksmithMaster.PlayerGold"/> in an FF-style HUD panel.
 /// </summary>
 public class GoldDisplayUI : MonoBehaviour
 {
-    [Tooltip("Optional; leave empty to use BlacksmithMaster.ResolveEconomy() (same ledger as BlacksmithQuestGiver).")]
+    [Tooltip("Optional; leave empty to use BlacksmithMaster.ResolveEconomy().")]
     [FormerlySerializedAs("blacksmith")]
     [SerializeField] private BlacksmithMaster blacksmithOverride;
-    [SerializeField] private TMP_Text goldLabel;
     [SerializeField] private string format = "Gold: {0}";
 
+    private UIDocument _document;
+    private Label _goldLabel;
     private BlacksmithMaster _subscribed;
 
     private void Awake()
     {
-        if (goldLabel == null)
-            goldLabel = GetComponent<TMP_Text>();
+        BuildUi();
+        Refresh();
     }
 
     private void OnEnable()
@@ -32,6 +33,22 @@ public class GoldDisplayUI : MonoBehaviour
         if (_subscribed != null)
             _subscribed.OnEconomyChanged -= Refresh;
         _subscribed = null;
+    }
+
+    private void BuildUi()
+    {
+        _document = GetComponent<UIDocument>();
+        if (_document == null)
+            _document = gameObject.AddComponent<UIDocument>();
+
+        FfStyleMenuUi.ConfigureDocument(_document, 4000);
+
+        var root = _document.rootVisualElement;
+        root.Clear();
+        root.style.flexGrow = 1f;
+        root.pickingMode = PickingMode.Ignore;
+
+        FfStyleMenuUi.BuildAnchoredHudPanel(root, "gold-panel", 12f, 12f, 140f, out _goldLabel);
     }
 
     private void RebindEconomySubscription()
@@ -50,17 +67,12 @@ public class GoldDisplayUI : MonoBehaviour
 
     private void Refresh()
     {
-        if (goldLabel == null)
+        if (_goldLabel == null)
             return;
 
         RebindEconomySubscription();
 
-        if (_subscribed == null)
-        {
-            goldLabel.text = string.Format(format, 0);
-            return;
-        }
-
-        goldLabel.text = string.Format(format, _subscribed.PlayerGold);
+        var amount = _subscribed != null ? _subscribed.PlayerGold : 0;
+        _goldLabel.text = string.Format(format, amount);
     }
 }

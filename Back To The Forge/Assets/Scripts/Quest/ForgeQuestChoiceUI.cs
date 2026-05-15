@@ -1,10 +1,11 @@
 using System.Collections;
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 /// <summary>
-/// Small overlay: forge quest choices (turn-in, chat, end day, etc.). Auto-built at runtime if missing.
+/// Forge / NPC choice overlay using the same FF-style command list as pause and main menu.
 /// </summary>
 public class ForgeQuestChoiceUI : MonoBehaviour
 {
@@ -14,17 +15,11 @@ public class ForgeQuestChoiceUI : MonoBehaviour
 
     public static bool IsBlockingGameplay { get; private set; }
 
-    private GameObject _panel;
-    private RectTransform _panelRect;
-    private Button _btnA;
-    private Button _btnB;
-    private Button _btnC;
-    private RectTransform _btnARect;
-    private RectTransform _btnBRect;
-    private RectTransform _btnCRect;
-    private TMP_Text _labelA;
-    private TMP_Text _labelB;
-    private TMP_Text _labelC;
+    private UIDocument _document;
+    private VisualElement _overlay;
+    private VisualElement _commandsList;
+    private readonly List<FfStyleMenuUi.MenuRow> _rows = new();
+    private int _selectedIndex;
     private int? _picked;
 
     private void Awake()
@@ -36,7 +31,9 @@ public class ForgeQuestChoiceUI : MonoBehaviour
         }
 
         Instance = this;
-        BuildUiIfNeeded();
+        DontDestroyOnLoad(gameObject);
+        BuildUi();
+        SetOverlayVisible(false);
     }
 
     private void OnDestroy()
@@ -58,7 +55,6 @@ public class ForgeQuestChoiceUI : MonoBehaviour
         return go.AddComponent<ForgeQuestChoiceUI>();
     }
 
-    /// <summary>Hides any choice overlay and clears the static gameplay block flag.</summary>
     public static void ForceCloseAll()
     {
         IsBlockingGameplay = false;
@@ -67,42 +63,33 @@ public class ForgeQuestChoiceUI : MonoBehaviour
             return;
 
         Instance._picked = null;
-        if (Instance._panel != null)
-            Instance._panel.SetActive(false);
+        Instance.SetOverlayVisible(false);
     }
 
-    /// <param name="buttonCText">If null or empty, only two buttons are shown.</param>
     public IEnumerator RunRoutine(string buttonAText, string buttonBText, string buttonCText = null)
     {
-        BuildUiIfNeeded();
+        BuildUi();
         LastChoice = -1;
         _picked = null;
+        _selectedIndex = 0;
 
-        var three = !string.IsNullOrEmpty(buttonCText);
+        _rows.Clear();
+        _rows.Add(new FfStyleMenuUi.MenuRow(buttonAText, () => _picked = 0));
+        _rows.Add(new FfStyleMenuUi.MenuRow(buttonBText, () => _picked = 1));
+        if (!string.IsNullOrEmpty(buttonCText))
+            _rows.Add(new FfStyleMenuUi.MenuRow(buttonCText, () => _picked = 2));
 
-        if (_labelA != null)
-            _labelA.text = buttonAText;
-        if (_labelB != null)
-            _labelB.text = buttonBText;
-        if (_labelC != null)
-            _labelC.text = three && buttonCText != null ? buttonCText : string.Empty;
-
-        ApplyChoiceLayout(three);
-
+        RefreshCommands();
         IsBlockingGameplay = true;
 
         try
         {
-            if (_panel != null)
-                _panel.SetActive(true);
-
+            SetOverlayVisible(true);
             yield return new WaitUntil(() => _picked.HasValue);
 
             LastChoice = _picked.Value;
             _picked = null;
-
-            if (_panel != null)
-                _panel.SetActive(false);
+            SetOverlayVisible(false);
         }
         finally
         {
@@ -110,117 +97,78 @@ public class ForgeQuestChoiceUI : MonoBehaviour
         }
     }
 
-    private void ApplyChoiceLayout(bool threeButtons)
+    private void Update()
     {
-        if (_panelRect == null)
+        if (!IsBlockingGameplay || _overlay == null || _overlay.style.display == DisplayStyle.None)
             return;
 
-        _panelRect.sizeDelta = new Vector2(520f, threeButtons ? 300f : 200f);
+        var kb = Keyboard.current;
+        if (kb == null)
+            return;
 
-        if (_btnC != null)
-            _btnC.gameObject.SetActive(threeButtons);
-
-        if (_btnARect != null)
-            _btnARect.anchoredPosition = threeButtons ? new Vector2(0f, 92f) : new Vector2(0f, 40f);
-        if (_btnBRect != null)
-            _btnBRect.anchoredPosition = threeButtons ? new Vector2(0f, 0f) : new Vector2(0f, -50f);
-        if (_btnCRect != null && threeButtons)
-            _btnCRect.anchoredPosition = new Vector2(0f, -92f);
+        if (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)
+            MoveSelection(-1);
+        else if (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)
+            MoveSelection(1);
+        else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.zKey.wasPressedThisFrame)
+            ActivateSelection();
     }
 
-    private void BuildUiIfNeeded()
+    private void BuildUi()
     {
-        if (_panel != null && _btnC != null)
+        _document = GetComponent<UIDocument>();
+        if (_document == null)
+            _document = gameObject.AddComponent<UIDocument>();
+
+        FfStyleMenuUi.ConfigureDocument(_document, 5500);
+        _overlay = FfStyleMenuUi.BuildChoiceOverlay(
+            _document.rootVisualElement,
+            "— Choose —",
+            out _commandsList);
+    }
+
+    private void RefreshCommands()
+    {
+        FfStyleMenuUi.RefreshCommandRows(
+            _commandsList,
+            _rows,
+            _selectedIndex,
+            index => _selectedIndex = index,
+            _ => ActivateSelection());
+    }
+
+    private void MoveSelection(int delta)
+    {
+        if (_rows.Count == 0)
             return;
 
-        if (_panel != null)
+        var next = _selectedIndex;
+        for (var i = 0; i < _rows.Count; i++)
         {
-            var canvasRoot = _panel.transform.parent != null ? _panel.transform.parent.gameObject : _panel;
-            Destroy(canvasRoot);
-            _panel = null;
-            _panelRect = null;
-            _btnA = null;
-            _btnB = null;
-            _btnC = null;
-            _btnARect = null;
-            _btnBRect = null;
-            _btnCRect = null;
-            _labelA = null;
-            _labelB = null;
-            _labelC = null;
+            next = (next + delta + _rows.Count) % _rows.Count;
+            if (_rows[next].Enabled)
+                break;
         }
 
-        var canvasGo = new GameObject("ForgeQuestChoiceCanvas", typeof(RectTransform));
-        canvasGo.transform.SetParent(transform, false);
-        var canvas = canvasGo.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 5500;
-        var scaler = canvasGo.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
-        canvasGo.AddComponent<GraphicRaycaster>();
-
-        _panel = new GameObject("ChoicePanel", typeof(RectTransform));
-        _panel.transform.SetParent(canvasGo.transform, false);
-        _panelRect = _panel.GetComponent<RectTransform>();
-        _panelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        _panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        _panelRect.pivot = new Vector2(0.5f, 0.5f);
-        _panelRect.sizeDelta = new Vector2(520f, 200f);
-        _panelRect.anchoredPosition = new Vector2(0f, 40f);
-
-        var bg = _panel.AddComponent<Image>();
-        bg.color = new Color(0.08f, 0.08f, 0.15f, 0.96f);
-
-        _btnA = CreateButton(_panel.transform, "BtnA", new Vector2(0f, 40f), out _labelA, out _btnARect);
-        _btnB = CreateButton(_panel.transform, "BtnB", new Vector2(0f, -50f), out _labelB, out _btnBRect);
-        _btnC = CreateButton(_panel.transform, "BtnC", new Vector2(0f, -92f), out _labelC, out _btnCRect);
-        _btnC.gameObject.SetActive(false);
-
-        _btnA.onClick.AddListener(() => { _picked = 0; });
-        _btnB.onClick.AddListener(() => { _picked = 1; });
-        _btnC.onClick.AddListener(() => { _picked = 2; });
-
-        _panel.SetActive(false);
+        _selectedIndex = next;
+        RefreshCommands();
     }
 
-    private static Button CreateButton(Transform parent, string name, Vector2 anchoredPos, out TMP_Text tmp, out RectTransform buttonRt)
+    private void ActivateSelection()
     {
-        var go = new GameObject(name, typeof(RectTransform));
-        go.transform.SetParent(parent, false);
+        if (_selectedIndex < 0 || _selectedIndex >= _rows.Count)
+            return;
 
-        buttonRt = go.GetComponent<RectTransform>();
-        buttonRt.anchorMin = new Vector2(0.5f, 0.5f);
-        buttonRt.anchorMax = new Vector2(0.5f, 0.5f);
-        buttonRt.pivot = new Vector2(0.5f, 0.5f);
-        buttonRt.sizeDelta = new Vector2(460f, 56f);
-        buttonRt.anchoredPosition = anchoredPos;
+        var row = _rows[_selectedIndex];
+        if (!row.Enabled)
+            return;
 
-        var img = go.AddComponent<Image>();
-        img.color = new Color(0.2f, 0.22f, 0.32f, 1f);
+        row.OnSelect?.Invoke();
+    }
 
-        var btn = go.AddComponent<Button>();
-        btn.targetGraphic = img;
-
-        var textGo = new GameObject("Label", typeof(RectTransform));
-        textGo.transform.SetParent(go.transform, false);
-        tmp = textGo.AddComponent<TextMeshProUGUI>();
-        tmp.fontSize = 22f;
-        tmp.color = Color.white;
-        tmp.alignment = TextAlignmentOptions.Center;
-        var trt = tmp.rectTransform;
-        trt.anchorMin = Vector2.zero;
-        trt.anchorMax = Vector2.one;
-        trt.offsetMin = Vector2.zero;
-        trt.offsetMax = Vector2.zero;
-
-        var font = TMP_Settings.defaultFontAsset;
-        if (font == null)
-            font = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
-        if (font != null)
-            tmp.font = font;
-
-        return btn;
+    private void SetOverlayVisible(bool visible)
+    {
+        if (_overlay != null)
+            _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 }

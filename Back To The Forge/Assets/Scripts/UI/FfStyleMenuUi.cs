@@ -188,6 +188,234 @@ public static class FfStyleMenuUi
         label.style.unityFontStyleAndWeight = bold ? FontStyle.Bold : FontStyle.Normal;
     }
 
+    /// <summary>Bottom dialogue box matching menu panels (speaker + body).</summary>
+    public static VisualElement BuildDialoguePanel(
+        VisualElement documentRoot,
+        out Label speakerLabel,
+        out Label lineLabel)
+    {
+        documentRoot.Clear();
+        documentRoot.style.flexGrow = 1f;
+        documentRoot.pickingMode = PickingMode.Ignore;
+
+        var styleSheet = Resources.Load<StyleSheet>(StyleSheetResource);
+        if (styleSheet != null)
+            documentRoot.styleSheets.Add(styleSheet);
+
+        var host = new VisualElement { name = "dialogue-host" };
+        host.style.position = Position.Absolute;
+        host.style.left = 0;
+        host.style.right = 0;
+        host.style.bottom = 0;
+        host.style.paddingLeft = 16;
+        host.style.paddingRight = 16;
+        host.style.paddingBottom = 20;
+        host.style.paddingTop = 0;
+        host.pickingMode = PickingMode.Ignore;
+        documentRoot.Add(host);
+
+        var panel = new VisualElement { name = "dialogue-panel" };
+        panel.AddToClassList("hud-panel");
+        panel.style.flexGrow = 0f;
+        panel.style.flexShrink = 0f;
+        panel.style.minHeight = 120;
+        panel.style.paddingTop = 12;
+        panel.style.paddingBottom = 12;
+        panel.style.paddingLeft = 16;
+        panel.style.paddingRight = 16;
+        host.Add(panel);
+
+        speakerLabel = new Label { name = "dialogue-speaker" };
+        ApplyLabelStyle(speakerLabel, 18f, true, SubtitleColor);
+        speakerLabel.style.marginBottom = 8;
+        panel.Add(speakerLabel);
+
+        lineLabel = new Label { name = "dialogue-line" };
+        ApplyLabelStyle(lineLabel, 16f, false);
+        lineLabel.style.whiteSpace = WhiteSpace.Normal;
+        panel.Add(lineLabel);
+
+        return host;
+    }
+
+    /// <summary>Small anchored HUD panel (gold, inventory, etc.).</summary>
+    public static VisualElement BuildAnchoredHudPanel(
+        VisualElement documentRoot,
+        string elementName,
+        float top,
+        float right,
+        float minWidth,
+        out Label contentLabel)
+    {
+        AttachStyleSheet(documentRoot);
+
+        var panel = new VisualElement { name = elementName };
+        panel.AddToClassList("hud-panel");
+        panel.style.position = Position.Absolute;
+        panel.style.top = top;
+        panel.style.right = right;
+        panel.style.minWidth = minWidth;
+        panel.style.paddingTop = 8;
+        panel.style.paddingBottom = 8;
+        panel.style.paddingLeft = 12;
+        panel.style.paddingRight = 12;
+        panel.pickingMode = PickingMode.Ignore;
+        documentRoot.Add(panel);
+
+        contentLabel = new Label();
+        ApplyLabelStyle(contentLabel, 15f, true);
+        contentLabel.style.whiteSpace = WhiteSpace.Normal;
+        panel.Add(contentLabel);
+
+        return panel;
+    }
+
+    /// <summary>Centered command menu without title (forge choices, etc.).</summary>
+    public static VisualElement BuildChoiceOverlay(
+        VisualElement documentRoot,
+        string subtitle,
+        out VisualElement commandsList)
+    {
+        documentRoot.Clear();
+        documentRoot.style.flexGrow = 1f;
+        documentRoot.pickingMode = PickingMode.Position;
+
+        AttachStyleSheet(documentRoot);
+
+        var overlay = new VisualElement { name = "choice-overlay" };
+        overlay.style.flexGrow = 1f;
+        overlay.style.justifyContent = Justify.Center;
+        overlay.style.alignItems = Align.Center;
+        overlay.style.backgroundColor = new Color(0f, 0f, 0f, 0.2f);
+        overlay.pickingMode = PickingMode.Position;
+        documentRoot.Add(overlay);
+
+        var panel = new VisualElement { name = "choice-panel" };
+        panel.AddToClassList("hud-panel");
+        panel.style.minWidth = 300;
+        panel.style.maxWidth = 420;
+        panel.style.paddingTop = 14;
+        panel.style.paddingBottom = 14;
+        panel.style.paddingLeft = 18;
+        panel.style.paddingRight = 18;
+        overlay.Add(panel);
+
+        if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            var subtitleLabel = new Label(subtitle);
+            ApplyLabelStyle(subtitleLabel, 13f, false, SubtitleColor);
+            subtitleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            subtitleLabel.style.marginBottom = 10;
+            panel.Add(subtitleLabel);
+        }
+
+        commandsList = new VisualElement { name = "commands-list" };
+        commandsList.AddToClassList("command-list");
+        commandsList.pickingMode = PickingMode.Position;
+        panel.Add(commandsList);
+
+        return overlay;
+    }
+
+    /// <summary>Left-bottom inventory panel matching main / pause menus.</summary>
+    public static VisualElement BuildInventoryOverlay(
+        VisualElement documentRoot,
+        string title,
+        string subtitle,
+        out VisualElement slotList)
+    {
+        documentRoot.Clear();
+        documentRoot.style.flexGrow = 1f;
+        documentRoot.pickingMode = PickingMode.Ignore;
+
+        AttachStyleSheet(documentRoot);
+
+        var overlay = new VisualElement { name = "inventory-overlay" };
+        overlay.style.flexGrow = 1f;
+        overlay.style.justifyContent = Justify.FlexEnd;
+        overlay.style.alignItems = Align.FlexStart;
+        overlay.style.paddingLeft = 20;
+        overlay.style.paddingBottom = 24;
+        overlay.style.backgroundColor = new Color(0f, 0f, 0f, 0.15f);
+        overlay.pickingMode = PickingMode.Ignore;
+        documentRoot.Add(overlay);
+
+        var panel = new VisualElement { name = "inventory-panel" };
+        panel.AddToClassList("hud-panel");
+        panel.style.minWidth = 280;
+        panel.style.maxWidth = 400;
+        panel.style.paddingTop = 14;
+        panel.style.paddingBottom = 14;
+        panel.style.paddingLeft = 16;
+        panel.style.paddingRight = 16;
+        overlay.Add(panel);
+
+        var titleLabel = new Label(title);
+        titleLabel.name = "inventory-title";
+        ApplyLabelStyle(titleLabel, 20f, true);
+        titleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+        titleLabel.style.marginBottom = 6;
+        panel.Add(titleLabel);
+
+        var subtitleLabel = new Label(subtitle);
+        subtitleLabel.name = "inventory-subtitle";
+        ApplyLabelStyle(subtitleLabel, 12f, false, SubtitleColor);
+        subtitleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+        subtitleLabel.style.marginBottom = 10;
+        panel.Add(subtitleLabel);
+
+        slotList = new VisualElement { name = "inventory-slots" };
+        slotList.AddToClassList("command-list");
+        slotList.pickingMode = PickingMode.Ignore;
+        panel.Add(slotList);
+
+        return overlay;
+    }
+
+    public static void RefreshInventorySlotRows(VisualElement slotList, IReadOnlyList<string> slotLines)
+    {
+        if (slotList == null)
+            return;
+
+        slotList.Clear();
+
+        if (slotLines == null || slotLines.Count == 0)
+            return;
+
+        for (var i = 0; i < slotLines.Count; i++)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("command-row");
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.Center;
+            row.style.minHeight = 22;
+            row.pickingMode = PickingMode.Ignore;
+
+            var cursor = new Label("\u00a0");
+            cursor.AddToClassList("command-cursor");
+            cursor.style.width = 18;
+            cursor.style.visibility = Visibility.Hidden;
+            row.Add(cursor);
+
+            var label = new Label(slotLines[i]);
+            label.AddToClassList("command-label");
+            ApplyLabelStyle(label, 15f, true);
+            row.Add(label);
+
+            slotList.Add(row);
+        }
+    }
+
+    public static void AttachStyleSheet(VisualElement root)
+    {
+        if (root == null)
+            return;
+
+        var styleSheet = Resources.Load<StyleSheet>(StyleSheetResource);
+        if (styleSheet != null && !root.styleSheets.Contains(styleSheet))
+            root.styleSheets.Add(styleSheet);
+    }
+
     public static void ReleaseFocus(UIDocument document)
     {
         if (document == null)
