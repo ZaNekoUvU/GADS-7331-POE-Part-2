@@ -31841,6 +31841,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: IronVein
       objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788002, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9200334455667788991, guid: b913293a4b5c6d70891a2b3c4d5e6f03, type: 3}
       propertyPath: m_LocalPosition.x
       value: 33.86
@@ -79210,6 +79214,10 @@ PrefabInstance:
     - target: {fileID: 9200334455667788001, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
       propertyPath: m_Name
       value: StoneDeposit (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788002, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
       propertyPath: m_LocalScale.x
@@ -237405,6 +237413,10 @@ PrefabInstance:
     - target: {fileID: 9200334455667788001, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
       propertyPath: m_Name
       value: StoneDeposit
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200334455667788002, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9200334455667788991, guid: b708293a4b5c6d7e8091a2b3c4d5e612, type: 3}
       propertyPath: m_LocalScale.x
