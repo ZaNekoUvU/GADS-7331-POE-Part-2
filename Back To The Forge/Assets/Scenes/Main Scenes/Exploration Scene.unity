@@ -141312,6 +141312,11 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1441615424 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 836394787678868948, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
+  m_PrefabInstance: {fileID: 5750654058794944660}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1442083907
 GameObject:
   m_ObjectHideFlags: 0
@@ -169423,12 +169428,46 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 881102030405060708, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
   m_PrefabInstance: {fileID: 5750654058794944660}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1441615424}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2c3d4e5f60718293a4b5c6d7e8f9012, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
+--- !u!95 &1733526240
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1441615424}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2f26227641b23f14d87f5b6e7f348c29, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1733526241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1441615424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bb44b578c605914fb8b23005afd249a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimator2D
 --- !u!1 &1733588868
 GameObject:
   m_ObjectHideFlags: 0
@@ -207791,52 +207830,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!1 &5012345200
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5012345201}
-  - component: {fileID: 5012345202}
-  m_Layer: 0
-  m_Name: MercenaryCamp
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5012345201
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5012345200}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5012345202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5012345200}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2c3d4e5f6a748091a2b3c4d5e6f70a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MercenaryCampSpawner
-  catalog: {fileID: 11400000, guid: c9dae0b1c2d3e4f5a6b7c8d9e0f1a2b3, type: 2}
-  recruiterPrefab: {fileID: 0}
 --- !u!1 &5012345000
 GameObject:
   m_ObjectHideFlags: 0
@@ -207929,6 +207922,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   offer: {fileID: 11400000, guid: d0d1d2d3d4d5d6d7d8d9dadbdcdddedf, type: 2}
+  autoAssignPartySlot: 1
   partySlotIndex: 0
   blacksmith: {fileID: 0}
   choiceUi: {fileID: 0}
@@ -207988,6 +207982,52 @@ MonoBehaviour:
   player: {fileID: 0}
   unitPrefabRegistry: {fileID: 11400000, guid: 777788889999000011112222333344aa, type: 2}
   companionParent: {fileID: 0}
+--- !u!1 &5012345200
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5012345201}
+  - component: {fileID: 5012345202}
+  m_Layer: 0
+  m_Name: MercenaryCamp
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5012345201
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5012345200}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5012345202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5012345200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c3d4e5f6a748091a2b3c4d5e6f70a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MercenaryCampSpawner
+  catalog: {fileID: 11400000, guid: c9dae0b1c2d3e4f5a6b7c8d9e0f1a2b3, type: 2}
+  recruiterPrefab: {fileID: 0}
 --- !u!1001 &4244286202594503442
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -208128,6 +208168,10 @@ PrefabInstance:
       propertyPath: interactAction
       value: 
       objectReference: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    - target: {fileID: 6023662777486380595, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3600299246869568964, guid: 2d6720b9690977648a7acf105fa73316, type: 3}
     - target: {fileID: 9155727358556536795, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 10.5
@@ -208171,7 +208215,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 836394787678868948, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1733526241}
+    - targetCorrespondingSourceObject: {fileID: 836394787678868948, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1733526240}
   m_SourcePrefab: {fileID: 100100000, guid: afd3e3bdca7b9c94293181737ce6798c, type: 3}
 --- !u!1001 &7213663800928611500
 PrefabInstance:
@@ -208311,6 +208361,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Blacksmith
       objectReference: {fileID: 0}
+    - target: {fileID: 5109736313311348546, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 2514407213013589476, guid: 6a6be86fb1dde28498269b518cd01256, type: 3}
+    - target: {fileID: 5109736313311348546, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5109736313311348546, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5109736313311348546, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5158849962728822010, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
       propertyPath: ollamaService
       value: 
@@ -208322,6 +208388,18 @@ PrefabInstance:
     - target: {fileID: 6253491418183829155, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7285118274095268288, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.274
+      objectReference: {fileID: 0}
+    - target: {fileID: 7285118274095268288, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.274
+      objectReference: {fileID: 0}
+    - target: {fileID: 7285118274095268288, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.274
       objectReference: {fileID: 0}
     - target: {fileID: 7285118274095268288, guid: 37116090480e2264a99bb8b9f769c3bc, type: 3}
       propertyPath: m_LocalPosition.x
