@@ -11,13 +11,17 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class PauseMenuController : MonoBehaviour
 {
+    public const string DefaultMainMenuSceneName = "Main Menu";
+
     public static PauseMenuController Instance { get; private set; }
 
     /// <summary>True while the pause overlay is visible and scaled time is frozen.</summary>
     public static bool IsOpen { get; private set; }
 
-    [Tooltip("Scene name exactly as in File > Build Settings (e.g. MainMenu). Leave empty to disable the main menu button until you add a menu scene.")]
-    [SerializeField] private string mainMenuSceneName;
+    private static string _pendingMainMenuSceneName = DefaultMainMenuSceneName;
+
+    [Tooltip("Scene name exactly as in File > Build Settings (e.g. Main Menu).")]
+    [SerializeField] private string mainMenuSceneName = DefaultMainMenuSceneName;
 
     private GameObject _root;
     private Button _mainMenuButton;
@@ -44,11 +48,18 @@ public class PauseMenuController : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        if (!string.IsNullOrWhiteSpace(_pendingMainMenuSceneName))
+            mainMenuSceneName = _pendingMainMenuSceneName.Trim();
+
         BuildUi();
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDestroy()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
         if (Instance != this)
             return;
 
@@ -59,8 +70,20 @@ public class PauseMenuController : MonoBehaviour
         IsOpen = false;
     }
 
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Only full scene swaps (e.g. main menu → exploration). Skip additive combat loads.
+        if (mode != LoadSceneMode.Single)
+            return;
+
+        ForceCloseAndResetTime();
+    }
+
     private void Update()
     {
+        if (IsNonPausableScene())
+            return;
+
         if (!WasTogglePausePressedThisFrame())
             return;
 
@@ -68,6 +91,12 @@ public class PauseMenuController : MonoBehaviour
             Resume();
         else
             Open();
+    }
+
+    private static bool IsNonPausableScene()
+    {
+        var scene = SceneManager.GetActiveScene();
+        return scene.IsValid() && scene.name == DefaultMainMenuSceneName;
     }
 
     private static bool WasTogglePausePressedThisFrame()
@@ -108,16 +137,12 @@ public class PauseMenuController : MonoBehaviour
 
     private void LoadMainMenu()
     {
-        if (string.IsNullOrWhiteSpace(mainMenuSceneName))
-        {
-            Debug.LogWarning($"{nameof(PauseMenuController)}: Assign {nameof(mainMenuSceneName)} (and add that scene to Build Settings) before using main menu.", this);
-            return;
-        }
+        var target = string.IsNullOrWhiteSpace(mainMenuSceneName)
+            ? DefaultMainMenuSceneName
+            : mainMenuSceneName.Trim();
 
-        Time.timeScale = 1f;
-        IsOpen = false;
-        _root.SetActive(false);
-        SceneManager.LoadScene(mainMenuSceneName.Trim());
+        ForceCloseAndResetTime();
+        SceneManager.LoadScene(target);
     }
 
     private static void QuitApplication()
@@ -130,13 +155,32 @@ public class PauseMenuController : MonoBehaviour
 #endif
     }
 
-    /// <summary>Assign main-menu scene at runtime when using the auto-created pause object (no inspector).</summary>
-    public static void SetMainMenuScene(string sceneName)
+    /// <summary>Closes pause UI and restores gameplay time (call before loading another scene).</summary>
+    public static void ForceCloseAndResetTime()
     {
+        IsOpen = false;
+        Time.timeScale = 1f;
+
         if (Instance == null)
             return;
 
-        Instance.mainMenuSceneName = string.IsNullOrWhiteSpace(sceneName) ? string.Empty : sceneName.Trim();
+        Instance._timeScaleBeforePause = 1f;
+        if (Instance._root != null)
+            Instance._root.SetActive(false);
+        Instance.RefreshMainMenuButton();
+    }
+
+    /// <summary>Assign main-menu scene at runtime when using the auto-created pause object (no inspector).</summary>
+    public static void SetMainMenuScene(string sceneName)
+    {
+        _pendingMainMenuSceneName = string.IsNullOrWhiteSpace(sceneName)
+            ? DefaultMainMenuSceneName
+            : sceneName.Trim();
+
+        if (Instance == null)
+            return;
+
+        Instance.mainMenuSceneName = _pendingMainMenuSceneName;
         Instance.RefreshMainMenuButton();
     }
 
@@ -145,9 +189,12 @@ public class PauseMenuController : MonoBehaviour
         if (_mainMenuButton == null || _mainMenuLabel == null)
             return;
 
-        var configured = !string.IsNullOrWhiteSpace(mainMenuSceneName);
+        var target = string.IsNullOrWhiteSpace(mainMenuSceneName)
+            ? DefaultMainMenuSceneName
+            : mainMenuSceneName.Trim();
+        var configured = Application.CanStreamedLevelBeLoaded(target);
         _mainMenuButton.interactable = configured;
-        _mainMenuLabel.text = configured ? "Main menu" : "Main menu (set scene)";
+        _mainMenuLabel.text = configured ? "Main menu" : "Main menu (add to build)";
         _mainMenuLabel.color = configured ? Color.white : new Color(0.65f, 0.65f, 0.7f, 1f);
     }
 

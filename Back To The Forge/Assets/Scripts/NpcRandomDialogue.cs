@@ -29,8 +29,7 @@ public class NpcRandomDialogue : MonoBehaviour
     private void Awake()
     {
         _collider2D = GetComponent<Collider2D>();
-        if (_collider2D != null && !_collider2D.isTrigger)
-            Debug.LogWarning($"{nameof(NpcRandomDialogue)}: Collider on '{name}' should be a trigger for range detection.", this);
+        Collider2DTriggerUtil.WarnIfNoTalkTrigger(gameObject, nameof(NpcRandomDialogue));
     }
 
     private void OnEnable()

@@ -158,7 +158,7 @@ public class CombatUnitSpawner : MonoBehaviour
                 continue;
             }
 
-            var isPlayer = i == 0 && id == CombatSession.PlayerUnitId;
+            var isPlayer = i == 0;
             var unit = SpawnUnit(prefab, anchor, def, moveRegistry, true, isPlayer, i);
             if (unit != null)
                 _allies.Add(unit);

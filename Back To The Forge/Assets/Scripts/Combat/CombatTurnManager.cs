@@ -1,27 +1,55 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Turn order: all living allies in party order (player then companions), then all enemies. Each ally uses Basic Attack when active; enemies act automatically.
-/// Extend later with speed stats or initiative.
+/// Turn order: living allies that spawned (hero, then companions), then enemies. Empty companion slots are omitted.
 /// </summary>
 [DefaultExecutionOrder(-40)]
 public class CombatTurnManager : MonoBehaviour
 {
+    public const int MoveIdStrike = 100;
+    public const int MoveIdPowerStrike = 101;
+
+    public const int PlayerMaxMana = CombatUnit.HeroMaxMana;
+    public const int PowerStrikeManaCost = 10;
+    public const int PlayerManaRegenPerTurn = 2;
+
     [SerializeField] private CombatUnitSpawner spawner;
 
-    [Tooltip("Real-time wait before an enemy uses Basic Attack (exploration may use timeScale 0).")]
-    [SerializeField] private float enemyAttackDelaySeconds = 1f;
+    [Tooltip("Real-time wait before a companion or enemy uses an attack (exploration may use timeScale 0).")]
+    [SerializeField] private float autoAttackDelaySeconds = 1f;
+
+    [Tooltip("Chance to escape combat when the player chooses Flee (0.3 = 30%).")]
+    [SerializeField] [Range(0f, 1f)] private float fleeSuccessChance = 0.3f;
 
     private CombatSceneController _sceneController;
 
     private readonly List<CombatUnit> _order = new();
     private int _turnIndex;
-    private bool _enemyTurnRoutineActive;
+    private bool _autoTurnRoutineActive;
 
     public CombatUnit CurrentActor =>
         _order.Count > 0 && _turnIndex >= 0 && _turnIndex < _order.Count ? _order[_turnIndex] : null;
+
+    public bool IsAutoTurnRoutineActive => _autoTurnRoutineActive;
+
+    /// <summary>True when it is the player hero's turn and they may pick a command.</summary>
+    public bool IsAwaitingPlayerCommand
+    {
+        get
+        {
+            if (_autoTurnRoutineActive)
+                return false;
+
+            return IsPlayerCommandActor(CurrentActor);
+        }
+    }
+
+    public bool IsAwaitingAllyCommand => IsAwaitingPlayerCommand;
+
+    public event Action TurnChanged;
 
     private void OnEnable()
     {
@@ -50,6 +78,12 @@ public class CombatTurnManager : MonoBehaviour
 
         if (_order.Count == 0)
             _turnIndex = -1;
+
+        if (IsPlayerCommandActor(CurrentActor))
+            _autoTurnRoutineActive = false;
+
+        NotifyTurnChanged();
+        TryScheduleAutoTurn();
     }
 
     private void Start()
@@ -60,72 +94,218 @@ public class CombatTurnManager : MonoBehaviour
         _sceneController = FindAnyObjectByType<CombatSceneController>();
 
         BuildTurnOrder();
+        _autoTurnRoutineActive = false;
         LogTurnState();
-        TryScheduleEnemyTurn();
+        NotifyTurnChanged();
+        TryScheduleAutoTurn();
     }
 
     private void OnDestroy()
     {
         StopAllCoroutines();
-        _enemyTurnRoutineActive = false;
+        _autoTurnRoutineActive = false;
     }
 
-    /// <summary>
-    /// Allies only: performs Basic Attack then advances. Enemies act automatically after a delay.
-    /// </summary>
     public void OnBasicAttackButtonPressed()
     {
-        var actor = CurrentActor;
-        if (actor == null || !actor.IsAlive)
+        var target = GetFirstLivingOpponentFor(CurrentActor);
+        if (target != null)
+            PerformPlayerStrike(target, MoveIdStrike);
+    }
+
+    /// <summary>30% chance to leave combat; on failure the hero takes a hit and the turn ends.</summary>
+    public void TryFlee()
+    {
+        if (!IsAwaitingPlayerCommand)
+            return;
+
+        var hero = GetPlayerHero();
+        if (hero == null || !hero.IsAlive)
+            return;
+
+        if (UnityEngine.Random.value < fleeSuccessChance)
         {
-            Debug.LogWarning("[Combat] Basic Attack: no active fighter.", this);
+            Debug.Log("[Combat] Flee succeeded — leaving combat.", this);
+            EndCombatAfterFlee();
             return;
         }
 
-        if (!actor.IsAlly)
-            return;
+        var attacker = GetFirstLivingOpponentFor(hero);
+        var dmg = attacker != null
+            ? attacker.GetStrikeDamageForMove(MoveIdStrike)
+            : Mathf.Max(1, hero.MaxHp / 10);
 
-        var victory = PerformBasicAttackAndAdvanceTurn();
-        if (!victory)
-            TryScheduleEnemyTurn();
+        Debug.Log($"[Combat] Flee failed! {hero.gameObject.name} takes {dmg} damage.", this);
+        hero.TakeDamage(dmg);
+
+        if (hero.IsAlive && !TryEndCombatIfAllEnemiesDefeated())
+            FinishTurnAfterAction();
     }
 
-    /// <summary>If the current fighter is an enemy, wait <see cref="enemyAttackDelaySeconds"/> then Basic Attack and advance.</summary>
-    private void TryScheduleEnemyTurn()
+    public void PerformPlayerStrike(CombatUnit target, int moveId)
     {
-        if (_enemyTurnRoutineActive)
+        if (!IsAwaitingPlayerCommand)
+            return;
+
+        var player = CurrentActor;
+        if (!IsPlayerCommandActor(player))
+            return;
+
+        if (!CanActorUseMove(player, moveId))
+            return;
+
+        if (!TryStrike(player, target, moveId, out var victory))
+            return;
+
+        if (!victory)
+            FinishTurnAfterAction();
+    }
+
+    public CombatUnit GetPlayerHero()
+    {
+        if (spawner == null)
+            return null;
+
+        foreach (var ally in spawner.SpawnedAllies)
+        {
+            if (IsPlayerCommandActor(ally))
+                return ally;
+        }
+
+        return null;
+    }
+
+    public bool CanPlayerUsePowerStrike()
+    {
+        var hero = GetPlayerHero();
+        return hero != null && hero.IsAlive && hero.CanSpendMana(PowerStrikeManaCost);
+    }
+
+    public bool CanActorUseMove(CombatUnit actor, int moveId)
+    {
+        if (actor == null || !actor.IsAlive)
+            return false;
+
+        if (moveId == MoveIdPowerStrike)
+        {
+            if (!IsPlayerCommandActor(actor))
+                return false;
+
+            return actor.CanSpendMana(PowerStrikeManaCost);
+        }
+
+        return moveId == MoveIdStrike || moveId <= 0;
+    }
+
+    public IReadOnlyList<CombatUnit> GetLivingOpponentsFor(CombatUnit actor)
+    {
+        var list = new List<CombatUnit>();
+        if (actor == null || spawner == null)
+            return list;
+
+        if (actor.IsAlly)
+        {
+            foreach (var e in spawner.SpawnedEnemies)
+            {
+                if (e != null && e.IsAlive)
+                    list.Add(e);
+            }
+        }
+        else
+        {
+            foreach (var a in spawner.SpawnedAllies)
+            {
+                if (a != null && a.IsAlive)
+                    list.Add(a);
+            }
+        }
+
+        return list;
+    }
+
+    public CombatUnit GetFirstLivingOpponentFor(CombatUnit actor)
+    {
+        var opponents = GetLivingOpponentsFor(actor);
+        return opponents.Count > 0 ? opponents[0] : null;
+    }
+
+    /// <summary>Party leader in ally slot 0 — receives menu commands.</summary>
+    public bool IsPlayerCommandActor(CombatUnit unit)
+    {
+        if (unit == null || !unit.IsAlive || !unit.IsAlly)
+            return false;
+
+        if (unit.IsPlayerCharacter)
+            return true;
+
+        if (spawner != null && spawner.SpawnedAllies.Count > 0)
+            return spawner.SpawnedAllies[0] == unit;
+
+        return unit.SlotIndex == 0;
+    }
+
+    private void TryScheduleAutoTurn()
+    {
+        if (_autoTurnRoutineActive)
             return;
 
         var a = CurrentActor;
-        if (a == null || !a.IsAlive || a.IsAlly)
+        if (a == null || !a.IsAlive)
             return;
 
-        StartCoroutine(EnemyTurnSequence());
+        if (IsPlayerCommandActor(a))
+            return;
+
+        StartCoroutine(AutoTurnSequence());
     }
 
-    private IEnumerator EnemyTurnSequence()
+    private IEnumerator AutoTurnSequence()
     {
-        _enemyTurnRoutineActive = true;
-        yield return new WaitForSecondsRealtime(enemyAttackDelaySeconds);
+        _autoTurnRoutineActive = true;
+        yield return new WaitForSecondsRealtime(autoAttackDelaySeconds);
 
         var actor = CurrentActor;
-        if (actor == null || !actor.IsAlive || actor.IsAlly)
+        if (actor == null || !actor.IsAlive || IsPlayerCommandActor(actor))
         {
-            _enemyTurnRoutineActive = false;
-            TryScheduleEnemyTurn();
+            _autoTurnRoutineActive = false;
+            NotifyTurnChanged();
+            TryScheduleAutoTurn();
             yield break;
         }
 
-        var victory = PerformBasicAttackCurrentActor();
+        var target = GetFirstLivingOpponentFor(actor);
+        if (target == null)
+        {
+            Debug.LogWarning($"[Combat] Auto attack skipped: {actor.gameObject.name} has no living opponent.", this);
+            _autoTurnRoutineActive = false;
+            FinishTurnAfterAction();
+            yield break;
+        }
+
+        if (!TryStrike(actor, target, MoveIdStrike, out var victory))
+        {
+            _autoTurnRoutineActive = false;
+            FinishTurnAfterAction();
+            yield break;
+        }
+
         if (victory)
         {
-            _enemyTurnRoutineActive = false;
+            _autoTurnRoutineActive = false;
             yield break;
         }
 
+        // Clear before AdvanceTurn so TurnChanged listeners see a ready player turn.
+        _autoTurnRoutineActive = false;
         AdvanceTurn();
-        _enemyTurnRoutineActive = false;
-        TryScheduleEnemyTurn();
+        TryScheduleAutoTurn();
+    }
+
+    private void FinishTurnAfterAction()
+    {
+        _autoTurnRoutineActive = false;
+        AdvanceTurn();
+        TryScheduleAutoTurn();
     }
 
     private void BuildTurnOrder()
@@ -135,11 +315,11 @@ public class CombatTurnManager : MonoBehaviour
         if (spawner == null)
             return;
 
-        foreach (var a in spawner.SpawnedAllies)
-            TryAddLiving(a);
+        foreach (var ally in spawner.SpawnedAllies)
+            TryAddLiving(ally);
 
-        foreach (var e in spawner.SpawnedEnemies)
-            TryAddLiving(e);
+        foreach (var enemy in spawner.SpawnedEnemies)
+            TryAddLiving(enemy);
 
         _turnIndex = _order.Count > 0 ? 0 : -1;
     }
@@ -150,11 +330,12 @@ public class CombatTurnManager : MonoBehaviour
             _order.Add(u);
     }
 
-    /// <summary>Advance to next living unit in order.</summary>
     public void AdvanceTurn()
     {
         if (_order.Count == 0)
             return;
+
+        var previousActor = CurrentActor;
 
         var steps = 0;
         do
@@ -165,72 +346,73 @@ public class CombatTurnManager : MonoBehaviour
                 break;
         } while (!CurrentActor.IsAlive && _order.Count > 0);
 
+        if (IsPlayerCommandActor(CurrentActor))
+        {
+            _autoTurnRoutineActive = false;
+
+            if (previousActor != null
+                && !IsPlayerCommandActor(previousActor)
+                && GetPlayerHero() is { } hero)
+            {
+                hero.RegenerateMana(PlayerManaRegenPerTurn);
+            }
+        }
+
         LogTurnState();
+        NotifyTurnChanged();
     }
 
-    /// <summary>Strike with the current actor, then advance turn. Returns true if combat ended (victory unload).</summary>
-    public bool PerformBasicAttackAndAdvanceTurn()
+    private bool TryStrike(CombatUnit actor, CombatUnit target, int moveId, out bool victory)
     {
-        var victory = PerformBasicAttackCurrentActor();
-        if (!victory)
-            AdvanceTurn();
-        return victory;
-    }
+        victory = false;
 
-    /// <summary>Basic attack from current actor toward first living opponent. Returns true if combat ended (victory unload started).</summary>
-    public bool PerformBasicAttackCurrentActor()
-    {
-        var actor = CurrentActor;
         if (actor == null || !actor.IsAlive)
         {
-            Debug.LogWarning("[Combat] Basic strike skipped: no living current actor.", this);
+            Debug.LogWarning("[Combat] Strike skipped: attacker is not alive.", this);
             return false;
         }
 
-        if (spawner == null)
+        if (target == null || !target.IsAlive || target.IsAlly == actor.IsAlly)
         {
-            Debug.LogError("[Combat] Basic strike skipped: CombatUnitSpawner is null.", this);
+            Debug.LogWarning($"[Combat] Strike skipped: invalid target for {actor.gameObject.name}.", this);
             return false;
         }
 
-        CombatUnit target = null;
-        if (actor.IsAlly)
+        if (!CanActorUseMove(actor, moveId))
         {
-            foreach (var e in spawner.SpawnedEnemies)
-            {
-                if (e != null && e.IsAlive)
-                {
-                    target = e;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            foreach (var a in spawner.SpawnedAllies)
-            {
-                if (a != null && a.IsAlive)
-                {
-                    target = a;
-                    break;
-                }
-            }
-        }
-
-        if (target == null)
-        {
-            Debug.LogWarning($"[Combat] Basic strike skipped: {actor.gameObject.name} has no living opponent.", this);
+            Debug.LogWarning($"[Combat] Strike skipped: {actor.gameObject.name} cannot use move {moveId}.", this);
             return false;
         }
 
-        var dmg = actor.GetBasicStrikeDamage();
+        if (moveId == MoveIdPowerStrike && !actor.TrySpendMana(PowerStrikeManaCost))
+        {
+            Debug.LogWarning($"[Combat] Strike skipped: {actor.gameObject.name} lacks mana for Power Strike.", this);
+            return false;
+        }
+
+        var dmg = actor.GetStrikeDamageForMove(moveId);
         var hpBefore = target.CurrentHp;
         target.TakeDamage(dmg);
         Debug.Log(
-            $"[Combat] STRIKE: {actor.gameObject.name} → {target.gameObject.name} | damage={dmg} | target HP {hpBefore} → {target.CurrentHp}/{target.MaxHp}",
+            $"[Combat] STRIKE: {actor.gameObject.name} → {target.gameObject.name} | move={moveId} damage={dmg} | target HP {hpBefore} → {target.CurrentHp}/{target.MaxHp}",
             this);
 
-        return TryEndCombatIfAllEnemiesDefeated();
+        victory = TryEndCombatIfAllEnemiesDefeated();
+        return true;
+    }
+
+    private void EndCombatAfterFlee()
+    {
+        if (_sceneController == null)
+            _sceneController = FindAnyObjectByType<CombatSceneController>();
+
+        if (_sceneController == null)
+        {
+            Debug.LogError("[Combat] Flee succeeded but no CombatSceneController in scene.", this);
+            return;
+        }
+
+        _sceneController.EndCombat();
     }
 
     private bool TryEndCombatIfAllEnemiesDefeated()
@@ -255,7 +437,7 @@ public class CombatTurnManager : MonoBehaviour
         {
             foreach (var a in spawner.SpawnedAllies)
             {
-                if (a == null || !a.IsPlayerCharacter)
+                if (a == null || !IsPlayerCommandActor(a))
                     continue;
 
                 var persist = FindAnyObjectByType<PlayerPersistentCombatHealth>();
@@ -273,8 +455,15 @@ public class CombatTurnManager : MonoBehaviour
     {
         var a = CurrentActor;
         if (a == null)
+        {
             Debug.Log("[Combat] Turn manager: no actors.", this);
-        else
-            Debug.Log($"[Combat] Active: {a.gameObject.name} (HP {a.CurrentHp}/{a.MaxHp}).", this);
+            return;
+        }
+
+        var tag = IsPlayerCommandActor(a) ? " [PLAYER TURN]" : a.IsAlly ? " [COMPANION]" : " [ENEMY]";
+        var mp = a.UsesMana ? $" MP {a.CurrentMana}/{a.MaxMana}" : "";
+        Debug.Log($"[Combat] Active: {a.gameObject.name} (HP {a.CurrentHp}/{a.MaxHp}){mp}{tag}.", this);
     }
+
+    private void NotifyTurnChanged() => TurnChanged?.Invoke();
 }

@@ -39,8 +39,21 @@ public class CombatUnit : MonoBehaviour
     public bool IsPlayerCharacter => _isPlayerCharacter;
     public int SlotIndex => _slotIndex;
 
+    public const int HeroMaxMana = 10;
+
+    private bool _usesMana;
+    private int _currentMana;
+    private int _maxMana;
+
+    public bool UsesMana => _usesMana;
+    public int CurrentMana => _usesMana ? _currentMana : 0;
+    public int MaxMana => _usesMana ? _maxMana : 0;
+
     /// <summary>Args: current HP, max HP. Fired after <see cref="Initialize"/> and after <see cref="TakeDamage"/>.</summary>
     public event Action<int, int> HpChanged;
+
+    /// <summary>Args: current MP, max MP. Hero only.</summary>
+    public event Action<int, int> ManaChanged;
 
     public void Initialize(
         UnitDefinition definition,
@@ -86,20 +99,81 @@ public class CombatUnit : MonoBehaviour
                 _currentHp = maxHpCap;
         }
 
+        _usesMana = isAlly && isPlayerCharacter;
+        if (_usesMana)
+        {
+            _maxMana = HeroMaxMana;
+            _currentMana = HeroMaxMana;
+        }
+        else
+        {
+            _maxMana = 0;
+            _currentMana = 0;
+        }
+
         var label = definition != null ? definition.DisplayName : "?";
         gameObject.name = $"{(isAlly ? "Ally" : "Enemy")}_{label}_{slotIndex}";
         HpChanged?.Invoke(_currentHp, MaxHp);
+        if (_usesMana)
+            ManaChanged?.Invoke(_currentMana, _maxMana);
     }
 
-    public int GetBasicStrikeDamage()
+    public bool CanSpendMana(int cost) => _usesMana && cost > 0 && _currentMana >= cost;
+
+    public bool TrySpendMana(int cost)
+    {
+        if (!CanSpendMana(cost))
+            return false;
+
+        _currentMana -= cost;
+        ManaChanged?.Invoke(_currentMana, _maxMana);
+        return true;
+    }
+
+    public void RegenerateMana(int amount)
+    {
+        if (!_usesMana || amount <= 0)
+            return;
+
+        var before = _currentMana;
+        _currentMana = Mathf.Min(_maxMana, _currentMana + amount);
+        if (_currentMana != before)
+            ManaChanged?.Invoke(_currentMana, _maxMana);
+    }
+
+    public int GetBasicStrikeDamage() => GetStrikeDamageForMove(0);
+
+    /// <summary>Damage for a specific move id (0 = basic strike / best default).</summary>
+    public int GetStrikeDamageForMove(int moveId)
     {
         if (_definition == null)
             return 0;
 
         if (_enemyDifficultyApplied)
-            return _runtimeEnemyStrikeDamage;
+        {
+            if (moveId <= 0)
+                return _runtimeEnemyStrikeDamage;
 
-        return _definition.GetBasicStrikeDamage(_moveRegistry);
+            if (_moveRegistry != null && _moveRegistry.TryGet(moveId, out var enemyMove))
+            {
+                var scaled = enemyMove.BaseDamage > 0
+                    ? enemyMove.BaseDamage
+                    : _runtimeEnemyStrikeDamage;
+                return Mathf.Max(1, Mathf.RoundToInt(scaled * enemyMove.DamageMultiplier));
+            }
+
+            return _runtimeEnemyStrikeDamage;
+        }
+
+        var basePower = _definition.GetBasicStrikeDamage(_moveRegistry);
+        if (moveId <= 0)
+            return basePower;
+
+        if (_moveRegistry == null || !_moveRegistry.TryGet(moveId, out var move))
+            return basePower;
+
+        var raw = move.BaseDamage > 0 ? move.BaseDamage : basePower;
+        return Mathf.Max(1, Mathf.RoundToInt(raw * move.DamageMultiplier));
     }
 
     public void TakeDamage(int amount)
