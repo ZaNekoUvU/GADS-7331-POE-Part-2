@@ -22,9 +22,9 @@ Unity 6 **2D RPG** prototype: exploration, forge economy, mercenary companions, 
 - **Exploration** — village/wilds navigation, inventory (**hold Tab**), economy tied to **`BlacksmithMaster`**.
 - **Combat** — **`CombatAdditiveCoordinator`** loads **Combat Scene** additively and isolates exploration renderers/cameras so only combat content draws.
 - **Companions** — **`MercenaryCampSpawner`** + **`HireableCompanionOffer`** assets; hire flow **`CompanionRecruiter`**.
-- **LLM (optional)** — **`OllamaDialogueService`** powers NPC lines, forge quest offers (JSON), random **bandit** encounter intros, and mercenary **opening** lines using ScriptableObject personas.
+- **LLM features** — **`OllamaDialogueService`** talks to **Ollama** on your PC (`http://127.0.0.1:11434`). NPC dialogue, forge commissions (JSON), random **bandit** encounter intros, and mercenary **openings** use it when available.
 
-Without Ollama running, features fall back to **scripted dialogue** where implemented.
+If **Ollama is not installed**, **not running**, or the **model is missing**, the game **still runs** and falls back to **scripted dialogue** where implemented — but you will **not** get AI-generated lines until Ollama is set up correctly.
 
 ---
 
@@ -34,9 +34,20 @@ Without Ollama running, features fall back to **scripted dialogue** where implem
 2. Install **Unity 6** editor version matching **`Back To The Forge/ProjectSettings/ProjectVersion.txt`** (currently **6000.4.6f1**).
 3. Open the **`Back To The Forge`** folder in Unity Hub.
 4. Add scenes to **Build Settings** if prompted (Main Menu, Exploration, Combat).
-5. **Optional — LLM:** Install [Ollama](https://ollama.com), pull a model (e.g. `qwen3:8b`), and align the model name on **`OllamaDialogueService`** in your scene or settings asset.
 
-Full steps: **[docs/setup.md](docs/setup.md)**.
+### Ollama (required for AI dialogue features)
+
+1. **Install Ollama** from **[https://ollama.com](https://ollama.com)** for your OS (Windows / macOS / Linux).
+2. **Keep Ollama running in the background** while you play or develop — leave the app open (Windows system tray / macOS menu bar). If Ollama is closed, HTTP requests from Unity fail and the game uses fallback text.
+3. **Pull the model this project is configured for:** **`qwen3:8b`**  
+   In a terminal:
+   ```bash
+   ollama pull qwen3:8b
+   ```
+4. Confirm it appears under **`ollama list`** (the name must match **exactly**, including tag).
+5. In Unity, the scene/component **`OllamaDialogueService`** (or an **`Ollama Dialogue Settings`** asset) should use **model `qwen3:8b`** and host **`http://127.0.0.1:11434`** unless you intentionally switch models — if you change the model string, pull that tag first.
+
+More detail and troubleshooting: **[docs/setup.md](docs/setup.md)**.
 
 ---
 
@@ -47,7 +58,7 @@ Full steps: **[docs/setup.md](docs/setup.md)**.
 | **Unity 6** | Editor & runtime |
 | **Unity Input System** | Player / UI actions |
 | **UI Toolkit** | Menus, dialogue, HUD panels (`FfStyleMenuUi`) |
-| **Ollama** (local, optional) | HTTP `/api/chat` from `OllamaDialogueService` |
+| **Ollama** | Local LLM server — **install from [ollama.com](https://ollama.com)**; **keep running in background** during play. Reference model: **`qwen3:8b`** (`ollama pull qwen3:8b`). Used by `OllamaDialogueService` over `http://127.0.0.1:11434`. |
 | **TextMeshPro** | Legacy UI text where still referenced in scenes |
 
 ---
