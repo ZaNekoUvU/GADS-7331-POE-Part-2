@@ -180,16 +180,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   offer: {fileID: 11400000, guid: d0d1d2d3d4d5d6d7d8d9dadbdcdddedf, type: 2}
+  autoAssignPartySlot: 1
   partySlotIndex: 0
   blacksmith: {fileID: 0}
   choiceUi: {fileID: 0}
   dialogueUi: {fileID: 0}
-  npcDisplayName: Mercenary
+  npcDisplayName: 
   companionSpeakerOverride: 
-  openingLine: Need muscle? I fight for coin — fair wage, until tomorrow.
+  openingLine: 
   hireButtonCustomText: 
   declineButtonText: No thanks
-  cannotAffordLine: Your purse is too light. Come back when you can pay.
-  companionJoinLine: I'm with you. Point me at the trouble.
+  cannotAffordLine: 
+  companionJoinLine: 
   playerTag: Player
   interactAction: {fileID: 0}

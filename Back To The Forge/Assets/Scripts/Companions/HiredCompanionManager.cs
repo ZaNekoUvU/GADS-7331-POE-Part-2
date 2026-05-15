@@ -3,7 +3,6 @@ using UnityEngine;
 
 /// <summary>
 /// Runtime hired allies (max three companions; player is separate). Cleared when the calendar advances.
-/// Drives <see cref="ExplorationCombatParty"/> via <see cref="ExplorationCombatParty.ApplyToCombatSession"/>.
 /// </summary>
 public sealed class HiredCompanionManager : MonoBehaviour
 {
@@ -11,21 +10,12 @@ public sealed class HiredCompanionManager : MonoBehaviour
 
     public const int MaxCompanionSlots = 3;
 
-    /// <summary>Ally combat index 1. 0 = empty.</summary>
     public int Slot1UnitId { get; private set; }
-
-    /// <summary>Ally combat index 2. 0 = empty.</summary>
     public int Slot2UnitId { get; private set; }
-
-    /// <summary>Ally combat index 3. 0 = empty.</summary>
     public int Slot3UnitId { get; private set; }
 
     public event Action OnRosterChanged;
 
-    /// <summary>
-    /// Exploration objects (e.g. a <see cref="CompanionRecruiter"/>) that should follow the player instead of a spawned registry prefab.
-    /// Cleared when the slot empties or the recruiter returns home.
-    /// </summary>
     private readonly GameObject[] _physicalFollowerRootsBySlot = new GameObject[MaxCompanionSlots];
 
     private void Awake()
@@ -59,10 +49,78 @@ public sealed class HiredCompanionManager : MonoBehaviour
         return go.AddComponent<HiredCompanionManager>();
     }
 
-    /// <summary>Hires or replaces companion slot 0..2 (maps to party slots 1..3). Charges gold on success.</summary>
-    /// <param name="physicalFollowerRoot">
-    /// If set (e.g. the mercenary NPC), bound before <see cref="OnRosterChanged"/> so presenters skip duplicate spawns.
-    /// </param>
+    public int CountHired()
+    {
+        var n = 0;
+        if (Slot1UnitId > 0) n++;
+        if (Slot2UnitId > 0) n++;
+        if (Slot3UnitId > 0) n++;
+        return n;
+    }
+
+    public bool IsPartyFull => CountHired() >= MaxCompanionSlots;
+
+    public int FindSlotWithUnitId(int unitId)
+    {
+        if (unitId <= 0)
+            return -1;
+
+        if (Slot1UnitId == unitId) return 0;
+        if (Slot2UnitId == unitId) return 1;
+        if (Slot3UnitId == unitId) return 2;
+        return -1;
+    }
+
+    public int FindFirstEmptySlot()
+    {
+        if (Slot1UnitId <= 0) return 0;
+        if (Slot2UnitId <= 0) return 1;
+        if (Slot3UnitId <= 0) return 2;
+        return -1;
+    }
+
+    public int FindSlotForPhysicalRoot(GameObject root)
+    {
+        if (root == null)
+            return -1;
+
+        for (var i = 0; i < MaxCompanionSlots; i++)
+        {
+            if (_physicalFollowerRootsBySlot[i] == root)
+                return i;
+        }
+
+        return -1;
+    }
+
+    /// <summary>Hires into the first empty slot, or replaces that mercenary's existing slot if already rostered.</summary>
+    public bool TryHireAuto(
+        int unitId,
+        int cost,
+        BlacksmithMaster payFrom,
+        GameObject physicalFollowerRoot,
+        out int assignedSlotIndex)
+    {
+        assignedSlotIndex = -1;
+
+        if (unitId <= 0)
+            return false;
+
+        var existing = FindSlotWithUnitId(unitId);
+        if (existing >= 0)
+        {
+            assignedSlotIndex = existing;
+        }
+        else
+        {
+            assignedSlotIndex = FindFirstEmptySlot();
+            if (assignedSlotIndex < 0)
+                return false;
+        }
+
+        return TryHire(assignedSlotIndex, unitId, cost, payFrom, physicalFollowerRoot);
+    }
+
     public bool TryHire(
         int companionSlotIndex,
         int unitId,
@@ -78,6 +136,8 @@ public sealed class HiredCompanionManager : MonoBehaviour
 
         if (payFrom == null || !payFrom.TrySpendGold(cost))
             return false;
+
+        ClearUnitFromOtherSlots(unitId, companionSlotIndex);
 
         switch (companionSlotIndex)
         {
@@ -99,6 +159,27 @@ public sealed class HiredCompanionManager : MonoBehaviour
         return true;
     }
 
+    private void ClearUnitFromOtherSlots(int unitId, int keepSlot)
+    {
+        if (keepSlot != 0 && Slot1UnitId == unitId)
+        {
+            Slot1UnitId = 0;
+            _physicalFollowerRootsBySlot[0] = null;
+        }
+
+        if (keepSlot != 1 && Slot2UnitId == unitId)
+        {
+            Slot2UnitId = 0;
+            _physicalFollowerRootsBySlot[1] = null;
+        }
+
+        if (keepSlot != 2 && Slot3UnitId == unitId)
+        {
+            Slot3UnitId = 0;
+            _physicalFollowerRootsBySlot[2] = null;
+        }
+    }
+
     public void BindPhysicalFollowerToSlot(int companionSlotIndex0To2, GameObject root)
     {
         if ((uint)companionSlotIndex0To2 >= MaxCompanionSlots || root == null)
@@ -115,7 +196,6 @@ public sealed class HiredCompanionManager : MonoBehaviour
         _physicalFollowerRootsBySlot[companionSlotIndex0To2] = null;
     }
 
-    /// <summary>Optional world root that follows the player for this slot (mercenary NPC). Null if using presenter spawns.</summary>
     public GameObject GetPhysicalFollowerRoot(int companionSlotIndex0To2)
     {
         if ((uint)companionSlotIndex0To2 >= MaxCompanionSlots)
@@ -132,11 +212,9 @@ public sealed class HiredCompanionManager : MonoBehaviour
         Slot1UnitId = 0;
         Slot2UnitId = 0;
         Slot3UnitId = 0;
-        // Physical followers are unbound when CompanionRecruiter restores after this event.
         OnRosterChanged?.Invoke();
     }
 
-    /// <summary>Unit id in companion slot 0..2 (party indices 1..3). 0 if empty.</summary>
     public int GetCompanionSlotUnitId(int companionSlotIndex0To2)
     {
         switch (companionSlotIndex0To2)

@@ -21,16 +21,50 @@ public class QuestMineralPickup : MonoBehaviour
         if (q == null || !q.QuestActive || q.QuestItemAsset == null)
             return;
 
-        var rb = other.attachedRigidbody;
-        var inv = rb != null ? rb.GetComponent<Inventory>() : other.GetComponent<Inventory>();
+        var inv = ResolvePlayerInventory(other);
         if (inv == null)
+        {
+            Debug.LogWarning($"{nameof(QuestMineralPickup)}: No player {nameof(Inventory)} found.", this);
             return;
+        }
 
         var leftover = inv.TryAdd(q.QuestItemAsset, 1);
         if (leftover > 0)
+        {
+            Debug.LogWarning($"{nameof(QuestMineralPickup)}: Inventory full — could not add commission ore.", this);
             return;
+        }
 
         q.MarkOrePickedUp();
         Destroy(gameObject);
+    }
+
+    private static Inventory ResolvePlayerInventory(Collider2D other)
+    {
+        var pm = PlayerMovement2D.Instance;
+        if (pm != null)
+        {
+            if (pm.TryGetComponent<Inventory>(out var onPlayer))
+                return onPlayer;
+
+            var onHierarchy = pm.GetComponentInChildren<Inventory>(true);
+            if (onHierarchy == null)
+                onHierarchy = pm.GetComponentInParent<Inventory>();
+            if (onHierarchy != null)
+                return onHierarchy;
+        }
+
+        var rb = other.attachedRigidbody;
+        if (rb != null)
+        {
+            if (rb.TryGetComponent<Inventory>(out var onRb))
+                return onRb;
+
+            var onRbHierarchy = rb.GetComponentInChildren<Inventory>(true);
+            if (onRbHierarchy != null)
+                return onRbHierarchy;
+        }
+
+        return other.GetComponent<Inventory>();
     }
 }

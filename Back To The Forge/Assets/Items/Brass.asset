@@ -15,3 +15,4 @@ MonoBehaviour:
   itemId: 7
   displayName: Brass
   baseSellPrice: 9
+  priceTier: 6

@@ -41,7 +41,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     [SerializeField] private string turnInThanksFallback = "Aye, this is what I needed. Here's your coin.";
     [SerializeField] private string turnInEmptyFallback =
-        "You need the strange ore I asked for and your iron ingots before I can pay you.";
+        "You're still short on what I asked for — check your pack and the mines.";
 
     [Header("Proximity")]
     [SerializeField] private InputActionReference interactAction;
@@ -249,6 +249,12 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (q == null || inv == null)
         {
             dialogueUi.Show(profile.CharacterName, turnInEmptyFallback);
+            yield break;
+        }
+
+        if (!q.CanTurnIn(inv, out var blockerMessage))
+        {
+            dialogueUi.Show(profile.CharacterName, blockerMessage);
             yield break;
         }
 

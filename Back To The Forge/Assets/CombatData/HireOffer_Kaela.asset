@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ffeefeed0011223344556677889900, type: 3}
+  m_Name: HireOffer_Kaela
+  m_EditorClassIdentifier: 
+  unit: {fileID: 11400000, guid: f3a4b5c6d7e8091a2b3c4d5e6f708100, type: 2}
+  hireCost: 20
+  recruitLabel: 
+  personalityTrait: Cheerful scout — quick feet, quicker jokes.
+  npcDisplayName: Kaela
+  openingLine: Hey! You look like someone who walks into trouble on purpose. I can keep up!
+  cannotAffordLine: Ah—I'd love to tag along, but you're short on gold.
+  companionJoinLine: Lead the way! I'll spot ambushes before you trip on them.
+  partyFullLine: Your party's packed. Three's the limit—come back after the forge resets the roster.

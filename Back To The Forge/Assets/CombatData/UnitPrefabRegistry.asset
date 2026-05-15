@@ -19,6 +19,24 @@ MonoBehaviour:
   - unitId: 2
     definition: {fileID: 11400000, guid: e0e1d2c3b4a5968778695a4b3c2d1e0f, type: 2}
     prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 3
+    definition: {fileID: 11400000, guid: f3a4b5c6d7e8091a2b3c4d5e6f708100, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 4
+    definition: {fileID: 11400000, guid: f4a5b6c7d8e9091a2b3c4d5e6f708200, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 5
+    definition: {fileID: 11400000, guid: f5a6b7c8d9ea091a2b3c4d5e6f708300, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 6
+    definition: {fileID: 11400000, guid: f6a7b8c9dae0a91a2b3c4d5e6f708400, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 7
+    definition: {fileID: 11400000, guid: f7a8b9cadbe1b91a2b3c4d5e6f708500, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 8
+    definition: {fileID: 11400000, guid: f8a9bacbe2c2c91a2b3c4d5e6f708600, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
   - unitId: 10
     definition: {fileID: 11400000, guid: 666677778888999900001111222233ff, type: 2}
     prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}

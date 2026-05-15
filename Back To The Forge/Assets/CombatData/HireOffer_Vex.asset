@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ffeefeed0011223344556677889900, type: 3}
+  m_Name: HireOffer_Vex
+  m_EditorClassIdentifier: 
+  unit: {fileID: 11400000, guid: f8a9bacbe2c2c91a2b3c4d5e6f708600, type: 2}
+  hireCost: 100
+  recruitLabel: 
+  personalityTrait: Mysterious wanderer — cryptic, observant.
+  npcDisplayName: Vex
+  openingLine: The road whispered your name. Coin buys my silence—and my steel.
+  cannotAffordLine: Fate is patient. Your gold is not.
+  companionJoinLine: Walk. I follow. Ask nothing more.
+  partyFullLine: Three shadows already cling to you. No room for mine.

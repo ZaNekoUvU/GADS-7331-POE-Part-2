@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Unit_Ally_Mercenary
   m_EditorClassIdentifier: 
   unitId: 2
-  displayName: Mercenary
-  maxHp: 32
-  attackDamage: 14
+  displayName: Rook
+  maxHp: 45
+  attackDamage: 20
   moveIds:
   - 100
   moves: []

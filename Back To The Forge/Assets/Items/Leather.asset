@@ -15,3 +15,4 @@ MonoBehaviour:
   itemId: 5
   displayName: Leather
   baseSellPrice: 10
+  priceTier: 5

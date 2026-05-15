@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ffeefeed0011223344556677889900, type: 3}
+  m_Name: HireOffer_Silas
+  m_EditorClassIdentifier: 
+  unit: {fileID: 11400000, guid: f5a6b7c8d9ea091a2b3c4d5e6f708300, type: 2}
+  hireCost: 65
+  recruitLabel: 
+  personalityTrait: Witty spell-tinker — fights with blade and bad puns.
+  npcDisplayName: Silas
+  openingLine: I read old battle charts for fun. Hire me and I'll test a few theories in the field.
+  cannotAffordLine: Fascinating. Your wallet is lighter than my spellbook.
+  companionJoinLine: Splendid. Try not to stand directly in my experimental arc.
+  partyFullLine: Three allies is the sensible maximum. Mathematics, you see.

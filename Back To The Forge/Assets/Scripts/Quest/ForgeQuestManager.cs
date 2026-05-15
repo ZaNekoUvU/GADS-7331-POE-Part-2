@@ -21,6 +21,69 @@ public sealed class ForgeQuestManager : MonoBehaviour
 
     public event Action OnForgeQuestChanged;
 
+    /// <summary>True when <paramref name="def"/> is the active forge commission item (by id or reference).</summary>
+    public bool IsCommissionItem(ItemDefinition def)
+    {
+        if (!QuestActive || def == null || QuestItemAsset == null)
+            return false;
+
+        if (QuestItemAsset.ItemId > 0 && def.ItemId > 0)
+            return def.ItemId == QuestItemAsset.ItemId;
+
+        return def == QuestItemAsset;
+    }
+
+    /// <summary>Inventory label; commission ore uses the AI-invented <see cref="QuestMaterialName"/>.</summary>
+    public string GetInventoryDisplayName(ItemDefinition def)
+    {
+        if (def == null)
+            return "?";
+
+        return IsCommissionItem(def) ? QuestMaterialName : def.DisplayName;
+    }
+
+    /// <summary>When false, <paramref name="message"/> explains what is still missing.</summary>
+    public bool CanTurnIn(Inventory inv, out string message)
+    {
+        message = null;
+        if (!QuestActive || QuestItemAsset == null)
+        {
+            message = "No active forge commission.";
+            return false;
+        }
+
+        if (inv == null)
+        {
+            message = "Can't read your inventory.";
+            return false;
+        }
+
+        var cQuest = CountOf(inv, QuestItemAsset);
+        var needIron = ForgeIronTurnInItem != null;
+        var cIron = needIron ? CountOf(inv, ForgeIronTurnInItem) : 0;
+
+        if (cQuest > 0 && (!needIron || cIron > 0))
+            return true;
+
+        if (cQuest <= 0 && needIron && cIron <= 0)
+        {
+            message =
+                $"You need {QuestMaterialName} (pick up the commission ore in the world — not today's daily special) " +
+                $"and {ForgeIronTurnInItem.DisplayName} from the mines.";
+            return false;
+        }
+
+        if (cQuest <= 0)
+        {
+            message =
+                $"You need {QuestMaterialName}. Find the commission ore spawn — gathering today's daily special won't count.";
+            return false;
+        }
+
+        message = $"You have {QuestMaterialName}, but I still need {ForgeIronTurnInItem.DisplayName} from the mines.";
+        return false;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

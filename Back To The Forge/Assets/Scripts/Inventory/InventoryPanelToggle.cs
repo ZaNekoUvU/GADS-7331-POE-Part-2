@@ -70,11 +70,37 @@ public class InventoryPanelToggle : MonoBehaviour
         {
             string line;
             if (i >= slots.Length || slots[i].IsEmpty)
+            {
                 line = $"{i + 1}. —";
+            }
             else
-                line = $"{i + 1}. {slots[i].item.DisplayName} x{slots[i].count}";
+            {
+                var unitPrice = GetTodaySellPrice(slots[i].item);
+                line = $"{i + 1}. {GetSlotDisplayName(slots[i].item)} x{slots[i].count} ({unitPrice}g)";
+            }
 
             inventoryText.text += line + "\n";
         }
+    }
+
+    private static int GetTodaySellPrice(ItemDefinition item)
+    {
+        if (item == null)
+            return 0;
+
+        var market = ResourceMarketPricing.Instance;
+        return market != null ? market.GetTodayPrice(item) : Mathf.Max(1, item.BaseSellPrice);
+    }
+
+    private static string GetSlotDisplayName(ItemDefinition item)
+    {
+        if (item == null)
+            return "?";
+
+        var forge = ForgeQuestManager.Instance;
+        if (forge != null)
+            return forge.GetInventoryDisplayName(item);
+
+        return item.DisplayName;
     }
 }

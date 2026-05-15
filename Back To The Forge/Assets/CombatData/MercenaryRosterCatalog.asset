@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1c2d3e4f5a6478091a2b3c4d5e6f709, type: 3}
+  m_Name: MercenaryRosterCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::MercenaryRosterCatalog
+  recruiterPrefab: {fileID: 7711001122334455671, guid: 6622bb33cc44dd55ee66ff778899aa02, type: 3}
+  recruits:
+  - offer: {fileID: 11400000, guid: d0d1d2d3d4d5d6d7d8d9dadbdcdddedf, type: 2}
+    worldPosition: {x: -2.5, y: -6.5}
+    spriteTint: {r: 0.85, g: 0.45, b: 0.15, a: 1}
+  - offer: {fileID: 11400000, guid: e2f3a4b5c6d748091a2b3c4d5e702010, type: 2}
+    worldPosition: {x: 2.5, y: -7}
+    spriteTint: {r: 0.35, g: 0.75, b: 0.95, a: 1}
+  - offer: {fileID: 11400000, guid: e3f4a5b6c7d8491a2b3c4d5e70302000, type: 2}
+    worldPosition: {x: 6.5, y: -4.5}
+    spriteTint: {r: 0.75, g: 0.78, b: 0.82, a: 1}
+  - offer: {fileID: 11400000, guid: e4f5a6b7c8d94a1a2b3c4d5e70403000, type: 2}
+    worldPosition: {x: 11, y: -2}
+    spriteTint: {r: 0.55, g: 0.4, b: 0.9, a: 1}
+  - offer: {fileID: 11400000, guid: e5f6a7b8c9da5b1a2b3c4d5e70504000, type: 2}
+    worldPosition: {x: -6, y: -3.5}
+    spriteTint: {r: 0.25, g: 0.3, b: 0.35, a: 1}
+  - offer: {fileID: 11400000, guid: e6f7a8b9cad06c1a2b3c4d5e70605000, type: 2}
+    worldPosition: {x: 0, y: -9.5}
+    spriteTint: {r: 0.9, g: 0.7, b: 0.35, a: 1}
+  - offer: {fileID: 11400000, guid: e7f8a9bacbd17d1a2b3c4d5e70706000, type: 2}
+    worldPosition: {x: 8, y: 1.5}
+    spriteTint: {r: 0.6, g: 0.2, b: 0.55, a: 1}
