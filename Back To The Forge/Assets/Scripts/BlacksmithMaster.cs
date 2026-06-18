@@ -83,6 +83,7 @@ public class BlacksmithMaster : MonoBehaviour
             return;
 
         _playerGold += amount;
+        OnGoldAdded?.Invoke(amount);
         OnEconomyChanged?.Invoke();
     }
 
@@ -153,6 +154,7 @@ public class BlacksmithMaster : MonoBehaviour
     }
 
     public event Action OnEconomyChanged;
+    public event Action<int> OnGoldAdded;
     public event Action<ItemDefinition> OnDailyQuestRolled;
 
     private void Awake()
@@ -373,6 +375,8 @@ public class BlacksmithMaster : MonoBehaviour
 
         RollDailyQuest();
 
+        if (total > 0)
+            OnGoldAdded?.Invoke(total);
         OnEconomyChanged?.Invoke();
 
         if (debugLogs)

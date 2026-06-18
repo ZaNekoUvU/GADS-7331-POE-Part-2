@@ -18,6 +18,7 @@ public class Inventory : MonoBehaviour
     private readonly Slot[] _slots = new Slot[MaxSlots];
 
     public event Action OnChanged;
+    public event Action<ItemDefinition, int> OnItemAdded;
 
     /// <summary>Returns how many items could not be added (0 if all fit).</summary>
     public int TryAdd(ItemDefinition item, int amount)
@@ -26,7 +27,7 @@ public class Inventory : MonoBehaviour
             return amount;
 
         var remaining = amount;
-        var changed = false;
+        var added = 0;
 
         for (var i = 0; i < MaxSlots; i++)
         {
@@ -42,12 +43,11 @@ public class Inventory : MonoBehaviour
             slot.count += add;
             _slots[i] = slot;
             remaining -= add;
-            changed = true;
+            added += add;
 
             if (remaining <= 0)
             {
-                if (changed)
-                    NotifyChanged();
+                NotifyItemAdded(item, added);
                 return 0;
             }
         }
@@ -61,11 +61,11 @@ public class Inventory : MonoBehaviour
             var add = Mathf.Min(MaxStack, remaining);
             _slots[idx] = new Slot { item = item, count = add };
             remaining -= add;
-            changed = true;
+            added += add;
         }
 
-        if (changed)
-            NotifyChanged();
+        if (added > 0)
+            NotifyItemAdded(item, added);
 
         return remaining;
     }
@@ -194,5 +194,12 @@ public class Inventory : MonoBehaviour
     private void NotifyChanged()
     {
         OnChanged?.Invoke();
+    }
+
+    private void NotifyItemAdded(ItemDefinition item, int amountAdded)
+    {
+        OnChanged?.Invoke();
+        if (item != null && amountAdded > 0)
+            OnItemAdded?.Invoke(item, amountAdded);
     }
 }

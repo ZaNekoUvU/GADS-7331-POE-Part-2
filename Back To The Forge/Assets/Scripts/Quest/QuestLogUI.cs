@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Top-left HUD showing the current forge objective (blacksmith, commission ore, turn-in, or free play).
+/// Top-right HUD showing the current forge objective (blacksmith, commission ore, turn-in, or free play).
 /// </summary>
 [DisallowMultipleComponent]
 public class QuestLogUI : MonoBehaviour

@@ -5,18 +5,17 @@ using UnityEngine;
 /// </summary>
 public class QuestWaypointArrow : MonoBehaviour
 {
-    [SerializeField] private float orbitRadius = 1.15f;
-    [SerializeField] private float bobAmplitude = 0.12f;
+    [SerializeField] private float orbitRadius = 0.95f;
+    [SerializeField] private float bobAmplitude = 0.08f;
     [SerializeField] private float bobSpeed = 2.8f;
     [SerializeField] private float hideWhenWithinDistance = 1.35f;
-    [SerializeField] private float visualScale = 0.55f;
-    [SerializeField] private Color arrowColor = new(1f, 0.88f, 0.25f, 1f);
+    [SerializeField] private float visualScale = 0.34f;
 
     private Transform _follow;
     private SpriteRenderer _sprite;
     private Vector3? _worldTarget;
     private static Sprite _sharedArrowSprite;
-    private const int ArrowSpriteRevision = 2;
+    private const int ArrowSpriteRevision = 5;
     private static int _sharedArrowRevision;
 
     public void SetFollow(Transform follow)
@@ -43,7 +42,7 @@ public class QuestWaypointArrow : MonoBehaviour
         }
 
         _sprite.sprite = _sharedArrowSprite;
-        _sprite.color = arrowColor;
+        _sprite.color = Color.white;
         _sprite.sortingOrder = 50;
         transform.localScale = Vector3.one * visualScale;
     }
@@ -83,8 +82,8 @@ public class QuestWaypointArrow : MonoBehaviour
 
     private static Sprite CreateArrowSprite()
     {
-        const int w = 20;
-        const int h = 28;
+        const int w = 12;
+        const int h = 18;
         var tex = new Texture2D(w, h, TextureFormat.RGBA32, false)
         {
             filterMode = FilterMode.Point,
@@ -92,20 +91,46 @@ public class QuestWaypointArrow : MonoBehaviour
         };
 
         var clear = new Color(0f, 0f, 0f, 0f);
-        var fill = Color.white;
+        var fill = FfStyleMenuUi.HudPanelBlue;
+        var border = Color.white;
 
         for (var y = 0; y < h; y++)
         {
-            // Wide base at the bottom, narrow tip at the top — points +Y toward the objective.
-            var t = 1f - y / (float)(h - 1);
-            var halfWidth = Mathf.Max(1, Mathf.RoundToInt(t * (w * 0.5f)));
-            var cx = w / 2;
-
             for (var x = 0; x < w; x++)
-                tex.SetPixel(x, y, Mathf.Abs(x - cx) <= halfWidth ? fill : clear);
+            {
+                if (!IsInsideArrow(x, y, w, h))
+                {
+                    tex.SetPixel(x, y, clear);
+                    continue;
+                }
+
+                tex.SetPixel(x, y, IsArrowBorderPixel(x, y, w, h) ? border : fill);
+            }
         }
 
         tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.65f), 16f);
+        return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.65f), 20f);
+    }
+
+    private static bool IsInsideArrow(int x, int y, int w, int h)
+    {
+        if (x < 0 || y < 0 || x >= w || y >= h)
+            return false;
+
+        var t = 1f - y / (float)(h - 1);
+        var halfWidth = Mathf.Max(1, Mathf.RoundToInt(t * (w * 0.5f)));
+        var cx = w / 2;
+        return Mathf.Abs(x - cx) <= halfWidth;
+    }
+
+    private static bool IsArrowBorderPixel(int x, int y, int w, int h)
+    {
+        if (!IsInsideArrow(x, y, w, h))
+            return false;
+
+        return !IsInsideArrow(x - 1, y, w, h)
+               || !IsInsideArrow(x + 1, y, w, h)
+               || !IsInsideArrow(x, y - 1, w, h)
+               || !IsInsideArrow(x, y + 1, w, h);
     }
 }

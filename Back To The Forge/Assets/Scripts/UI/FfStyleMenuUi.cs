@@ -17,6 +17,7 @@ public static class FfStyleMenuUi
     public static readonly Color TextColor = new(1f, 1f, 1f, 1f);
     public static readonly Color DisabledTextColor = new(0.65f, 0.65f, 0.7f, 1f);
     public static readonly Color SubtitleColor = new(0.85f, 0.85f, 0.95f, 1f);
+    public static readonly Color HudPanelBlue = new(0f, 0f, 128f / 255f, 1f);
 
     public readonly struct MenuRow
     {
@@ -255,7 +256,7 @@ public static class FfStyleMenuUi
         return overlay;
     }
 
-    /// <summary>Top-left quest objective — same panel and typography as dialogue UI.</summary>
+    /// <summary>Top-right quest objective — same panel and typography as dialogue UI.</summary>
     public static VisualElement BuildQuestObjectivePanel(
         VisualElement documentRoot,
         string headerText,
@@ -277,7 +278,7 @@ public static class FfStyleMenuUi
         panel.AddToClassList("hud-panel");
         panel.style.position = Position.Absolute;
         panel.style.top = 16;
-        panel.style.left = 16;
+        panel.style.right = 16;
         panel.style.flexGrow = 0f;
         panel.style.flexShrink = 0f;
         panel.style.flexBasis = StyleKeyword.Auto;
@@ -299,6 +300,62 @@ public static class FfStyleMenuUi
         ApplyLabelStyle(bodyLabel, 16f, false);
         bodyLabel.style.whiteSpace = WhiteSpace.Normal;
         panel.Add(bodyLabel);
+
+        return panel;
+    }
+
+    /// <summary>Bottom-right stack for pickup / gold gain messages.</summary>
+    public static VisualElement BuildPickupLogRoot(VisualElement documentRoot, out VisualElement entryList)
+    {
+        documentRoot.Clear();
+        documentRoot.style.flexGrow = 1f;
+        documentRoot.style.position = Position.Absolute;
+        documentRoot.style.left = 0;
+        documentRoot.style.right = 0;
+        documentRoot.style.top = 0;
+        documentRoot.style.bottom = 0;
+        documentRoot.pickingMode = PickingMode.Ignore;
+
+        AttachStyleSheet(documentRoot);
+
+        entryList = new VisualElement { name = "pickup-log-list" };
+        entryList.style.position = Position.Absolute;
+        entryList.style.bottom = 16;
+        entryList.style.right = 16;
+        entryList.style.flexDirection = FlexDirection.Column;
+        entryList.style.alignItems = Align.FlexEnd;
+        entryList.pickingMode = PickingMode.Ignore;
+        documentRoot.Add(entryList);
+
+        return entryList;
+    }
+
+    public static VisualElement BuildPickupLogEntry(string message)
+    {
+        var panel = new VisualElement { name = "pickup-log-entry" };
+        panel.AddToClassList("hud-panel");
+        panel.AddToClassList("pickup-log-entry");
+        panel.style.flexGrow = 0f;
+        panel.style.flexShrink = 0f;
+        panel.style.flexBasis = StyleKeyword.Auto;
+        panel.style.flexDirection = FlexDirection.Row;
+        panel.style.alignItems = Align.Center;
+        panel.style.justifyContent = Justify.FlexEnd;
+        panel.style.minHeight = 34;
+        panel.style.overflow = Overflow.Hidden;
+        panel.pickingMode = PickingMode.Ignore;
+
+        var label = new Label(message) { name = "pickup-log-label" };
+        label.AddToClassList("pickup-log-label");
+        ApplyLabelStyle(label, 14f, true);
+        label.style.marginTop = 0;
+        label.style.marginBottom = 0;
+        label.style.paddingTop = 0;
+        label.style.paddingBottom = 0;
+        label.style.whiteSpace = WhiteSpace.NoWrap;
+        label.style.unityTextAlign = TextAnchor.MiddleRight;
+        label.pickingMode = PickingMode.Ignore;
+        panel.Add(label);
 
         return panel;
     }

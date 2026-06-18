@@ -45,6 +45,28 @@
     min-width: 150px;
 }
 
+.hud-panel.pickup-log-entry {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 4px;
+    min-height: 34px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 12px;
+    overflow: hidden;
+}
+
+.pickup-log-entry .pickup-log-label {
+    margin: 0;
+    padding: 0;
+    -unity-text-align: middle-right;
+    white-space: nowrap;
+}
+
 .unit-list {
     flex-grow: 1;
     flex-direction: column;
