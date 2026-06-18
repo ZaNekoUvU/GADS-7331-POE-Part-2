@@ -28,6 +28,12 @@
     border-radius: 0;
 }
 
+/* Quest log + gather prompt only — semi-transparent so the world shows through. */
+.hud-panel.hud-panel--faded {
+    background-color: rgba(0, 0, 128, 0.45);
+    border-color: rgba(255, 255, 255, 0.65);
+}
+
 .hud-panel--commands {
     flex-grow: 1.1;
     max-width: 220px;

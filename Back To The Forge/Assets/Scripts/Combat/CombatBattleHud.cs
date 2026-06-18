@@ -86,6 +86,7 @@ public class CombatBattleHud : MonoBehaviour
 
     private int _pendingMoveId;
     private bool _lastCanAct;
+    private CombatUnit _spriteHighlightedTarget;
 
     private struct CommandEntry
 
@@ -186,7 +187,7 @@ public class CombatBattleHud : MonoBehaviour
 
 
         UnsubscribeHp();
-
+        ClearTargetSpriteHighlight();
     }
 
 
@@ -967,7 +968,7 @@ public class CombatBattleHud : MonoBehaviour
 
         _enemiesList.Clear();
 
-        var active = turnManager != null ? turnManager.CurrentActor : null;
+        var rowHighlight = GetSelectedTargetUnit();
 
 
 
@@ -981,10 +982,55 @@ public class CombatBattleHud : MonoBehaviour
 
 
 
-            AddUnitRow(_enemiesList, enemy, active);
+            AddUnitRow(_enemiesList, enemy, rowHighlight);
 
         }
 
+    }
+
+
+
+    private CombatUnit GetSelectedTargetUnit()
+    {
+        if (_phase != HudPhase.PickTarget || _selectedCommandIndex <= 0)
+            return null;
+
+        var targetIndex = _selectedCommandIndex - 1;
+        if (targetIndex < 0 || targetIndex >= _targetChoices.Count)
+            return null;
+
+        return _targetChoices[targetIndex];
+    }
+
+    private void ClearTargetSpriteHighlight()
+    {
+        if (_spriteHighlightedTarget != null)
+        {
+            var highlight = _spriteHighlightedTarget.GetComponent<CombatTargetSpriteHighlight>();
+            if (highlight != null)
+                highlight.SetHighlighted(false);
+
+            _spriteHighlightedTarget = null;
+        }
+    }
+
+    private void UpdateTargetSpriteHighlight()
+    {
+        ClearTargetSpriteHighlight();
+
+        if (_phase != HudPhase.PickTarget)
+            return;
+
+        var target = GetSelectedTargetUnit();
+        if (target == null || !target.IsAlive)
+            return;
+
+        var highlight = CombatTargetSpriteHighlight.GetOrAdd(target);
+        if (highlight != null)
+        {
+            highlight.SetHighlighted(true);
+            _spriteHighlightedTarget = target;
+        }
     }
 
 
@@ -1284,6 +1330,10 @@ public class CombatBattleHud : MonoBehaviour
 
         }
 
+        UpdateTargetSpriteHighlight();
+
+        if (_phase == HudPhase.PickTarget)
+            RefreshEnemies();
     }
 
 

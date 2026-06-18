@@ -11,9 +11,16 @@ public class InventoryPanelToggle : MonoBehaviour
     [SerializeField] private InputActionReference inventoryAction;
     [SerializeField] private Inventory inventory;
 
+    [Header("Gold")]
+    [Tooltip("Optional; leave empty to use BlacksmithMaster.ResolveEconomy().")]
+    [SerializeField] private BlacksmithMaster blacksmithOverride;
+    [SerializeField] private string goldFormat = "Gold: {0}";
+
     private UIDocument _document;
     private VisualElement _overlay;
     private VisualElement _slotList;
+    private Label _goldLabel;
+    private BlacksmithMaster _economy;
     private readonly List<string> _slotLineBuffer = new();
 
     private void Awake()
@@ -34,6 +41,9 @@ public class InventoryPanelToggle : MonoBehaviour
 
         if (inventory != null)
             inventory.OnChanged += OnInventoryChanged;
+
+        RebindEconomySubscription();
+        RefreshGold();
     }
 
     private void OnDisable()
@@ -43,6 +53,10 @@ public class InventoryPanelToggle : MonoBehaviour
 
         if (inventory != null)
             inventory.OnChanged -= OnInventoryChanged;
+
+        if (_economy != null)
+            _economy.OnEconomyChanged -= RefreshGold;
+        _economy = null;
 
         SetOverlayVisible(false);
     }
@@ -100,7 +114,10 @@ public class InventoryPanelToggle : MonoBehaviour
             _document.rootVisualElement,
             "Inventory",
             "Hold Tab",
-            out _slotList);
+            out _slotList,
+            out _goldLabel);
+
+        RefreshGold();
     }
 
     private void OnInventoryChanged()
@@ -121,6 +138,34 @@ public class InventoryPanelToggle : MonoBehaviour
     {
         if (_overlay != null)
             _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+
+        if (visible)
+            RefreshGold();
+    }
+
+    private void RebindEconomySubscription()
+    {
+        var target = blacksmithOverride != null ? blacksmithOverride : BlacksmithMaster.ResolveEconomy();
+        if (_economy == target)
+            return;
+
+        if (_economy != null)
+            _economy.OnEconomyChanged -= RefreshGold;
+
+        _economy = target;
+        if (_economy != null)
+            _economy.OnEconomyChanged += RefreshGold;
+    }
+
+    private void RefreshGold()
+    {
+        if (_goldLabel == null)
+            return;
+
+        RebindEconomySubscription();
+
+        var amount = _economy != null ? _economy.PlayerGold : 0;
+        _goldLabel.text = string.Format(goldFormat, amount);
     }
 
     private void RefreshSlotRows()

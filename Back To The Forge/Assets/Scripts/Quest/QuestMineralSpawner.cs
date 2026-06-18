@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class QuestMineralSpawner : MonoBehaviour
 {
+    public static QuestMineralSpawner Instance { get; private set; }
+
     [Tooltip("Empty = any scene. Otherwise only this scene name (case-sensitive).")]
     [SerializeField] private string onlyWhenSceneName = "";
 
@@ -20,6 +22,28 @@ public class QuestMineralSpawner : MonoBehaviour
     [SerializeField] private int maxTries = 32;
 
     private GameObject _spawned;
+
+    /// <summary>World position of the active commission pickup, if one exists in the loaded scene.</summary>
+    public static bool TryGetActiveSpawnPosition(out Vector3 world)
+    {
+        world = default;
+        if (Instance == null || Instance._spawned == null)
+            return false;
+
+        world = Instance._spawned.transform.position;
+        return true;
+    }
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
 
     private void OnEnable()
     {

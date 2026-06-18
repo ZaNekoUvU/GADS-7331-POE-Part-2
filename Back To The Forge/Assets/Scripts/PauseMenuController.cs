@@ -27,10 +27,14 @@ public class PauseMenuController : MonoBehaviour
 
     private UIDocument _document;
     private VisualElement _overlay;
+    private VisualElement _menuPanel;
+    private Label _subtitleLabel;
+    private VisualElement _controlsBody;
     private VisualElement _commandsList;
     private readonly List<FfStyleMenuUi.MenuRow> _entries = new();
     private int _selectedIndex;
     private float _timeScaleBeforePause;
+    private bool _showingControls;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoCreateIfMissing()
@@ -94,7 +98,12 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         if (IsOpen)
-            Resume();
+        {
+            if (_showingControls)
+                ShowMainView();
+            else
+                Resume();
+        }
         else
             Open();
     }
@@ -134,11 +143,11 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         IsOpen = true;
+        _showingControls = false;
         _timeScaleBeforePause = Time.timeScale;
         Time.timeScale = 0f;
         _selectedIndex = 0;
-        RebuildEntries();
-        RefreshCommands();
+        ShowMainView();
         SetOverlayVisible(true);
     }
 
@@ -148,6 +157,7 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         IsOpen = false;
+        _showingControls = false;
         Time.timeScale = _timeScaleBeforePause > 0.01f ? _timeScaleBeforePause : 1f;
         FfStyleMenuUi.ReleaseFocus(_document);
         SetOverlayVisible(false);
@@ -213,9 +223,54 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         Instance.mainMenuSceneName = _pendingMainMenuSceneName;
-        if (IsOpen)
-            Instance.RebuildEntries();
-        Instance.RefreshCommands();
+        if (IsOpen && !Instance._showingControls)
+            Instance.ShowMainView();
+    }
+
+    private void ShowMainView()
+    {
+        _showingControls = false;
+
+        if (_subtitleLabel != null)
+            _subtitleLabel.text = "— Paused —";
+
+        if (_controlsBody != null)
+            _controlsBody.style.display = DisplayStyle.None;
+
+        if (_menuPanel != null)
+        {
+            _menuPanel.style.maxWidth = 360;
+            _menuPanel.style.minWidth = 280;
+        }
+
+        RebuildEntries();
+        _selectedIndex = 0;
+        RefreshCommands();
+    }
+
+    private void ShowControlsView()
+    {
+        _showingControls = true;
+
+        if (_subtitleLabel != null)
+            _subtitleLabel.text = "— Controls —";
+
+        if (_controlsBody != null)
+        {
+            _controlsBody.style.display = DisplayStyle.Flex;
+            FfStyleMenuUi.RefreshControlReferenceRows(_controlsBody, GameControlsReference.Entries);
+        }
+
+        if (_menuPanel != null)
+        {
+            _menuPanel.style.maxWidth = 480;
+            _menuPanel.style.minWidth = 360;
+        }
+
+        _entries.Clear();
+        _entries.Add(new FfStyleMenuUi.MenuRow("Back", ShowMainView));
+        _selectedIndex = 0;
+        RefreshCommands();
     }
 
     private void RebuildEntries()
@@ -228,6 +283,7 @@ public class PauseMenuController : MonoBehaviour
         var mainMenuAvailable = Application.CanStreamedLevelBeLoaded(mainMenuTarget);
 
         _entries.Add(new FfStyleMenuUi.MenuRow("Continue", Resume));
+        _entries.Add(new FfStyleMenuUi.MenuRow("Controls", ShowControlsView));
         _entries.Add(new FfStyleMenuUi.MenuRow("Restart", RestartCurrentScene));
         _entries.Add(new FfStyleMenuUi.MenuRow(
             mainMenuAvailable ? "Main menu" : "Main menu (add to build)",
@@ -249,8 +305,18 @@ public class PauseMenuController : MonoBehaviour
             "— Paused —",
             out _commandsList);
 
-        RebuildEntries();
-        RefreshCommands();
+        _menuPanel = _overlay.Q<VisualElement>("menu-panel");
+        _subtitleLabel = _overlay.Q<Label>("menu-subtitle");
+
+        _controlsBody = new VisualElement { name = "controls-body" };
+        _controlsBody.style.marginBottom = 12;
+        _controlsBody.style.display = DisplayStyle.None;
+        _controlsBody.pickingMode = PickingMode.Ignore;
+
+        if (_menuPanel != null && _commandsList != null)
+            _menuPanel.Insert(_menuPanel.IndexOf(_commandsList), _controlsBody);
+
+        ShowMainView();
         SetOverlayVisible(false);
     }
 

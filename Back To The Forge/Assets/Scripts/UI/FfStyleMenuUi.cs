@@ -322,8 +322,10 @@ public static class FfStyleMenuUi
         VisualElement documentRoot,
         string title,
         string subtitle,
-        out VisualElement slotList)
+        out VisualElement slotList,
+        out Label goldLabel)
     {
+        goldLabel = null;
         documentRoot.Clear();
         documentRoot.style.flexGrow = 1f;
         documentRoot.pickingMode = PickingMode.Ignore;
@@ -342,6 +344,7 @@ public static class FfStyleMenuUi
 
         var panel = new VisualElement { name = "inventory-panel" };
         panel.AddToClassList("hud-panel");
+        panel.style.flexDirection = FlexDirection.Column;
         panel.style.minWidth = 280;
         panel.style.maxWidth = 400;
         panel.style.paddingTop = 14;
@@ -366,8 +369,25 @@ public static class FfStyleMenuUi
 
         slotList = new VisualElement { name = "inventory-slots" };
         slotList.AddToClassList("command-list");
+        slotList.style.flexGrow = 1f;
+        slotList.style.flexShrink = 1f;
         slotList.pickingMode = PickingMode.Ignore;
         panel.Add(slotList);
+
+        var footer = new VisualElement { name = "inventory-footer" };
+        footer.style.flexDirection = FlexDirection.Row;
+        footer.style.justifyContent = Justify.FlexEnd;
+        footer.style.alignItems = Align.FlexEnd;
+        footer.style.marginTop = 8;
+        footer.style.paddingTop = 4;
+        footer.pickingMode = PickingMode.Ignore;
+        panel.Add(footer);
+
+        goldLabel = new Label { name = "inventory-gold", text = "Gold: 0" };
+        ApplyLabelStyle(goldLabel, 15f, true);
+        goldLabel.style.unityTextAlign = TextAnchor.MiddleRight;
+        goldLabel.style.whiteSpace = WhiteSpace.Normal;
+        footer.Add(goldLabel);
 
         return overlay;
     }
@@ -403,6 +423,46 @@ public static class FfStyleMenuUi
             row.Add(label);
 
             slotList.Add(row);
+        }
+    }
+
+    public static void RefreshControlReferenceRows(
+        VisualElement container,
+        IReadOnlyList<GameControlsReference.Entry> bindings)
+    {
+        if (container == null)
+            return;
+
+        container.Clear();
+
+        if (bindings == null || bindings.Count == 0)
+            return;
+
+        for (var i = 0; i < bindings.Count; i++)
+        {
+            var binding = bindings[i];
+            var row = new VisualElement();
+            row.name = $"control-row-{i}";
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.FlexStart;
+            row.style.marginBottom = 8;
+            row.pickingMode = PickingMode.Ignore;
+
+            var keys = new Label(binding.Keys);
+            keys.style.minWidth = 148;
+            keys.style.maxWidth = 148;
+            keys.style.whiteSpace = WhiteSpace.Normal;
+            ApplyLabelStyle(keys, 14f, true);
+
+            var desc = new Label(binding.Description);
+            desc.style.flexGrow = 1f;
+            desc.style.flexShrink = 1f;
+            desc.style.whiteSpace = WhiteSpace.Normal;
+            ApplyLabelStyle(desc, 13f, false, SubtitleColor);
+
+            row.Add(keys);
+            row.Add(desc);
+            container.Add(row);
         }
     }
 

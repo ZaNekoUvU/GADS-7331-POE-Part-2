@@ -16,6 +16,8 @@ public sealed class ForgeQuestManager : MonoBehaviour
     /// <summary>Standard ore (e.g. Iron) removed together on forge turn-in.</summary>
     public ItemDefinition ForgeIronTurnInItem { get; private set; }
     public bool OrePickedUp { get; private set; }
+    /// <summary>True after a successful forge turn-in until the player picks up commission ore again or the day resets.</summary>
+    public bool CommissionDelivered { get; private set; }
     /// <summary>Cached per-unit rate from last <see cref="BeginQuest"/> (for UI). Turn-in pay uses <see cref="BlacksmithMaster.GetUnitSellPrice"/>.</summary>
     public int GoldRewardPerUnit { get; private set; }
 
@@ -134,6 +136,7 @@ public sealed class ForgeQuestManager : MonoBehaviour
         QuestItemAsset = questInventoryItem;
         ForgeIronTurnInItem = ironTurnInItem;
         OrePickedUp = false;
+        CommissionDelivered = false;
         GoldRewardPerUnit = goldPerUnit;
         OnForgeQuestChanged?.Invoke();
     }
@@ -144,6 +147,7 @@ public sealed class ForgeQuestManager : MonoBehaviour
             return;
 
         OrePickedUp = true;
+        CommissionDelivered = false;
         OnForgeQuestChanged?.Invoke();
     }
 
@@ -199,6 +203,7 @@ public sealed class ForgeQuestManager : MonoBehaviour
             pay.AddGold(goldPaid);
 
         OrePickedUp = false;
+        CommissionDelivered = rm > 0;
         OnForgeQuestChanged?.Invoke();
         return rm;
     }
@@ -228,11 +233,42 @@ public sealed class ForgeQuestManager : MonoBehaviour
 
         QuestActive = false;
         OrePickedUp = false;
+        CommissionDelivered = false;
         QuestMaterialName = null;
         QuestItemAsset = null;
         ForgeIronTurnInItem = null;
         GoldRewardPerUnit = 0;
         OnForgeQuestChanged?.Invoke();
+    }
+
+    /// <summary>Counts commission ore in the player inventory (0 if none).</summary>
+    public int CountCommissionOreInInventory(Inventory inv)
+    {
+        if (!QuestActive || QuestItemAsset == null || inv == null)
+            return 0;
+
+        return CountOf(inv, QuestItemAsset);
+    }
+
+    /// <summary>True when the player is carrying at least one unit of the commissioned ore.</summary>
+    public bool HasCommissionOreInInventory(Inventory inv)
+    {
+        return CountCommissionOreInInventory(inv) > 0;
+    }
+
+    /// <summary>Counts supplementary turn-in ore (e.g. Iron) in the player inventory.</summary>
+    public int CountSupplementaryTurnInInInventory(Inventory inv)
+    {
+        if (!QuestActive || ForgeIronTurnInItem == null || inv == null)
+            return 0;
+
+        return CountOf(inv, ForgeIronTurnInItem);
+    }
+
+    /// <summary>True when the quest expects supplementary ore on turn-in and the player has none.</summary>
+    public bool IsMissingSupplementaryTurnIn(Inventory inv)
+    {
+        return QuestActive && ForgeIronTurnInItem != null && CountSupplementaryTurnInInInventory(inv) <= 0;
     }
 
     private static int CountOf(Inventory inv, ItemDefinition def)
