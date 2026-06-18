@@ -68,16 +68,39 @@ public class ForgeQuestChoiceUI : MonoBehaviour
 
     public IEnumerator RunRoutine(string buttonAText, string buttonBText, string buttonCText = null)
     {
-        BuildUi();
+        var labels = new List<string>(3) { buttonAText, buttonBText };
+        if (!string.IsNullOrEmpty(buttonCText))
+            labels.Add(buttonCText);
+
+        yield return RunChoiceListRoutine(labels, "— Choose —", includeCancel: false);
+    }
+
+    /// <summary>Shows a FF-style list; <see cref="LastChoice"/> is the picked index, or -1 if cancelled.</summary>
+    public IEnumerator RunChoiceListRoutine(
+        IReadOnlyList<string> optionLabels,
+        string subtitle = "— Choose —",
+        bool includeCancel = true)
+    {
+        BuildUi(subtitle);
         LastChoice = -1;
         _picked = null;
         _selectedIndex = 0;
 
         _rows.Clear();
-        _rows.Add(new FfStyleMenuUi.MenuRow(buttonAText, () => _picked = 0));
-        _rows.Add(new FfStyleMenuUi.MenuRow(buttonBText, () => _picked = 1));
-        if (!string.IsNullOrEmpty(buttonCText))
-            _rows.Add(new FfStyleMenuUi.MenuRow(buttonCText, () => _picked = 2));
+        if (optionLabels != null)
+        {
+            for (var i = 0; i < optionLabels.Count; i++)
+            {
+                var index = i;
+                _rows.Add(new FfStyleMenuUi.MenuRow(optionLabels[i], () => _picked = index));
+            }
+        }
+
+        if (includeCancel)
+            _rows.Add(new FfStyleMenuUi.MenuRow("Cancel", () => _picked = -1));
+
+        if (_rows.Count == 0)
+            yield break;
 
         RefreshCommands();
         IsBlockingGameplay = true;
@@ -112,9 +135,11 @@ public class ForgeQuestChoiceUI : MonoBehaviour
             MoveSelection(1);
         else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.zKey.wasPressedThisFrame)
             ActivateSelection();
+        else if (kb.escapeKey.wasPressedThisFrame || kb.xKey.wasPressedThisFrame)
+            _picked = -1;
     }
 
-    private void BuildUi()
+    private void BuildUi(string subtitle = "— Choose —")
     {
         _document = GetComponent<UIDocument>();
         if (_document == null)
@@ -123,7 +148,7 @@ public class ForgeQuestChoiceUI : MonoBehaviour
         FfStyleMenuUi.ConfigureDocument(_document, 5500);
         _overlay = FfStyleMenuUi.BuildChoiceOverlay(
             _document.rootVisualElement,
-            "— Choose —",
+            subtitle,
             out _commandsList);
     }
 

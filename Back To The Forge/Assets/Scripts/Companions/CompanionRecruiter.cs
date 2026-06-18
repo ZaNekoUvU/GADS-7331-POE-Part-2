@@ -191,11 +191,6 @@ public class CompanionRecruiter : MonoBehaviour
         if (mgr != null && _activePartySlot >= 0)
             mgr.BindPhysicalFollowerToSlot(_activePartySlot, gameObject);
 
-        var talk = GetComponent<HiredCompanionDialogue>();
-        if (talk == null)
-            talk = gameObject.AddComponent<HiredCompanionDialogue>();
-        talk.Configure(offer, _activePartySlot, interactAction);
-
         if (_returnHomeRoutine != null)
         {
             StopCoroutine(_returnHomeRoutine);
@@ -230,6 +225,16 @@ public class CompanionRecruiter : MonoBehaviour
 
         EnsureFollowerConfigured();
         follower.enabled = true;
+        DisableWorldGameplayColliders(gameObject);
+    }
+
+    private static void DisableWorldGameplayColliders(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        foreach (var col in root.GetComponentsInChildren<Collider2D>(true))
+            col.enabled = false;
     }
 
     private void EnsureFollowerConfigured()
@@ -267,10 +272,6 @@ public class CompanionRecruiter : MonoBehaviour
             _isFollowingPlayer = false;
             if (_activePartySlot >= 0)
                 HiredCompanionManager.Instance?.UnbindPhysicalFollowerSlot(_activePartySlot);
-
-            var talk = GetComponent<HiredCompanionDialogue>();
-            if (talk != null)
-                Destroy(talk);
 
             var follower = GetComponent<CompanionFollower2D>();
             if (follower != null)

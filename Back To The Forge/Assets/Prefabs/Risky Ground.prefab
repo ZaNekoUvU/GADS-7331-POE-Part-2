@@ -155,5 +155,9 @@ MonoBehaviour:
   combatStarter: {fileID: 0}
   coordinator: {fileID: 0}
   encounterId: 1
-  rollIntervalSeconds: 1
+  rollIntervalSeconds: 3
   chancePerRoll: 0.1
+  cooldownAfterEncounterSeconds: 45
+  requireMovementBetweenRolls: 1
+  minMoveDistanceBetweenRolls: 1.1
+  logRollResults: 0

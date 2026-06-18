@@ -297,24 +297,114 @@ public class BlacksmithQuestGiver : MonoBehaviour
             yield break;
         }
 
+        var inv = ResolvePlayerInventory();
         ActiveDialogue.ShowAwaitingLine(profile.CharacterName, "…");
 
-        var sb = new StringBuilder(384);
-        sb.AppendLine(BuildPersonaHeader());
-        sb.AppendLine(
-            $"The traveler is here for small talk. You already asked them to fetch \"{q.QuestMaterialName}\" — do not repeat the full commission speech. " +
-            "One or two short casual sentences.");
-        var sys = sb.ToString();
+        var sys = BuildSmallTalkSystemPrompt(q, inv);
         var user = "Say your line only.";
 
         string line = null;
         string err = null;
         yield return StartCoroutine(ollamaService.RequestRoleplayLineCoroutine(sys, user, s => line = s, e => err = e));
 
+        if (!string.IsNullOrWhiteSpace(line) && SmallTalkContradictsInventory(line, q, inv))
+        {
+            Debug.LogWarning($"[ForgeQuest] Small talk contradicted inventory — using fallback. Raw: {line}", this);
+            line = null;
+        }
+
         if (!string.IsNullOrWhiteSpace(line))
             ActiveDialogue.Show(profile.CharacterName, line);
         else
-            ActiveDialogue.Show(profile.CharacterName, "Mind the forge — and those tunnels.");
+            ActiveDialogue.Show(profile.CharacterName, BuildSmallTalkFallback(q, inv));
+    }
+
+    private string BuildSmallTalkSystemPrompt(ForgeQuestManager q, Inventory inv)
+    {
+        var sb = new StringBuilder(640);
+        sb.AppendLine(BuildPersonaHeader());
+        sb.AppendLine("Facts (must follow exactly — do not contradict or invent inventory):");
+        AppendCommissionInventoryFacts(sb, q, inv);
+        sb.AppendLine("- The traveler chose casual small talk, not a turn-in.");
+        sb.AppendLine("- One or two short casual sentences only.");
+        sb.AppendLine("- Do not repeat the full commission speech.");
+        sb.AppendLine(
+            "- NEVER say they already brought, delivered, handed over, found, or finished gathering the commission ore " +
+            "unless the pack count above is greater than zero.");
+        sb.AppendLine("- NEVER thank them for commission ore unless that count is greater than zero.");
+        sb.AppendLine("- If they do not have it yet, you may encourage them or mention the forge — nothing is delivered yet.");
+        sb.AppendLine("- No meta, no 'the user', no JSON.");
+        return sb.ToString();
+    }
+
+    private static void AppendCommissionInventoryFacts(StringBuilder sb, ForgeQuestManager q, Inventory inv)
+    {
+        var material = q.QuestMaterialName ?? "the commission ore";
+        var commissionCount = q.CountCommissionOreInInventory(inv);
+        sb.AppendLine($"- Active commission material: {material}");
+        sb.AppendLine($"- Commission ore in traveler's pack RIGHT NOW: {commissionCount} (game truth).");
+
+        if (q.ForgeIronTurnInItem != null)
+        {
+            var ironName = q.ForgeIronTurnInItem.DisplayName;
+            var ironCount = q.CountSupplementaryTurnInInInventory(inv);
+            sb.AppendLine($"- {ironName} in traveler's pack RIGHT NOW: {ironCount} (game truth).");
+        }
+
+        if (commissionCount <= 0)
+            sb.AppendLine($"- They do NOT have {material} yet. Do not speak as if they do.");
+        else if (q.ForgeIronTurnInItem != null && q.CountSupplementaryTurnInInInventory(inv) <= 0)
+            sb.AppendLine(
+                $"- They have some {material}, but still need {q.ForgeIronTurnInItem.DisplayName} from the mines before turn-in.");
+        else
+            sb.AppendLine("- They may have enough to turn in later, but this is only small talk — do not pay or close the quest.");
+    }
+
+    private static bool SmallTalkContradictsInventory(string line, ForgeQuestManager q, Inventory inv)
+    {
+        if (string.IsNullOrWhiteSpace(line) || q == null || q.CountCommissionOreInInventory(inv) > 0)
+            return false;
+
+        var lower = line.ToLowerInvariant();
+        var material = q.QuestMaterialName?.Trim().ToLowerInvariant();
+
+        if (ContainsAny(lower,
+                "you brought", "you've brought", "you have brought", "you delivered", "you've delivered",
+                "you handed", "you've handed", "good haul", "nice haul", "well done finding",
+                "already found", "already got", "already have", "got it already", "have it already"))
+            return true;
+
+        if (string.IsNullOrEmpty(material))
+            return false;
+
+        if (lower.Contains(material) && ContainsAny(lower,
+                "you have", "you've got", "you got", "in your pack", "in your bag", "brought the", "found the"))
+            return true;
+
+        return false;
+    }
+
+    private static bool ContainsAny(string text, params string[] phrases)
+    {
+        for (var i = 0; i < phrases.Length; i++)
+        {
+            if (text.Contains(phrases[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string BuildSmallTalkFallback(ForgeQuestManager q, Inventory inv)
+    {
+        var material = q.QuestMaterialName ?? "that ore";
+        if (q.CountCommissionOreInInventory(inv) <= 0)
+            return $"Still after {material}? Check the tunnels — I'll be here.";
+
+        if (q.ForgeIronTurnInItem != null && q.CountSupplementaryTurnInInInventory(inv) <= 0)
+            return $"You've got {material}. Don't forget {q.ForgeIronTurnInItem.DisplayName} from the mines.";
+
+        return "Mind the forge — and those tunnels.";
     }
 
     private string BuildTurnInSystemPrompt(string materialName, int questMineralUnits, int ironUnits, int goldPaid)

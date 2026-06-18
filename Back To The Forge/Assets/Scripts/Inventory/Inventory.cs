@@ -20,8 +20,14 @@ public class Inventory : MonoBehaviour
     public event Action OnChanged;
     public event Action<ItemDefinition, int> OnItemAdded;
 
+    public enum ItemAddContext
+    {
+        Pickup,
+        Gather
+    }
+
     /// <summary>Returns how many items could not be added (0 if all fit).</summary>
-    public int TryAdd(ItemDefinition item, int amount)
+    public int TryAdd(ItemDefinition item, int amount, ItemAddContext context = ItemAddContext.Pickup, string sourceDetail = null)
     {
         if (item == null || amount <= 0)
             return amount;
@@ -47,7 +53,7 @@ public class Inventory : MonoBehaviour
 
             if (remaining <= 0)
             {
-                NotifyItemAdded(item, added);
+                NotifyItemAdded(item, added, context, sourceDetail);
                 return 0;
             }
         }
@@ -65,7 +71,7 @@ public class Inventory : MonoBehaviour
         }
 
         if (added > 0)
-            NotifyItemAdded(item, added);
+            NotifyItemAdded(item, added, context, sourceDetail);
 
         return remaining;
     }
@@ -196,10 +202,17 @@ public class Inventory : MonoBehaviour
         OnChanged?.Invoke();
     }
 
-    private void NotifyItemAdded(ItemDefinition item, int amountAdded)
+    private void NotifyItemAdded(ItemDefinition item, int amountAdded, ItemAddContext context, string sourceDetail)
     {
         OnChanged?.Invoke();
-        if (item != null && amountAdded > 0)
-            OnItemAdded?.Invoke(item, amountAdded);
+        if (item == null || amountAdded <= 0)
+            return;
+
+        var prefix = context == ItemAddContext.Gather ? "[Gather]" : "[Pickup]";
+        var name = string.IsNullOrWhiteSpace(item.DisplayName) ? item.name : item.DisplayName.Trim();
+        var detail = string.IsNullOrWhiteSpace(sourceDetail) ? string.Empty : $" from '{sourceDetail.Trim()}'";
+        Debug.Log($"{prefix} +{amountAdded} {name}{detail} (total in bag: {CountItem(item)}).", this);
+
+        OnItemAdded?.Invoke(item, amountAdded);
     }
 }

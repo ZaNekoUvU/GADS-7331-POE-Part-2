@@ -136,6 +136,16 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
 
         follower.Configure(playerT, slotIndex);
         follower.enabled = true;
+        DisableWorldGameplayColliders(root);
+    }
+
+    private static void DisableWorldGameplayColliders(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        foreach (var col in root.GetComponentsInChildren<Collider2D>(true))
+            col.enabled = false;
     }
 
     private GameObject SpawnFollower(int unitId, int slotIndex)
@@ -169,7 +179,10 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
         rb.simulated = true;
 
         foreach (var col in go.GetComponentsInChildren<Collider2D>(true))
+        {
             col.isTrigger = true;
+            col.enabled = false;
+        }
 
         var follower = go.GetComponent<CompanionFollower2D>();
         if (follower == null)

@@ -6,6 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class QuestMineralPickup : MonoBehaviour
 {
+    private bool _pickedUp;
+
     private void Reset()
     {
         var c = GetComponent<Collider2D>();
@@ -14,8 +16,13 @@ public class QuestMineralPickup : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (_pickedUp)
+            return;
+
         if (!PlayerMovement2D.IsPlayerCharacterCollider(other))
             return;
+
+        _pickedUp = true;
 
         var q = ForgeQuestManager.Instance;
         if (q == null || !q.QuestActive || q.QuestItemAsset == null)
@@ -28,7 +35,7 @@ public class QuestMineralPickup : MonoBehaviour
             return;
         }
 
-        var leftover = inv.TryAdd(q.QuestItemAsset, 1);
+        var leftover = inv.TryAdd(q.QuestItemAsset, 1, Inventory.ItemAddContext.Pickup, "forge commission");
         if (leftover > 0)
         {
             Debug.LogWarning($"{nameof(QuestMineralPickup)}: Inventory full — could not add commission ore.", this);

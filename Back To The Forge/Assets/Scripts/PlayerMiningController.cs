@@ -104,7 +104,7 @@ public class PlayerMiningController : MonoBehaviour
             if (vein == null || !vein.HasOreLeft)
                 break;
 
-            var leftover = inventory.TryAdd(vein.OreDefinition, vein.OrePerTick);
+            var leftover = inventory.TryAdd(vein.OreDefinition, vein.OrePerTick, Inventory.ItemAddContext.Gather, vein.name);
             if (leftover > 0)
             {
                 Debug.LogWarning("Inventory full — cannot add more.", this);

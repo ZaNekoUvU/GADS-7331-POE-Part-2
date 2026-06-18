@@ -22,7 +22,7 @@ public static class GameControlsReference
     {
         new("W A S D / Arrows", "Move in exploration"),
         new("E", "Interact — talk, advance dialogue, hold to mine"),
-        new("E (near hired merc)", "Talk to companion — type reply, Enter to send"),
+        new("C", "Talk to a hired mercenary (pick from party list)"),
         new("Tab (hold)", "Inventory and sell prices"),
         new("Enter / Z", "Confirm menu or dialogue choice"),
         new("Esc / P", "Pause / unpause"),
