@@ -26,6 +26,10 @@ public class HireableCompanionOffer : ScriptableObject
     [TextArea(2, 3)] [SerializeField] private string partyFullLine =
         "You've already got three blades with you. Dismiss one before hiring another.";
 
+    [Header("Morale battle skills (from dialogue)")]
+    [SerializeField] private MercenaryMoraleSkill positiveMoraleSkill;
+    [SerializeField] private MercenaryMoraleSkill negativeMoraleSkill;
+
     public UnitDefinition Unit => unit;
     public int HireCost => Mathf.Max(0, hireCost);
     public int UnitId => unit != null ? unit.UnitId : 0;
@@ -57,4 +61,6 @@ public class HireableCompanionOffer : ScriptableObject
     public string CannotAffordLine => cannotAffordLine;
     public string CompanionJoinLine => companionJoinLine;
     public string PartyFullLine => partyFullLine;
+    public MercenaryMoraleSkill PositiveMoraleSkill => positiveMoraleSkill;
+    public MercenaryMoraleSkill NegativeMoraleSkill => negativeMoraleSkill;
 }

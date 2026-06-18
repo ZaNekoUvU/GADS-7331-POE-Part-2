@@ -19,16 +19,23 @@ public class SimpleRpgDialogueUI : MonoBehaviour
     [SerializeField] private InputActionReference advanceAction;
 
     private UIDocument _document;
-    private VisualElement _dialogueHost;
+    private VisualElement _overlay;
     private Label _speakerLabel;
     private Label _lineLabel;
     private bool _advanceAllowed = true;
+    private bool _uiBuilt;
 
     private void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(this);
+            return;
+        }
+
+        if (ShouldRelocateOffLegacyCanvasHost())
+        {
+            RelocateToDedicatedOverlayHost();
             return;
         }
 
@@ -64,10 +71,6 @@ public class SimpleRpgDialogueUI : MonoBehaviour
     {
         if (Instance != null)
             return Instance;
-
-        var existing = FindAnyObjectByType<SimpleRpgDialogueUI>();
-        if (existing != null)
-            return existing;
 
         var go = new GameObject($"[{nameof(SimpleRpgDialogueUI)}]");
         return go.AddComponent<SimpleRpgDialogueUI>();
@@ -106,22 +109,40 @@ public class SimpleRpgDialogueUI : MonoBehaviour
             IsDialogueOpen = false;
     }
 
+    private bool ShouldRelocateOffLegacyCanvasHost()
+    {
+        return GetComponent<Canvas>() != null || GetComponent<RectTransform>() != null;
+    }
+
+    private void RelocateToDedicatedOverlayHost()
+    {
+        var host = new GameObject($"[{nameof(SimpleRpgDialogueUI)}]");
+        var ui = host.AddComponent<SimpleRpgDialogueUI>();
+        ui.advanceAction = advanceAction;
+        enabled = false;
+    }
+
     private void BuildUi()
     {
         _document = GetComponent<UIDocument>();
         if (_document == null)
             _document = gameObject.AddComponent<UIDocument>();
 
-        FfStyleMenuUi.ConfigureDocument(_document, 5000);
-        _dialogueHost = FfStyleMenuUi.BuildDialoguePanel(
+        var legacyCanvas = GetComponent<Canvas>();
+        if (legacyCanvas != null)
+            legacyCanvas.enabled = false;
+
+        FfStyleMenuUi.ConfigureDocument(_document, 5050);
+        _overlay = FfStyleMenuUi.BuildDialoguePanel(
             _document.rootVisualElement,
             out _speakerLabel,
             out _lineLabel);
+        _uiBuilt = true;
     }
 
     private void ShowInternal(string speaker, string line, bool advanceInitiallyAllowed)
     {
-        if (_document == null || _speakerLabel == null || _lineLabel == null)
+        if (!_uiBuilt || _document == null || _speakerLabel == null || _lineLabel == null)
             BuildUi();
 
         StopAllCoroutines();
@@ -160,8 +181,8 @@ public class SimpleRpgDialogueUI : MonoBehaviour
 
     private void SetVisible(bool visible)
     {
-        if (_dialogueHost != null)
-            _dialogueHost.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+        if (_overlay != null)
+            _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
     private bool WasAdvancePressedThisFrame()

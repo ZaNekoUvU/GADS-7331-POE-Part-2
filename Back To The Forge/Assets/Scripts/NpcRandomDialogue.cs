@@ -48,7 +48,8 @@ public class NpcRandomDialogue : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay
+            || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_playerProximity.Count <= 0)
@@ -60,13 +61,11 @@ public class NpcRandomDialogue : MonoBehaviour
         if (randomLines == null || randomLines.Length == 0)
             return;
 
-        var ui = dialogueUi != null ? dialogueUi : SimpleRpgDialogueUI.GetOrCreate();
-
         var line = randomLines[Random.Range(0, randomLines.Length)];
         if (string.IsNullOrWhiteSpace(line))
             return;
 
-        ui.Show(speakerDisplayName, line.Trim());
+        SimpleRpgDialogueUI.GetOrCreate().Show(speakerDisplayName, line.Trim());
     }
 
     private bool WasInteractPressedThisFrame()

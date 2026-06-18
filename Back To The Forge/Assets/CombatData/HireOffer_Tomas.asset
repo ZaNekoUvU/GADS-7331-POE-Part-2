@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 10
   recruitLabel: 
   personalityTrait: Big-hearted farmhand — earnest, strong, naive.
+  personalityVoice: Shy and earnest country fighter. Blossoms when praised, thanked, or gently
+    encouraged. Crumbles when mocked, shouted at, or called useless.
   npcDisplayName: Tomas
   openingLine: I left the fields to see the world! I can swing a hoe—or a sword, if you pay me.
   cannotAffordLine: Oh. I guess I should head home and save up first.
   companionJoinLine: Thank you! I'll do my best out there. I really will!
   partyFullLine: You already have three friends with you. That's a whole barnful!
+  positiveMoraleSkill:
+    skillName: Steady Heart
+    description: Kind words swell his courage and lifts the whole party's attack.
+    effectKind: 1
+    magnitude: 0.18
+  negativeMoraleSkill:
+    skillName: Crushed Spirit
+    description: Harsh words break his confidence and drag the party down.
+    effectKind: 2
+    magnitude: 0.15

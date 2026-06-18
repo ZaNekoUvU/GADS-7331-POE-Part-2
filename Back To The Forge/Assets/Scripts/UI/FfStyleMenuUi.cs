@@ -194,36 +194,7 @@ public static class FfStyleMenuUi
         out Label speakerLabel,
         out Label lineLabel)
     {
-        documentRoot.Clear();
-        documentRoot.style.flexGrow = 1f;
-        documentRoot.pickingMode = PickingMode.Ignore;
-
-        var styleSheet = Resources.Load<StyleSheet>(StyleSheetResource);
-        if (styleSheet != null)
-            documentRoot.styleSheets.Add(styleSheet);
-
-        var host = new VisualElement { name = "dialogue-host" };
-        host.style.position = Position.Absolute;
-        host.style.left = 0;
-        host.style.right = 0;
-        host.style.bottom = 0;
-        host.style.paddingLeft = 16;
-        host.style.paddingRight = 16;
-        host.style.paddingBottom = 20;
-        host.style.paddingTop = 0;
-        host.pickingMode = PickingMode.Ignore;
-        documentRoot.Add(host);
-
-        var panel = new VisualElement { name = "dialogue-panel" };
-        panel.AddToClassList("hud-panel");
-        panel.style.flexGrow = 0f;
-        panel.style.flexShrink = 0f;
-        panel.style.minHeight = 120;
-        panel.style.paddingTop = 12;
-        panel.style.paddingBottom = 12;
-        panel.style.paddingLeft = 16;
-        panel.style.paddingRight = 16;
-        host.Add(panel);
+        var overlay = BuildDialogueOverlayShell(documentRoot, out var panel);
 
         speakerLabel = new Label { name = "dialogue-speaker" };
         ApplyLabelStyle(speakerLabel, 18f, true, SubtitleColor);
@@ -235,7 +206,183 @@ public static class FfStyleMenuUi
         lineLabel.style.whiteSpace = WhiteSpace.Normal;
         panel.Add(lineLabel);
 
-        return host;
+        return overlay;
+    }
+
+    /// <summary>
+    /// Party merc chat: same shell as <see cref="BuildDialoguePanel"/>, plus morale hint and a reply field.
+    /// </summary>
+    public static VisualElement BuildCompanionConversationPanel(
+        VisualElement documentRoot,
+        out Label speakerLabel,
+        out Label lineLabel,
+        out Label statusLabel,
+        out TextField inputField)
+    {
+        var overlay = BuildDialogueOverlayShell(documentRoot, out var panel);
+
+        speakerLabel = new Label { name = "dialogue-speaker" };
+        ApplyLabelStyle(speakerLabel, 18f, true, SubtitleColor);
+        speakerLabel.style.marginBottom = 8;
+        panel.Add(speakerLabel);
+
+        lineLabel = new Label { name = "dialogue-line" };
+        ApplyLabelStyle(lineLabel, 16f, false);
+        lineLabel.style.whiteSpace = WhiteSpace.Normal;
+        lineLabel.style.marginBottom = 6;
+        panel.Add(lineLabel);
+
+        statusLabel = new Label { name = "companion-dialogue-status" };
+        ApplyLabelStyle(statusLabel, 12f, false, SubtitleColor);
+        statusLabel.style.whiteSpace = WhiteSpace.Normal;
+        statusLabel.style.marginBottom = 8;
+        panel.Add(statusLabel);
+
+        var inputRow = new VisualElement { name = "companion-dialogue-input-row" };
+        inputRow.AddToClassList("companion-dialogue-input-row");
+        panel.Add(inputRow);
+
+        var inputLabel = new Label("›");
+        ApplyLabelStyle(inputLabel, 18f, true);
+        inputLabel.style.marginRight = 6;
+        inputRow.Add(inputLabel);
+
+        inputField = new TextField { name = "companion-dialogue-input" };
+        inputField.AddToClassList("companion-dialogue-input");
+        inputField.style.flexGrow = 1f;
+        inputRow.Add(inputField);
+
+        return overlay;
+    }
+
+    /// <summary>Top-left quest objective — same panel and typography as dialogue UI.</summary>
+    public static VisualElement BuildQuestObjectivePanel(
+        VisualElement documentRoot,
+        string headerText,
+        out Label headerLabel,
+        out Label bodyLabel)
+    {
+        documentRoot.Clear();
+        documentRoot.style.flexGrow = 1f;
+        documentRoot.style.position = Position.Absolute;
+        documentRoot.style.left = 0;
+        documentRoot.style.right = 0;
+        documentRoot.style.top = 0;
+        documentRoot.style.bottom = 0;
+        documentRoot.pickingMode = PickingMode.Ignore;
+
+        AttachStyleSheet(documentRoot);
+
+        var panel = new VisualElement { name = "dialogue-panel" };
+        panel.AddToClassList("hud-panel");
+        panel.style.position = Position.Absolute;
+        panel.style.top = 16;
+        panel.style.left = 16;
+        panel.style.flexGrow = 0f;
+        panel.style.flexShrink = 0f;
+        panel.style.flexBasis = StyleKeyword.Auto;
+        panel.style.minWidth = 220;
+        panel.style.maxWidth = 420;
+        panel.style.paddingTop = 12;
+        panel.style.paddingBottom = 12;
+        panel.style.paddingLeft = 16;
+        panel.style.paddingRight = 16;
+        panel.pickingMode = PickingMode.Ignore;
+        documentRoot.Add(panel);
+
+        headerLabel = new Label { name = "dialogue-speaker", text = headerText };
+        ApplyLabelStyle(headerLabel, 18f, true, SubtitleColor);
+        headerLabel.style.marginBottom = 8;
+        panel.Add(headerLabel);
+
+        bodyLabel = new Label { name = "dialogue-line" };
+        ApplyLabelStyle(bodyLabel, 16f, false);
+        bodyLabel.style.whiteSpace = WhiteSpace.Normal;
+        panel.Add(bodyLabel);
+
+        return panel;
+    }
+
+    private static VisualElement BuildDialogueOverlayShell(VisualElement documentRoot, out VisualElement panel)
+    {
+        documentRoot.Clear();
+        documentRoot.style.flexGrow = 1f;
+        documentRoot.style.position = Position.Absolute;
+        documentRoot.style.left = 0;
+        documentRoot.style.right = 0;
+        documentRoot.style.top = 0;
+        documentRoot.style.bottom = 0;
+        documentRoot.pickingMode = PickingMode.Position;
+
+        AttachStyleSheet(documentRoot);
+
+        var overlay = new VisualElement { name = "dialogue-overlay" };
+        overlay.style.position = Position.Absolute;
+        overlay.style.left = 0;
+        overlay.style.right = 0;
+        overlay.style.top = 0;
+        overlay.style.bottom = 0;
+        overlay.style.backgroundColor = new Color(0f, 0f, 0f, 0.2f);
+        overlay.pickingMode = PickingMode.Position;
+        documentRoot.Add(overlay);
+
+        var host = new VisualElement { name = "dialogue-host" };
+        host.style.position = Position.Absolute;
+        host.style.left = 0;
+        host.style.right = 0;
+        host.style.bottom = 0;
+        host.style.paddingLeft = 16;
+        host.style.paddingRight = 16;
+        host.style.paddingBottom = 20;
+        host.style.paddingTop = 0;
+        host.style.flexDirection = FlexDirection.Column;
+        host.style.alignItems = Align.Stretch;
+        host.pickingMode = PickingMode.Position;
+        overlay.Add(host);
+
+        panel = new VisualElement { name = "dialogue-panel" };
+        panel.AddToClassList("hud-panel");
+        panel.style.flexGrow = 0f;
+        panel.style.flexShrink = 0f;
+        panel.style.flexBasis = StyleKeyword.Auto;
+        panel.style.minHeight = 120;
+        panel.style.width = Length.Percent(100);
+        panel.style.maxWidth = 720;
+        panel.style.alignSelf = Align.Center;
+        panel.style.paddingTop = 12;
+        panel.style.paddingBottom = 12;
+        panel.style.paddingLeft = 16;
+        panel.style.paddingRight = 16;
+        host.Add(panel);
+
+        return overlay;
+    }
+
+    public static VisualElement BuildClickableCommandRow(string label, Action onClick, bool enabled = true)
+    {
+        var row = new VisualElement();
+        row.AddToClassList("command-row");
+        row.pickingMode = PickingMode.Position;
+        if (!enabled)
+            row.AddToClassList("command-row--disabled");
+
+        var cursor = new Label("▶");
+        cursor.AddToClassList("command-cursor");
+        row.Add(cursor);
+
+        var text = new Label(label);
+        text.AddToClassList("command-label");
+        text.pickingMode = PickingMode.Ignore;
+        row.Add(text);
+
+        if (enabled && onClick != null)
+        {
+            row.RegisterCallback<ClickEvent>(_ => onClick());
+            row.RegisterCallback<PointerEnterEvent>(_ => row.AddToClassList("command-row--selected"));
+            row.RegisterCallback<PointerLeaveEvent>(_ => row.RemoveFromClassList("command-row--selected"));
+        }
+
+        return row;
     }
 
     /// <summary>Small anchored HUD panel (gold, inventory, etc.).</summary>

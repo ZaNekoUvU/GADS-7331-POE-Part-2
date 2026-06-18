@@ -95,6 +95,10 @@ public class CombatTurnManager : MonoBehaviour
 
         BuildTurnOrder();
         _autoTurnRoutineActive = false;
+
+        if (!string.IsNullOrWhiteSpace(CombatSession.PartyMoraleSummary))
+            Debug.Log($"[Combat] Mercenary morale: {CombatSession.PartyMoraleSummary} (party ATK x{CombatSession.PartyAttackMultiplier:0.##})", this);
+
         LogTurnState();
         NotifyTurnChanged();
         TryScheduleAutoTurn();
@@ -354,7 +358,7 @@ public class CombatTurnManager : MonoBehaviour
                 && !IsPlayerCommandActor(previousActor)
                 && GetPlayerHero() is { } hero)
             {
-                hero.RegenerateMana(PlayerManaRegenPerTurn);
+                hero.RegenerateMana(PlayerManaRegenPerTurn + CombatSession.HeroBonusManaRegen);
             }
         }
 

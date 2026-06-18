@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 30
   recruitLabel: 
   personalityTrait: Cynical rogue — dry humor, sharp strikes.
+  personalityVoice: Dry, sarcastic rogue. Respects honesty and competence; hates flattery,
+    pity, and being underestimated or ordered around like a lackey.
   npcDisplayName: Mira
   openingLine: Everybody wants a blade for hire. I'm expensive because I'm still breathing.
   cannotAffordLine: Cute. You can't afford me.
   companionJoinLine: Fine. I'll fight. Don't expect cheerful banter.
   partyFullLine: You already hired three. I'm not joining a parade.
+  positiveMoraleSkill:
+    skillName: Cutting Remark
+    description: Respect sharpens her edge — her strikes hit much harder.
+    effectKind: 3
+    magnitude: 0.3
+  negativeMoraleSkill:
+    skillName: Sour Blade
+    description: Insults leave her swinging with bitter, weaker blows.
+    effectKind: 4
+    magnitude: 0.15

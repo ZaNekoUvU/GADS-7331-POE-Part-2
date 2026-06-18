@@ -58,6 +58,8 @@ public class MercenaryCampSpawner : MonoBehaviour
             return;
         }
 
+        MercenaryOfferLookup.RegisterCatalog(catalog);
+
         var template = recruiterPrefab != null ? recruiterPrefab : catalog.RecruiterPrefab;
         if (template == null)
         {

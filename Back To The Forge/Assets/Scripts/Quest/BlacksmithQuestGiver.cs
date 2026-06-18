@@ -32,8 +32,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
     [SerializeField] private Inventory playerInventory;
     [SerializeField] private PlayerPersistentCombatHealth playerHealth;
     [SerializeField] private OllamaDialogueService ollamaService;
-    [SerializeField] private SimpleRpgDialogueUI dialogueUi;
     [SerializeField] private ForgeQuestChoiceUI choiceUi;
+
+    private SimpleRpgDialogueUI ActiveDialogue => SimpleRpgDialogueUI.GetOrCreate();
 
     [Header("Fallback wording")]
     [SerializeField] private string offerFallback =
@@ -91,7 +92,8 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay
+            || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_playerProximity.Count <= 0 || _sessionBusy || profile == null || questMineralDefinition == null
@@ -103,8 +105,6 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         if (ollamaService == null)
             ollamaService = OllamaDialogueService.GetOrCreate();
-        if (dialogueUi == null)
-            dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
         if (choiceUi == null)
             choiceUi = ForgeQuestChoiceUI.GetOrCreate();
         if (playerInventory == null)
@@ -136,14 +136,14 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (ollamaService.IsBusy)
         {
             ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
-            dialogueUi.Show(profile.CharacterName, offerFallback);
+            ActiveDialogue.Show(profile.CharacterName, offerFallback);
             yield break;
         }
 
         ForgeQuestOfferDto dto = null;
         string err = null;
 
-        dialogueUi.ShowAwaitingLine(profile.CharacterName, "…");
+        ActiveDialogue.ShowAwaitingLine(profile.CharacterName, "…");
 
         yield return StartCoroutine(ollamaService.RequestForgeQuestOfferCoroutine(
             profile.CharacterName,
@@ -154,13 +154,13 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (dto != null)
         {
             ForgeQuestManager.GetOrCreate().BeginQuest(dto.materialName, questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
-            dialogueUi.SetDialogueLineAndAllowAdvance(dto.requestLine);
+            ActiveDialogue.SetDialogueLineAndAllowAdvance(dto.requestLine);
         }
         else
         {
             Debug.LogWarning($"[ForgeQuest] Offer failed: {err}. Using fallback.", this);
             ForgeQuestManager.GetOrCreate().BeginQuest("Raw Emberglass", questMineralDefinition, forgeIronTurnInDefinition, CommissionGoldPerUnitHint());
-            dialogueUi.SetDialogueLineAndAllowAdvance(offerFallback);
+            ActiveDialogue.SetDialogueLineAndAllowAdvance(offerFallback);
         }
     }
 
@@ -248,19 +248,19 @@ public class BlacksmithQuestGiver : MonoBehaviour
         var inv = ResolvePlayerInventory();
         if (q == null || inv == null)
         {
-            dialogueUi.Show(profile.CharacterName, turnInEmptyFallback);
+            ActiveDialogue.Show(profile.CharacterName, turnInEmptyFallback);
             yield break;
         }
 
         if (!q.CanTurnIn(inv, out var blockerMessage))
         {
-            dialogueUi.Show(profile.CharacterName, blockerMessage);
+            ActiveDialogue.Show(profile.CharacterName, blockerMessage);
             yield break;
         }
 
         var materialName = q.QuestMaterialName;
 
-        dialogueUi.ShowAwaitingLine(profile.CharacterName, "…");
+        ActiveDialogue.ShowAwaitingLine(profile.CharacterName, "…");
 
         EnsureBlacksmithResolved();
 
@@ -273,9 +273,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
         yield return StartCoroutine(ollamaService.RequestRoleplayLineCoroutine(sys, user, s => line = s, e => err = e));
 
         if (!string.IsNullOrWhiteSpace(line))
-            dialogueUi.Show(profile.CharacterName, line);
+            ActiveDialogue.Show(profile.CharacterName, line);
         else
-            dialogueUi.Show(profile.CharacterName, unitsQuest > 0 ? turnInThanksFallback : turnInEmptyFallback);
+            ActiveDialogue.Show(profile.CharacterName, unitsQuest > 0 ? turnInThanksFallback : turnInEmptyFallback);
 
         if (unitsQuest <= 0)
             yield break;
@@ -293,11 +293,11 @@ public class BlacksmithQuestGiver : MonoBehaviour
         var q = ForgeQuestManager.Instance;
         if (q == null || !q.QuestActive)
         {
-            dialogueUi.Show(profile.CharacterName, "Come back later.");
+            ActiveDialogue.Show(profile.CharacterName, "Come back later.");
             yield break;
         }
 
-        dialogueUi.ShowAwaitingLine(profile.CharacterName, "…");
+        ActiveDialogue.ShowAwaitingLine(profile.CharacterName, "…");
 
         var sb = new StringBuilder(384);
         sb.AppendLine(BuildPersonaHeader());
@@ -312,9 +312,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
         yield return StartCoroutine(ollamaService.RequestRoleplayLineCoroutine(sys, user, s => line = s, e => err = e));
 
         if (!string.IsNullOrWhiteSpace(line))
-            dialogueUi.Show(profile.CharacterName, line);
+            ActiveDialogue.Show(profile.CharacterName, line);
         else
-            dialogueUi.Show(profile.CharacterName, "Mind the forge — and those tunnels.");
+            ActiveDialogue.Show(profile.CharacterName, "Mind the forge — and those tunnels.");
     }
 
     private string BuildTurnInSystemPrompt(string materialName, int questMineralUnits, int ironUnits, int goldPaid)

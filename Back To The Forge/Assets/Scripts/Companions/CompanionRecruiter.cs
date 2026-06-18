@@ -30,6 +30,8 @@ public class CompanionRecruiter : MonoBehaviour
 
     [SerializeField] private OllamaDialogueService ollamaService;
 
+    private SimpleRpgDialogueUI ActiveDialogue => SimpleRpgDialogueUI.GetOrCreate();
+
     [Header("Speakers")]
     [SerializeField] private string npcDisplayName = "Mercenary";
     [Tooltip("If empty, uses the offer's unit display name when the companion speaks.")]
@@ -189,6 +191,11 @@ public class CompanionRecruiter : MonoBehaviour
         if (mgr != null && _activePartySlot >= 0)
             mgr.BindPhysicalFollowerToSlot(_activePartySlot, gameObject);
 
+        var talk = GetComponent<HiredCompanionDialogue>();
+        if (talk == null)
+            talk = gameObject.AddComponent<HiredCompanionDialogue>();
+        talk.Configure(offer, _activePartySlot, interactAction);
+
         if (_returnHomeRoutine != null)
         {
             StopCoroutine(_returnHomeRoutine);
@@ -261,6 +268,10 @@ public class CompanionRecruiter : MonoBehaviour
             if (_activePartySlot >= 0)
                 HiredCompanionManager.Instance?.UnbindPhysicalFollowerSlot(_activePartySlot);
 
+            var talk = GetComponent<HiredCompanionDialogue>();
+            if (talk != null)
+                Destroy(talk);
+
             var follower = GetComponent<CompanionFollower2D>();
             if (follower != null)
                 follower.enabled = false;
@@ -323,7 +334,8 @@ public class CompanionRecruiter : MonoBehaviour
             && mgr.GetPhysicalFollowerRoot(mgr.FindSlotWithUnitId(offer.UnitId)) == gameObject)
             return;
 
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay
+            || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_playerProximity.Count <= 0 || _busy || offer == null)
@@ -332,8 +344,6 @@ public class CompanionRecruiter : MonoBehaviour
         if (!WasInteractPressedThisFrame())
             return;
 
-        if (dialogueUi == null)
-            dialogueUi = SimpleRpgDialogueUI.GetOrCreate();
         if (choiceUi == null)
             choiceUi = ForgeQuestChoiceUI.GetOrCreate();
         if (blacksmith == null)
@@ -352,7 +362,7 @@ public class CompanionRecruiter : MonoBehaviour
 
         if (uid <= 0 || blacksmith == null)
         {
-            dialogueUi.Show(ResolveNpcDisplayName(), "Something's wrong with this posting.");
+            ActiveDialogue.Show(ResolveNpcDisplayName(), "Something's wrong with this posting.");
             yield return StartCoroutine(WaitDialogueClosed());
             _busy = false;
             yield break;
@@ -368,20 +378,20 @@ public class CompanionRecruiter : MonoBehaviour
             var svc = ollamaService != null ? ollamaService : OllamaDialogueService.GetOrCreate();
             if (!svc.IsBusy)
             {
-                dialogueUi.ShowAwaitingLine(speaker, "…");
+                ActiveDialogue.ShowAwaitingLine(speaker, "…");
 
                 string ok = null;
                 string err = null;
                 yield return StartCoroutine(YieldMercenaryOpeningFromOllama(svc, speaker, offer, cost, s => ok = s, e => err = e));
 
                 if (!string.IsNullOrWhiteSpace(ok))
-                    dialogueUi.SetDialogueLineAndAllowAdvance(ok);
+                    ActiveDialogue.SetDialogueLineAndAllowAdvance(ok);
                 else
                 {
                     if (!string.IsNullOrWhiteSpace(err))
                         Debug.LogWarning($"[Ollama] {speaker}: {err}", this);
 
-                    dialogueUi.SetDialogueLineAndAllowAdvance(
+                    ActiveDialogue.SetDialogueLineAndAllowAdvance(
                         !string.IsNullOrWhiteSpace(openLine)
                             ? openLine.Trim()
                             : "Need muscle? Coin talks.");
@@ -393,7 +403,7 @@ public class CompanionRecruiter : MonoBehaviour
 
         if (!showedOpening && !string.IsNullOrWhiteSpace(openLine))
         {
-            dialogueUi.Show(speaker, openLine);
+            ActiveDialogue.Show(speaker, openLine);
             showedOpening = true;
         }
 
@@ -417,7 +427,7 @@ public class CompanionRecruiter : MonoBehaviour
         var mgr = HiredCompanionManager.GetOrCreate();
         if (blacksmith.PlayerGold < cost)
         {
-            dialogueUi.Show(speaker, ResolveCannotAffordLine());
+            ActiveDialogue.Show(speaker, ResolveCannotAffordLine());
             yield return StartCoroutine(WaitDialogueClosed());
             _busy = false;
             yield break;
@@ -425,7 +435,7 @@ public class CompanionRecruiter : MonoBehaviour
 
         if (autoAssignPartySlot && mgr.IsPartyFull && mgr.FindSlotWithUnitId(uid) < 0)
         {
-            dialogueUi.Show(speaker, ResolvePartyFullLine());
+            ActiveDialogue.Show(speaker, ResolvePartyFullLine());
             yield return StartCoroutine(WaitDialogueClosed());
             _busy = false;
             yield break;
@@ -437,15 +447,17 @@ public class CompanionRecruiter : MonoBehaviour
 
         if (hired)
         {
+            MercenaryOfferLookup.RegisterOffer(offer);
+
             if (!autoAssignPartySlot)
                 _activePartySlot = partySlotIndex;
 
-            dialogueUi.Show(CompanionSpeakerName(), ResolveCompanionJoinLine());
+            ActiveDialogue.Show(CompanionSpeakerName(), ResolveCompanionJoinLine());
             yield return StartCoroutine(WaitDialogueClosed());
         }
         else
         {
-            dialogueUi.Show(speaker, "Couldn't seal the deal. Try again.");
+            ActiveDialogue.Show(speaker, "Couldn't seal the deal. Try again.");
             yield return StartCoroutine(WaitDialogueClosed());
         }
 

@@ -45,7 +45,8 @@ public class NpcOllamaDialogue : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay
+            || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
             return;
 
         if (_playerProximity.Count <= 0 || _requestRunning)
@@ -61,7 +62,7 @@ public class NpcOllamaDialogue : MonoBehaviour
         }
 
         var service = ollamaService != null ? ollamaService : OllamaDialogueService.GetOrCreate();
-        var ui = dialogueUi != null ? dialogueUi : SimpleRpgDialogueUI.GetOrCreate();
+        var ui = SimpleRpgDialogueUI.GetOrCreate();
 
         if (service.IsBusy)
         {

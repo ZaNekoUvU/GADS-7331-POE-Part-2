@@ -8,6 +8,7 @@ Unity 6 **2D RPG** prototype: exploration, forge economy, mercenary companions, 
 
 | Document | Description |
 |----------|-------------|
+| [**Project context**](docs/context.md) | Overview, architecture, playtest state, known priorities |
 | [**High concept**](docs/high-concept.txt) | Ideation, LLM role, why local models fit the project |
 | [**Setup guide**](docs/setup.md) | Unity + Ollama install, models, troubleshooting |
 | [**Refinements log**](docs/refinements-changes.md) | Scope changes & AI-assisted decisions |

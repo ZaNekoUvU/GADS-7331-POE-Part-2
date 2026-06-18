@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 50
   recruitLabel: 
   personalityTrait: Stoic shield-bearer — few words, steady guard.
+  personalityVoice: Quiet, stoic tank. Values loyalty, calm respect, and steady leadership.
+    Dislikes panic, insults, or reckless orders that waste lives.
   npcDisplayName: Brynja
   openingLine: I stand between harm and those who pay. Hire me if you need a wall.
   cannotAffordLine: The price is set. Return when your coin matches it.
   companionJoinLine: I will hold the line. Stay close.
   partyFullLine: Three companions already. I do not squeeze into a full formation.
+  positiveMoraleSkill:
+    skillName: Steadfast Guard
+    description: Trust steels her — she can take more punishment at the front.
+    effectKind: 5
+    magnitude: 0.15
+  negativeMoraleSkill:
+    skillName: Doubting Wall
+    description: Doubt in her leader weakens the party's coordinated attack.
+    effectKind: 2
+    magnitude: 0.12

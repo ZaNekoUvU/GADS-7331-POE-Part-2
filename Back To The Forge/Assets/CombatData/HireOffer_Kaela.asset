@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 20
   recruitLabel: 
   personalityTrait: Cheerful scout — quick feet, quicker jokes.
+  personalityVoice: Upbeat and playful. Loves encouragement, shared laughs, and being trusted
+    on scouting duty. Hates being mocked, ignored, or treated like a kid.
   npcDisplayName: Kaela
   openingLine: Hey! You look like someone who walks into trouble on purpose. I can keep up!
   cannotAffordLine: Ah—I'd love to tag along, but you're short on gold.
   companionJoinLine: Lead the way! I'll spot ambushes before you trip on them.
   partyFullLine: Your party's packed. Three's the limit—come back after the forge resets the roster.
+  positiveMoraleSkill:
+    skillName: Scout's Rally
+    description: Encouragement makes her strike faster and harder on the front line.
+    effectKind: 3
+    magnitude: 0.25
+  negativeMoraleSkill:
+    skillName: Sulking Scout
+    description: Hurt pride — she stops putting her full force behind each blow.
+    effectKind: 4
+    magnitude: 0.2

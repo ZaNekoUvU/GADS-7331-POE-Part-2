@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 65
   recruitLabel: 
   personalityTrait: Witty spell-tinker — fights with blade and bad puns.
+  personalityVoice: Nerdy battle scholar with bad puns. Loves curiosity, clever banter, and
+    intellectual praise. Hates being called stupid or told to shut up mid-thought.
   npcDisplayName: Silas
   openingLine: I read old battle charts for fun. Hire me and I'll test a few theories in the field.
   cannotAffordLine: Fascinating. Your wallet is lighter than my spellbook.
   companionJoinLine: Splendid. Try not to stand directly in my experimental arc.
   partyFullLine: Three allies is the sensible maximum. Mathematics, you see.
+  positiveMoraleSkill:
+    skillName: Arcane Spark
+    description: Intellectual praise recharges the hero's battle focus each turn.
+    effectKind: 6
+    magnitude: 3
+  negativeMoraleSkill:
+    skillName: Distracted Mind
+    description: Being dismissed scatters his focus and weakens party attacks.
+    effectKind: 2
+    magnitude: 0.1

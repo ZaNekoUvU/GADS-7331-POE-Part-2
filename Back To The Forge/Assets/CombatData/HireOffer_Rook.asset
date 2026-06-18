@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 40
   recruitLabel: 
   personalityTrait: Gruff veteran — loyal once the coin is good.
+  personalityVoice: Gruff veteran sellsword. Warms to straight talk, shared danger, and earned
+    respect. Angered by cowardice, broken promises, or being called a coward.
   npcDisplayName: Rook
   openingLine: Need muscle? I fight for coin. Fair wage, until the day turns over.
   cannotAffordLine: Your purse is too light. Come back when you can pay my rate.
   companionJoinLine: You have my sword. Point me at the trouble.
   partyFullLine: Three blades already march with you. I won't crowd the line.
+  positiveMoraleSkill:
+    skillName: Veteran's Orders
+    description: Earned respect — he coordinates the party for stronger assaults.
+    effectKind: 1
+    magnitude: 0.15
+  negativeMoraleSkill:
+    skillName: Held Grudge
+    description: A slighted veteran's mood saps the party's fighting spirit.
+    effectKind: 2
+    magnitude: 0.12

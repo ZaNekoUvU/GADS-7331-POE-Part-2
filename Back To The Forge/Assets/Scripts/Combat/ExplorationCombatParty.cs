@@ -35,6 +35,26 @@ public class ExplorationCombatParty : MonoBehaviour
             s1,
             s2,
             s3);
+
+        if (hired != null)
+        {
+            hired.BuildCombatMoraleHandoff(
+                out var partyAtk,
+                out var heroMp,
+                out var slots,
+                out var summary);
+            CombatSession.PartyAttackMultiplier = partyAtk;
+            CombatSession.HeroBonusManaRegen = heroMp;
+            CombatSession.CompanionMoraleBySlot = slots;
+            CombatSession.PartyMoraleSummary = summary;
+        }
+        else
+        {
+            CombatSession.PartyAttackMultiplier = 1f;
+            CombatSession.HeroBonusManaRegen = 0;
+            CombatSession.CompanionMoraleBySlot = new CompanionCombatMoraleHandoff[3];
+            CombatSession.PartyMoraleSummary = string.Empty;
+        }
     }
 
 #if UNITY_EDITOR

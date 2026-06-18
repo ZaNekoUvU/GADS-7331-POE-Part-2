@@ -20,6 +20,8 @@ public class CombatUnit : MonoBehaviour
     private int _runtimeMaxHp;
     private int _runtimeEnemyStrikeDamage;
     private bool _enemyDifficultyApplied;
+    private bool _allyMoraleHpApplied;
+    private float _attackDamageMultiplier = 1f;
 
     public UnitDefinition Definition => _definition;
     public int CurrentHp => _currentHp;
@@ -29,7 +31,7 @@ public class CombatUnit : MonoBehaviour
         {
             if (_definition == null)
                 return 0;
-            if (_enemyDifficultyApplied)
+            if (_enemyDifficultyApplied || _allyMoraleHpApplied)
                 return _runtimeMaxHp;
             return _definition.MaxHp;
         }
@@ -38,6 +40,30 @@ public class CombatUnit : MonoBehaviour
     public bool IsAlly => _isAlly;
     public bool IsPlayerCharacter => _isPlayerCharacter;
     public int SlotIndex => _slotIndex;
+
+    public float AttackDamageMultiplier => _attackDamageMultiplier;
+
+    public void SetAttackDamageMultiplier(float multiplier)
+    {
+        _attackDamageMultiplier = Mathf.Max(0.1f, multiplier);
+    }
+
+    public void ApplyMoraleModifiers(float attackMultiplier, float maxHpMultiplier)
+    {
+        if (attackMultiplier > 0f)
+            SetAttackDamageMultiplier(attackMultiplier);
+
+        if (!_isAlly || _enemyDifficultyApplied || _definition == null)
+            return;
+
+        if (maxHpMultiplier <= 1.001f)
+            return;
+
+        _runtimeMaxHp = Mathf.Max(1, Mathf.RoundToInt(_definition.MaxHp * maxHpMultiplier));
+        _allyMoraleHpApplied = true;
+        _currentHp = _runtimeMaxHp;
+        HpChanged?.Invoke(_currentHp, MaxHp);
+    }
 
     public const int HeroMaxMana = 10;
 
@@ -71,6 +97,8 @@ public class CombatUnit : MonoBehaviour
         _enemyDifficultyApplied = false;
         _runtimeMaxHp = 0;
         _runtimeEnemyStrikeDamage = 0;
+        _attackDamageMultiplier = 1f;
+        _allyMoraleHpApplied = false;
 
         if (definition == null)
         {
@@ -167,13 +195,21 @@ public class CombatUnit : MonoBehaviour
 
         var basePower = _definition.GetBasicStrikeDamage(_moveRegistry);
         if (moveId <= 0)
-            return basePower;
+            return ApplyAllyMultiplier(basePower);
 
         if (_moveRegistry == null || !_moveRegistry.TryGet(moveId, out var move))
-            return basePower;
+            return ApplyAllyMultiplier(basePower);
 
         var raw = move.BaseDamage > 0 ? move.BaseDamage : basePower;
-        return Mathf.Max(1, Mathf.RoundToInt(raw * move.DamageMultiplier));
+        return ApplyAllyMultiplier(Mathf.Max(1, Mathf.RoundToInt(raw * move.DamageMultiplier)));
+    }
+
+    private int ApplyAllyMultiplier(int damage)
+    {
+        if (!_isAlly || Mathf.Approximately(_attackDamageMultiplier, 1f))
+            return damage;
+
+        return Mathf.Max(1, Mathf.RoundToInt(damage * _attackDamageMultiplier));
     }
 
     public void TakeDamage(int amount)

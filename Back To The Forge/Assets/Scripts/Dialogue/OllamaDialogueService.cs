@@ -110,6 +110,240 @@ public class OllamaDialogueService : MonoBehaviour
         }
     }
 
+    /// <summary>Player talks to a hired mercenary; returns spoken reply plus sentiment and combat effect JSON.</summary>
+    public IEnumerator RequestCompanionDialogueCoroutine(
+        HireableCompanionOffer offer,
+        string playerLine,
+        string conversationHistory,
+        Action<CompanionDialogueDto> onSuccess,
+        Action<string> onError)
+    {
+        if (offer == null)
+        {
+            onError?.Invoke("No mercenary offer.");
+            yield break;
+        }
+
+        if (_busy)
+        {
+            onError?.Invoke("busy");
+            yield break;
+        }
+
+        _busy = true;
+
+        try
+        {
+            var characterName = offer.NpcDisplayName;
+            var persona = offer.PersonaForLlm;
+
+            var positiveSkill = offer.PositiveMoraleSkill;
+            var negativeSkill = offer.NegativeMoraleSkill;
+
+            var systemContent =
+                "You are " + characterName + ", a hired mercenary traveling with the player in the retro fantasy game \"Back to the Forge\".\n" +
+                "Persona:\n" + persona + "\n\n" +
+                "Battle skills tied to how the traveler treats you:\n" +
+                "- If their words genuinely encourage you (positive sentiment), you unlock: \"" + positiveSkill.skillName + "\" — " + positiveSkill.description + "\n" +
+                "- If they upset or insult you (negative sentiment), you inflict: \"" + negativeSkill.skillName + "\" — " + negativeSkill.description + "\n\n" +
+                "The traveler speaks to you directly. Reply in character (1-3 short sentences, direct speech only).\n" +
+                "Judge their words against your personality.\n\n" +
+                "Output ONLY valid JSON with exactly these string keys:\n" +
+                "replyLine — what you say aloud;\n" +
+                "sentiment — positive, neutral, or negative;\n" +
+                "combatEffect — positive_skill, negative_skill, or none;\n" +
+                "effectLabel — must be \"" + positiveSkill.skillName + "\" when positive, \"" + negativeSkill.skillName + "\" when negative, else empty.\n" +
+                "No markdown, no code fences, no extra keys, no text before or after the JSON.\n" +
+                "Example: {\"replyLine\":\"Fair enough. I'll watch your back.\",\"sentiment\":\"positive\",\"combatEffect\":\"positive_skill\",\"effectLabel\":\"" +
+                positiveSkill.skillName + "\"}";
+
+            var userContent = new StringBuilder(512);
+            if (!string.IsNullOrWhiteSpace(conversationHistory))
+            {
+                userContent.AppendLine("Conversation so far:");
+                userContent.AppendLine(conversationHistory.Trim());
+                userContent.AppendLine();
+            }
+
+            userContent.Append("Traveler says now: \"");
+            userContent.Append(playerLine.Trim());
+            userContent.Append("\". Output the JSON now.");
+
+            var jsonBody = BuildChatJsonManual(systemContent, userContent.ToString(), jsonFormat: true, temperatureOverride: 0.35f);
+            var url = $"{Host}/api/chat";
+
+            if (logRequestsAndErrors)
+                Debug.Log($"[Ollama] POST {url} (companion dialogue JSON)\n{Truncate(jsonBody, 800)}", this);
+
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = Timeout;
+
+            yield return req.SendWebRequest();
+
+            var raw = req.downloadHandler != null ? req.downloadHandler.text : null;
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                onError?.Invoke(string.IsNullOrEmpty(req.error) ? req.result.ToString() : req.error);
+                yield break;
+            }
+
+            var apiErr = TryParseError(raw);
+            if (!string.IsNullOrEmpty(apiErr))
+            {
+                onError?.Invoke(apiErr);
+                yield break;
+            }
+
+            var content = TryParseAssistantMessage(raw);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                onError?.Invoke("Empty companion JSON.");
+                yield break;
+            }
+
+            if (!TryParseCompanionDialogue(content, out var dto))
+            {
+                if (logRequestsAndErrors)
+                    Debug.LogWarning($"[Ollama] Bad companion JSON:\n{Truncate(content, 800)}", this);
+                onError?.Invoke("Model did not return valid companion JSON.");
+                yield break;
+            }
+
+            onSuccess?.Invoke(dto);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static bool TryParseCompanionDialogue(string modelText, out CompanionDialogueDto dto)
+    {
+        dto = null;
+        var t = StripInferenceNoise(StripMarkdownCodeFence(modelText)).Trim();
+        if (string.IsNullOrEmpty(t))
+            return false;
+
+        if (!TryExtractJsonObject(t, out var json))
+            json = t;
+
+        if (TryDeserializeCompanion(json, out dto))
+            return true;
+
+        return TryParseCompanionDialogueLoose(json, out dto);
+    }
+
+    private static bool TryDeserializeCompanion(string json, out CompanionDialogueDto dto)
+    {
+        dto = null;
+        if (string.IsNullOrWhiteSpace(json))
+            return false;
+
+        try
+        {
+            dto = JsonUtility.FromJson<CompanionDialogueDto>(json);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        return NormalizeCompanionDto(ref dto);
+    }
+
+    private static bool TryParseCompanionDialogueLoose(string text, out CompanionDialogueDto dto)
+    {
+        dto = new CompanionDialogueDto
+        {
+            replyLine = MatchJsonStringField(text, "replyLine", "reply_line", "reply"),
+            sentiment = MatchJsonStringField(text, "sentiment"),
+            combatEffect = MatchJsonStringField(text, "combatEffect", "combat_effect", "effect"),
+            effectLabel = MatchJsonStringField(text, "effectLabel", "effect_label", "skill")
+        };
+
+        return NormalizeCompanionDto(ref dto);
+    }
+
+    private static bool NormalizeCompanionDto(ref CompanionDialogueDto dto)
+    {
+        if (dto == null || string.IsNullOrWhiteSpace(dto.replyLine))
+            return false;
+
+        dto.replyLine = SanitizeLine(dto.replyLine);
+        dto.sentiment = dto.sentiment?.Trim() ?? "neutral";
+        dto.combatEffect = dto.combatEffect?.Trim() ?? "none";
+        dto.effectLabel = dto.effectLabel?.Trim() ?? string.Empty;
+        return true;
+    }
+
+    private static bool TryExtractJsonObject(string text, out string json)
+    {
+        json = null;
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+
+        var start = text.IndexOf('{');
+        if (start < 0)
+            return false;
+
+        var depth = 0;
+        var inString = false;
+        var escaped = false;
+
+        for (var i = start; i < text.Length; i++)
+        {
+            var c = text[i];
+            if (inString)
+            {
+                if (escaped)
+                    escaped = false;
+                else if (c == '\\')
+                    escaped = true;
+                else if (c == '"')
+                    inString = false;
+
+                continue;
+            }
+
+            if (c == '"')
+            {
+                inString = true;
+                continue;
+            }
+
+            if (c == '{')
+                depth++;
+            else if (c == '}')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    json = text.Substring(start, i - start + 1);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string MatchJsonStringField(string text, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var pattern = "\"" + Regex.Escape(key) + "\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"";
+            var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (match.Success)
+                return UnescapeJsonString(match.Groups[1].Value);
+        }
+
+        return null;
+    }
+
     /// <summary>Asks for strict JSON: materialName, requestLine (Ollama-invented ore + blacksmith ask).</summary>
     public IEnumerator RequestForgeQuestOfferCoroutine(
         string blacksmithName,
@@ -139,7 +373,7 @@ public class OllamaDialogueService : MonoBehaviour
                 $"You are {blacksmithName}, a blacksmith quest giver.\nPersona: {personaSummary}\n" +
                 "The traveler just came to the counter. Output the JSON now for a new mining commission.";
 
-            var jsonBody = BuildChatJsonManual(systemContent, userContent);
+            var jsonBody = BuildChatJsonManual(systemContent, userContent, jsonFormat: true, temperatureOverride: 0.35f);
 
             var url = $"{Host}/api/chat";
 
@@ -362,10 +596,12 @@ public class OllamaDialogueService : MonoBehaviour
     }
 
     /// <summary>Hand-built JSON avoids Unity JsonUtility quirks with nested message arrays.</summary>
-    private string BuildChatJsonManual(string systemContent, string userContent)
+    private string BuildChatJsonManual(string systemContent, string userContent, bool jsonFormat = false, float? temperatureOverride = null)
     {
         var sb = new StringBuilder(1024 + systemContent.Length + userContent.Length);
         sb.Append("{\"model\":\"").Append(EscapeJson(Model)).Append("\",");
+        if (jsonFormat)
+            sb.Append("\"format\":\"json\",");
         sb.Append("\"stream\":false,");
         sb.Append("\"think\":false,");
         sb.Append("\"messages\":[");
@@ -373,7 +609,8 @@ public class OllamaDialogueService : MonoBehaviour
         sb.Append("{\"role\":\"user\",\"content\":\"").Append(EscapeJson(userContent)).Append("\"}");
         sb.Append("],\"options\":{");
         sb.Append("\"num_predict\":").Append(MaxTok).Append(',');
-        sb.Append("\"temperature\":").Append(Temp.ToString(CultureInfo.InvariantCulture));
+        var temp = temperatureOverride ?? Temp;
+        sb.Append("\"temperature\":").Append(temp.ToString(CultureInfo.InvariantCulture));
         sb.Append("}}");
         return sb.ToString();
     }

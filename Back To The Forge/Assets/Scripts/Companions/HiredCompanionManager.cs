@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -17,6 +18,10 @@ public sealed class HiredCompanionManager : MonoBehaviour
     public event Action OnRosterChanged;
 
     private readonly GameObject[] _physicalFollowerRootsBySlot = new GameObject[MaxCompanionSlots];
+    private readonly Dictionary<int, CompanionMoraleState> _moraleByUnitId = new();
+
+    public const float MinPartyAttackMultiplier = 0.55f;
+    public const float MaxPartyAttackMultiplier = 1.45f;
 
     private void Awake()
     {
@@ -155,8 +160,108 @@ public sealed class HiredCompanionManager : MonoBehaviour
         if (physicalFollowerRoot != null)
             BindPhysicalFollowerToSlot(companionSlotIndex, physicalFollowerRoot);
 
+        EnsureMoraleState(unitId);
         OnRosterChanged?.Invoke();
         return true;
+    }
+
+    public void ApplyCompanionDialogueResult(int unitId, CompanionDialogueDto dto)
+    {
+        if (unitId <= 0 || dto == null)
+            return;
+
+        MercenaryOfferLookup.TryGet(unitId, out var offer);
+        var state = EnsureMoraleState(unitId);
+        state.ApplyDialogueResult(dto, offer);
+        OnRosterChanged?.Invoke();
+    }
+
+    public bool TryGetMoraleState(int unitId, out CompanionMoraleState state)
+    {
+        if (unitId > 0 && _moraleByUnitId.TryGetValue(unitId, out state))
+            return true;
+
+        state = null;
+        return false;
+    }
+
+    /// <summary>Builds combat handoff from all hired mercenary morale skills.</summary>
+    public void BuildCombatMoraleHandoff(
+        out float partyAttackMultiplier,
+        out int heroBonusManaRegen,
+        out CompanionCombatMoraleHandoff[] companionSlots,
+        out string summary)
+    {
+        partyAttackMultiplier = 1f;
+        heroBonusManaRegen = 0;
+        companionSlots = new CompanionCombatMoraleHandoff[MaxCompanionSlots];
+        var parts = new List<string>(3);
+
+        ApplySlotMorale(Slot1UnitId, 0, ref partyAttackMultiplier, ref heroBonusManaRegen, companionSlots, parts);
+        ApplySlotMorale(Slot2UnitId, 1, ref partyAttackMultiplier, ref heroBonusManaRegen, companionSlots, parts);
+        ApplySlotMorale(Slot3UnitId, 2, ref partyAttackMultiplier, ref heroBonusManaRegen, companionSlots, parts);
+
+        partyAttackMultiplier = Mathf.Clamp(partyAttackMultiplier, MinPartyAttackMultiplier, MaxPartyAttackMultiplier);
+        summary = parts.Count == 0 ? string.Empty : string.Join("; ", parts);
+    }
+
+    private void ApplySlotMorale(
+        int unitId,
+        int companionSlotIndex,
+        ref float partyAttackMultiplier,
+        ref int heroBonusManaRegen,
+        CompanionCombatMoraleHandoff[] companionSlots,
+        List<string> summaryParts)
+    {
+        if (unitId <= 0 || !_moraleByUnitId.TryGetValue(unitId, out var state) || !state.HasActiveSkill)
+            return;
+
+        var skill = state.ActiveSkill;
+        var label = string.IsNullOrWhiteSpace(state.ActiveSkillLabel) ? skill.skillName : state.ActiveSkillLabel;
+        var pct = Mathf.RoundToInt(skill.magnitude * 100f);
+
+        ref var handoff = ref companionSlots[companionSlotIndex];
+        handoff.UnitId = unitId;
+        handoff.SkillLabel = label;
+
+        switch (skill.effectKind)
+        {
+            case MercenaryMoraleEffectKind.PartyAttackUp:
+                partyAttackMultiplier += skill.magnitude;
+                summaryParts.Add($"{label} +{pct}% party ATK");
+                break;
+            case MercenaryMoraleEffectKind.PartyAttackDown:
+                partyAttackMultiplier -= skill.magnitude;
+                summaryParts.Add($"{label} -{pct}% party ATK");
+                break;
+            case MercenaryMoraleEffectKind.SelfAttackUp:
+                handoff.SelfAttackMultiplier = 1f + skill.magnitude;
+                summaryParts.Add($"{label} +{pct}% merc ATK");
+                break;
+            case MercenaryMoraleEffectKind.SelfAttackDown:
+                handoff.SelfAttackMultiplier = Mathf.Max(0.5f, 1f - skill.magnitude);
+                summaryParts.Add($"{label} -{pct}% merc ATK");
+                break;
+            case MercenaryMoraleEffectKind.SelfMaxHpUp:
+                handoff.SelfMaxHpMultiplier = 1f + skill.magnitude;
+                summaryParts.Add($"{label} +{pct}% merc HP");
+                break;
+            case MercenaryMoraleEffectKind.HeroManaRegenUp:
+                heroBonusManaRegen += Mathf.RoundToInt(skill.magnitude);
+                summaryParts.Add($"{label} +{Mathf.RoundToInt(skill.magnitude)} hero MP/turn");
+                break;
+        }
+    }
+
+    private CompanionMoraleState EnsureMoraleState(int unitId)
+    {
+        if (!_moraleByUnitId.TryGetValue(unitId, out var state))
+        {
+            state = new CompanionMoraleState(unitId);
+            _moraleByUnitId[unitId] = state;
+        }
+
+        return state;
     }
 
     private void ClearUnitFromOtherSlots(int unitId, int keepSlot)
@@ -212,6 +317,7 @@ public sealed class HiredCompanionManager : MonoBehaviour
         Slot1UnitId = 0;
         Slot2UnitId = 0;
         Slot3UnitId = 0;
+        _moraleByUnitId.Clear();
         OnRosterChanged?.Invoke();
     }
 

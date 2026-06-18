@@ -5,12 +5,14 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Top-right HUD showing the current forge objective (blacksmith, commission ore, turn-in, or free play).
+/// Top-left HUD showing the current forge objective (blacksmith, commission ore, turn-in, or free play).
 /// </summary>
 [DisallowMultipleComponent]
 public class QuestLogUI : MonoBehaviour
 {
     public static QuestLogUI Instance { get; private set; }
+
+    private const string ObjectiveHeader = "Objective";
 
     [Header("Objective text")]
     [SerializeField] private string visitBlacksmithObjective = "Visit the blacksmith for work.";
@@ -23,7 +25,8 @@ public class QuestLogUI : MonoBehaviour
 
     private UIDocument _document;
     private VisualElement _panel;
-    private Label _questLabel;
+    private Label _headerLabel;
+    private Label _bodyLabel;
     private Inventory _inventory;
     private CombatAdditiveCoordinator _combatCoordinator;
     private bool _subscribedToForgeQuest;
@@ -113,31 +116,7 @@ public class QuestLogUI : MonoBehaviour
         FfStyleMenuUi.ConfigureDocument(_document, 4450);
 
         var root = _document.rootVisualElement;
-        root.Clear();
-        root.style.flexGrow = 1f;
-        root.pickingMode = PickingMode.Ignore;
-
-        FfStyleMenuUi.AttachStyleSheet(root);
-
-        _panel = new VisualElement { name = "quest-log-panel" };
-        _panel.AddToClassList("hud-panel");
-        _panel.AddToClassList("hud-panel--faded");
-        _panel.style.position = Position.Absolute;
-        _panel.style.top = 12;
-        _panel.style.right = 12;
-        _panel.style.minWidth = 240;
-        _panel.style.paddingTop = 8;
-        _panel.style.paddingBottom = 8;
-        _panel.style.paddingLeft = 12;
-        _panel.style.paddingRight = 12;
-        _panel.pickingMode = PickingMode.Ignore;
-        root.Add(_panel);
-
-        _questLabel = new Label { name = "quest-log-text" };
-        FfStyleMenuUi.ApplyLabelStyle(_questLabel, 10f, true);
-        _questLabel.style.whiteSpace = WhiteSpace.Normal;
-        _panel.Add(_questLabel);
-
+        _panel = FfStyleMenuUi.BuildQuestObjectivePanel(root, ObjectiveHeader, out _headerLabel, out _bodyLabel);
         _panel.style.display = DisplayStyle.None;
     }
 
@@ -188,7 +167,7 @@ public class QuestLogUI : MonoBehaviour
 
     private void Refresh()
     {
-        if (_panel == null || _questLabel == null)
+        if (_panel == null || _bodyLabel == null)
             return;
 
         EnsureForgeQuestSubscription();
@@ -201,7 +180,9 @@ public class QuestLogUI : MonoBehaviour
         }
 
         _panel.style.display = DisplayStyle.Flex;
-        _questLabel.text = BuildObjectiveText();
+        if (_headerLabel != null)
+            _headerLabel.text = ObjectiveHeader;
+        _bodyLabel.text = BuildObjectiveText();
     }
 
     private string BuildObjectiveText()

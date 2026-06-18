@@ -16,8 +16,20 @@ MonoBehaviour:
   hireCost: 100
   recruitLabel: 
   personalityTrait: Mysterious wanderer — cryptic, observant.
+  personalityVoice: Cryptic wanderer who speaks in riddles. Appreciates patience, mystery, and
+    trust without prying. Rebels against rudeness, demands, or crude insults.
   npcDisplayName: Vex
   openingLine: The road whispered your name. Coin buys my silence—and my steel.
   cannotAffordLine: Fate is patient. Your gold is not.
   companionJoinLine: Walk. I follow. Ask nothing more.
   partyFullLine: Three shadows already cling to you. No room for mine.
+  positiveMoraleSkill:
+    skillName: Shadow Edge
+    description: Mutual trust draws hidden strength — the whole party hits harder.
+    effectKind: 1
+    magnitude: 0.2
+  negativeMoraleSkill:
+    skillName: Withheld Strike
+    description: Rudeness makes her hold back — her own attacks falter badly.
+    effectKind: 4
+    magnitude: 0.25

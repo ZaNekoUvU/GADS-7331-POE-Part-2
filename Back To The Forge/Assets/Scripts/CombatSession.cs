@@ -44,6 +44,19 @@ public static class CombatSession
     /// <summary>Fired after the combat scene has fully unloaded.</summary>
     public static event Action CombatEnded;
 
+    /// <summary>Party-wide attack multiplier from mercenary morale (1 = normal).</summary>
+    public static float PartyAttackMultiplier { get; set; } = 1f;
+
+    /// <summary>Extra hero mana regen per turn from mercenary morale skills.</summary>
+    public static int HeroBonusManaRegen { get; set; }
+
+    /// <summary>Morale handoff for companion ally slots 1–3 (index 0 = slot 1).</summary>
+    public static CompanionCombatMoraleHandoff[] CompanionMoraleBySlot { get; set; } =
+        new CompanionCombatMoraleHandoff[3];
+
+    /// <summary>Short summary for combat log / HUD.</summary>
+    public static string PartyMoraleSummary { get; set; } = string.Empty;
+
     public static void RaiseCombatEnded()
     {
         CombatEnded?.Invoke();
@@ -54,5 +67,9 @@ public static class CombatSession
         EncounterId = 0;
         ResetAllyPartyDefaults();
         _victoryLootPending = false;
+        PartyAttackMultiplier = 1f;
+        HeroBonusManaRegen = 0;
+        PartyMoraleSummary = string.Empty;
+        CompanionMoraleBySlot = new CompanionCombatMoraleHandoff[3];
     }
 }

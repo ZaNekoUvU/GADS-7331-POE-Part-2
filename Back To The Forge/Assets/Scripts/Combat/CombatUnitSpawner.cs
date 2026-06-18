@@ -220,6 +220,29 @@ public class CombatUnitSpawner : MonoBehaviour
         }
 
         cu.Initialize(def, registry, ally, isPlayer, slot, startHp);
+
+        if (ally)
+        {
+            cu.SetAttackDamageMultiplier(CombatSession.PartyAttackMultiplier);
+
+            if (slot >= 1 && slot <= 3)
+            {
+                var moraleSlots = CombatSession.CompanionMoraleBySlot;
+                var moraleIndex = slot - 1;
+                if (moraleSlots != null && moraleIndex >= 0 && moraleIndex < moraleSlots.Length)
+                {
+                    var morale = moraleSlots[moraleIndex];
+                    if (def != null && morale.UnitId == def.UnitId)
+                    {
+                        var selfAtk = morale.SelfAttackMultiplier > 0f ? morale.SelfAttackMultiplier : 1f;
+                        cu.SetAttackDamageMultiplier(selfAtk * CombatSession.PartyAttackMultiplier);
+                        var maxHpMul = morale.SelfMaxHpMultiplier > 1.001f ? morale.SelfMaxHpMultiplier : 1f;
+                        cu.ApplyMoraleModifiers(1f, maxHpMul);
+                    }
+                }
+            }
+        }
+
         return cu;
     }
 }

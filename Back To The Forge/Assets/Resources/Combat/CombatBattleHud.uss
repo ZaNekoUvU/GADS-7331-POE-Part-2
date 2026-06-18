@@ -154,3 +154,44 @@
 .command-row--disabled .command-cursor {
     visibility: hidden;
 }
+
+/* Companion reply field (party merc chat — same dialogue panel as NPC talk) */
+.companion-dialogue-input-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 28px;
+    padding-top: 6px;
+    border-top-width: 2px;
+    border-top-color: rgba(255, 255, 255, 0.35);
+}
+
+.companion-dialogue-input {
+    flex-grow: 1;
+    min-height: 24px;
+    background-color: rgba(0, 0, 64, 0.55);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.75);
+    border-radius: 0;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    -unity-font-style: normal;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.companion-dialogue-input > TextInput {
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    -unity-font-style: normal;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.companion-dialogue-input .unity-text-field__input {
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+}
