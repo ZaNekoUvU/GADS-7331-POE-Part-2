@@ -22,6 +22,7 @@ public class GridWanderNpc2D : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] private MercenaryDirectionalAnimator2D mercenaryAnimator;
+    [SerializeField] private MercenaryWalkAnimatorSetup walkAnimatorSetup;
 
     private Rigidbody2D _body;
     private Vector2 _cellStart;
@@ -57,6 +58,9 @@ public class GridWanderNpc2D : MonoBehaviour
 
         if (mercenaryAnimator == null)
             mercenaryAnimator = GetComponent<MercenaryDirectionalAnimator2D>();
+
+        if (walkAnimatorSetup == null)
+            walkAnimatorSetup = GetComponent<MercenaryWalkAnimatorSetup>();
     }
 
     private void OnEnable()
@@ -79,7 +83,8 @@ public class GridWanderNpc2D : MonoBehaviour
         else if (animator != null)
         {
             animator.speed = 0f;
-            animator.Play("Down", 0, 0f);
+            PlayDirectionalWalk(Vector2.down);
+            animator.Play(animator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, 0f);
         }
     }
 
@@ -153,19 +158,17 @@ public class GridWanderNpc2D : MonoBehaviour
                 }
                 else if (animator != null)
                 {
-                    if (dir.y > 0.01f)
-                        animator.Play("Up");
-                    else if (dir.y < -0.01f)
-                        animator.Play("Down");
-                    else
-                        animator.Play("Left");
-
+                    PlayDirectionalWalk(dir);
                     animator.speed = 1f;
                 }
 
-                // SPRITE FLIP
-                if (mercenaryAnimator == null && flipXWhenFacingLeft && spriteRenderer != null && Mathf.Abs(dir.x) > 0.01f)
+                // SPRITE FLIP (legacy Left-only sheets)
+                if (mercenaryAnimator == null &&
+                    (walkAnimatorSetup == null || !walkAnimatorSetup.UseDedicatedRightWalk) &&
+                    flipXWhenFacingLeft && spriteRenderer != null && Mathf.Abs(dir.x) > 0.01f)
                     spriteRenderer.flipX = dir.x > 0f;
+                else if (walkAnimatorSetup != null && walkAnimatorSetup.UseDedicatedRightWalk && spriteRenderer != null)
+                    spriteRenderer.flipX = false;
 
                 _cellStart = origin;
                 _cellEnd = next;
@@ -207,6 +210,21 @@ public class GridWanderNpc2D : MonoBehaviour
         var a = Mathf.Min(minIdleSeconds, maxIdleSeconds);
         var b = Mathf.Max(minIdleSeconds, maxIdleSeconds);
         return Random.Range(a, b);
+    }
+
+    private void PlayDirectionalWalk(Vector2 dir)
+    {
+        if (animator == null)
+            return;
+
+        if (dir.y > 0.01f)
+            animator.Play("Up");
+        else if (dir.y < -0.01f)
+            animator.Play("Down");
+        else if (dir.x > 0.01f && walkAnimatorSetup != null && walkAnimatorSetup.UseDedicatedRightWalk)
+            animator.Play("Right");
+        else
+            animator.Play("Left");
     }
 
 #if UNITY_EDITOR

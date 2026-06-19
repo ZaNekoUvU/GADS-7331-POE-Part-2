@@ -103,12 +103,12 @@ TextureImporter:
       name: Tomas_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 294
+        y: 772
+        width: 164
+        height: 237
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,253 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 646
+        y: 772
+        width: 165
+        height: 237
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f66b8b9772331f749ad2d9b50b62515a
+      internalID: -1343141943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1015
+        y: 772
+        width: 163
+        height: 237
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfa75d6d0b1191e4a8f7c1b33709292c
+      internalID: -1166916227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 306
+        y: 542
+        width: 139
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00415df7ff7076f459d0d36b8afa6027
+      internalID: -1971734522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 542
+        width: 141
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 765787cc3043c514693a8bc71ca60fbd
+      internalID: 2116158391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 1027
+        y: 542
+        width: 139
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6be49973912bd6a46b6410154fb1a25a
+      internalID: 1857402397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 301
+        width: 141
+        height: 226
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6557d4e0836fb64aa48fa0cff1c0fca
+      internalID: 437687084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 301
+        width: 144
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 55d13e78a0c90304ab6f61a2166a724c
+      internalID: -2011259904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 301
+        width: 140
+        height: 226
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12714f19d3c35c441a2bfb3616be1ebd
+      internalID: -1268644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 59
+        width: 161
+        height: 231
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3ac1571af382644469754dfd9eee436d
+      internalID: 291614303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 59
+        width: 161
+        height: 231
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b28f85d7ba6bc24dbb50dfc3103c74b
+      internalID: -2019113007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tomas_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 1016
+        y: 59
+        width: 161
+        height: 231
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66ec78c54d1e1d842b0db74fe0e94333
+      internalID: 1262930446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: c9acba143ed7aac469e840ac2f59ad03
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +375,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Tomas_Walk_Spritesheet_0: 6624824442824996375
+      Tomas_Walk_Spritesheet_1: -1343141943
+      Tomas_Walk_Spritesheet_10: -2019113007
+      Tomas_Walk_Spritesheet_11: 1262930446
+      Tomas_Walk_Spritesheet_2: -1166916227
+      Tomas_Walk_Spritesheet_3: -1971734522
+      Tomas_Walk_Spritesheet_4: 2116158391
+      Tomas_Walk_Spritesheet_5: 1857402397
+      Tomas_Walk_Spritesheet_6: 437687084
+      Tomas_Walk_Spritesheet_7: -2011259904
+      Tomas_Walk_Spritesheet_8: -1268644
+      Tomas_Walk_Spritesheet_9: 291614303
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

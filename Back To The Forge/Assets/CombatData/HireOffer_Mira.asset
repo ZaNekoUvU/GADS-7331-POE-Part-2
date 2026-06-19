@@ -34,6 +34,7 @@ MonoBehaviour:
     effectKind: 4
     magnitude: 0.15
   walkSpritesheet: {fileID: 2800000, guid: 9609095fdca3c9447a1d5a8d59fa8d06, type: 3}
+  walkAnimatorController: {fileID: 9100000, guid: 7765ee8a0f802b501cb911a636a422b2, type: 2}
   battleReadySprite: {fileID: -4408575552332299256, guid: accaa3592184e3046b781067d897d492, type: 3}
   walkSheetColumns: 3
   walkSheetRows: 4

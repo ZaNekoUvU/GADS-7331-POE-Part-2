@@ -103,12 +103,12 @@ TextureImporter:
       name: Mira_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 322
+        y: 775
+        width: 146
+        height: 227
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,253 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 775
+        width: 143
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 30eb892605888074a9710f6e9edc5c02
+      internalID: 1410988852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 895
+        y: 775
+        width: 140
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d4b13cb9eb699204dadcbdf172e55597
+      internalID: -1191727831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 537
+        width: 136
+        height: 214
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 681997d58ee8a554292293595c8157b0
+      internalID: 270829193
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 541
+        width: 139
+        height: 213
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74d535da1c8a1554eaefdcb416499d38
+      internalID: -666925331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 537
+        width: 143
+        height: 217
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 41dbe4b1562c86a4cb716e785f7057c4
+      internalID: -463957784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 294
+        width: 128
+        height: 219
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc0639fe9878f104297eedb8f4f7ab69
+      internalID: 1436140165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 294
+        width: 140
+        height: 213
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b1088c12e0698b4d983af87c6556195
+      internalID: -433458354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 904
+        y: 294
+        width: 136
+        height: 213
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bb2208dbb4575f047b71160c7f0424bc
+      internalID: 1579537664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 44
+        width: 145
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 43b327f0fe99b974ba42bafe39572486
+      internalID: 213690887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 608
+        y: 44
+        width: 147
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3bafa96f358aa6e4fb6119c4a4130631
+      internalID: -1475225339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mira_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 44
+        width: 148
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49b2488b974c65b45a43166699ed78b0
+      internalID: 1071422549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 1f24fa68ec59b824da3fa07033ca8763
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +375,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Mira_Walk_Spritesheet_0: 4632289521273664665
+      Mira_Walk_Spritesheet_1: 1410988852
+      Mira_Walk_Spritesheet_10: -1475225339
+      Mira_Walk_Spritesheet_11: 1071422549
+      Mira_Walk_Spritesheet_2: -1191727831
+      Mira_Walk_Spritesheet_3: 270829193
+      Mira_Walk_Spritesheet_4: -666925331
+      Mira_Walk_Spritesheet_5: -463957784
+      Mira_Walk_Spritesheet_6: 1436140165
+      Mira_Walk_Spritesheet_7: -433458354
+      Mira_Walk_Spritesheet_8: 1579537664
+      Mira_Walk_Spritesheet_9: 213690887
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

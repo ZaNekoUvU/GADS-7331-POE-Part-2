@@ -19,17 +19,51 @@ public static class MercenaryVisualApplier
 
         spriteRenderer.color = tint ?? Color.white;
 
+        if (offer.WalkAnimatorController != null)
+            ApplyWalkAnimator(root, offer.WalkAnimatorController);
+        else
+            ApplyRuntimeWalkSheet(root, offer);
+
+        EnsureExplorationPhysics(root);
+        FitScaleToCurrentSprite(root, ExplorationTargetHeight);
+        return true;
+    }
+
+    private static void ApplyWalkAnimator(GameObject root, RuntimeAnimatorController controller)
+    {
+        var runtimeAnimator = root.GetComponent<MercenaryDirectionalAnimator2D>();
+        if (runtimeAnimator != null)
+            Object.Destroy(runtimeAnimator);
+
+        var unityAnimator = root.GetComponent<Animator>();
+        if (unityAnimator == null)
+            unityAnimator = root.AddComponent<Animator>();
+
+        unityAnimator.runtimeAnimatorController = controller;
+        unityAnimator.enabled = true;
+
+        var walkSetup = root.GetComponent<MercenaryWalkAnimatorSetup>();
+        if (walkSetup == null)
+            walkSetup = root.AddComponent<MercenaryWalkAnimatorSetup>();
+
+        walkSetup.Configure(true);
+    }
+
+    private static void ApplyRuntimeWalkSheet(GameObject root, HireableCompanionOffer offer)
+    {
+        var unityAnimator = root.GetComponent<Animator>();
+        if (unityAnimator != null)
+            unityAnimator.enabled = false;
+
+        var walkSetup = root.GetComponent<MercenaryWalkAnimatorSetup>();
+        if (walkSetup != null)
+            Object.Destroy(walkSetup);
+
         var animator = root.GetComponent<MercenaryDirectionalAnimator2D>();
         if (animator == null)
             animator = root.AddComponent<MercenaryDirectionalAnimator2D>();
 
         animator.Configure(offer.WalkSpritesheet, offer.WalkSheetColumns, offer.WalkSheetRows, offer.SpritePixelsPerUnit);
-
-        var legacyAnimator = root.GetComponent<Animator>();
-        if (legacyAnimator != null)
-            legacyAnimator.enabled = false;
-
-        EnsureExplorationPhysics(root);
 
         var refHeight = animator.GetReferenceWorldHeight(offer.SpritePixelsPerUnit);
         if (refHeight > 0.001f)
@@ -37,8 +71,6 @@ public static class MercenaryVisualApplier
             var scale = ExplorationTargetHeight / refHeight;
             root.transform.localScale = new Vector3(scale, scale, 1f);
         }
-
-        return true;
     }
 
     public static void ApplyCombatVisual(CombatUnit unit, HireableCompanionOffer offer)

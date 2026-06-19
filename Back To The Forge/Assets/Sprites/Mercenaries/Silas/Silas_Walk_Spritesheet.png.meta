@@ -103,12 +103,12 @@ TextureImporter:
       name: Silas_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 393
+        y: 809
+        width: 139
+        height: 201
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,319 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 810
+        width: 131
+        height: 200
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bda16ae73c271d049abe46136396c0a3
+      internalID: -1757243145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 949
+        y: 810
+        width: 136
+        height: 200
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 43e7b75a0ecc8244a8f6291747510d8d
+      internalID: 280295570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 599
+        width: 122
+        height: 195
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b6cf24a8ae13094e9d8762a8b1c6042
+      internalID: 1288583805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 600
+        width: 129
+        height: 194
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e4c7f00e517650a4495425be8c68f9fb
+      internalID: -1652466881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 949
+        y: 600
+        width: 125
+        height: 194
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c7ef281ca003884ea64ba9cad7c7b8c
+      internalID: -350747587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 390
+        width: 122
+        height: 194
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe43582eb01f52346b67527776e3de43
+      internalID: -887313599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 674
+        y: 390
+        width: 131
+        height: 194
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 05e32374dd18fc54cbaaf068982f58b2
+      internalID: -1242092712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 958
+        y: 390
+        width: 122
+        height: 194
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d5ce21531bbf2c148bf7fda86fc5c25f
+      internalID: 794127078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 417
+        y: 190
+        width: 116
+        height: 184
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 85898122aa2e078498d4b19e25a08936
+      internalID: 1693764117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 189
+        width: 119
+        height: 185
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 69a183211910eb1409b435e02907f82c
+      internalID: -2069991259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 964
+        y: 189
+        width: 117
+        height: 185
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8eabb10af52429b4f9db366e0a2fd86b
+      internalID: -1344370300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 6
+        width: 133
+        height: 181
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 411b915aa1117514792ef8f1e8b219d8
+      internalID: -600678189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_13
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 7
+        width: 134
+        height: 180
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a09833bab725df428943a8605f03bb4
+      internalID: 118790712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Silas_Walk_Spritesheet_14
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 8
+        width: 134
+        height: 179
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a43fb9bf0a7df14e8904a99886457ed
+      internalID: -700427559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 2f69421607c9a1948bc02664f5170bbd
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +441,25 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Silas_Walk_Spritesheet_0: 7087109386537347326
+      Silas_Walk_Spritesheet_1: -1757243145
+      Silas_Walk_Spritesheet_10: -2069991259
+      Silas_Walk_Spritesheet_11: -1344370300
+      Silas_Walk_Spritesheet_12: -600678189
+      Silas_Walk_Spritesheet_13: 118790712
+      Silas_Walk_Spritesheet_14: -700427559
+      Silas_Walk_Spritesheet_2: 280295570
+      Silas_Walk_Spritesheet_3: 1288583805
+      Silas_Walk_Spritesheet_4: -1652466881
+      Silas_Walk_Spritesheet_5: -350747587
+      Silas_Walk_Spritesheet_6: -887313599
+      Silas_Walk_Spritesheet_7: -1242092712
+      Silas_Walk_Spritesheet_8: 794127078
+      Silas_Walk_Spritesheet_9: 1693764117
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

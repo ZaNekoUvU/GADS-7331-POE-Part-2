@@ -18,6 +18,9 @@ public class CompanionFollower2D : MonoBehaviour
     private CombatAdditiveCoordinator _combatCoordinator;
     private PlayerMovement2D _leaderMovement;
     private MercenaryDirectionalAnimator2D _mercenaryAnimator;
+    private Animator _unityAnimator;
+    private MercenaryWalkAnimatorSetup _walkAnimatorSetup;
+    private SpriteRenderer _spriteRenderer;
 
     private void Awake()
     {
@@ -28,6 +31,9 @@ public class CompanionFollower2D : MonoBehaviour
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         _rb.simulated = true;
         _mercenaryAnimator = GetComponent<MercenaryDirectionalAnimator2D>();
+        _unityAnimator = GetComponent<Animator>();
+        _walkAnimatorSetup = GetComponent<MercenaryWalkAnimatorSetup>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     public void Configure(Transform followTarget, int companionSlotIndex)
@@ -76,17 +82,45 @@ public class CompanionFollower2D : MonoBehaviour
 
     private void UpdateMercenaryAnimation(Vector2 nextPosition, Vector2 leaderFacing)
     {
-        if (_mercenaryAnimator == null)
-            return;
-
         var moveDelta = nextPosition - _rb.position;
         var moving = moveDelta.sqrMagnitude > 0.0002f;
+        var facing = leaderFacing.sqrMagnitude > 0.0001f ? leaderFacing : moveDelta;
 
-        if (leaderFacing.sqrMagnitude > 0.0001f)
-            _mercenaryAnimator.SetFacingFromDirection(leaderFacing);
-        else if (moving)
-            _mercenaryAnimator.SetFacingFromDirection(moveDelta);
+        if (_mercenaryAnimator != null)
+        {
+            if (facing.sqrMagnitude > 0.0001f)
+                _mercenaryAnimator.SetFacingFromDirection(facing);
+            _mercenaryAnimator.SetMoving(moving);
+            return;
+        }
 
-        _mercenaryAnimator.SetMoving(moving);
+        if (_unityAnimator == null)
+            return;
+
+        if (facing.sqrMagnitude > 0.0001f)
+            PlayDirectionalWalk(facing);
+
+        _unityAnimator.speed = moving ? 1f : 0f;
+        if (!moving)
+            _unityAnimator.Play(_unityAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, 0f);
+    }
+
+    private void PlayDirectionalWalk(Vector2 dir)
+    {
+        if (_unityAnimator == null)
+            return;
+
+        var d = dir.normalized;
+        if (d.y > 0.01f)
+            _unityAnimator.Play("Up");
+        else if (d.y < -0.01f)
+            _unityAnimator.Play("Down");
+        else if (d.x > 0.01f && _walkAnimatorSetup != null && _walkAnimatorSetup.UseDedicatedRightWalk)
+            _unityAnimator.Play("Right");
+        else
+            _unityAnimator.Play("Left");
+
+        if (_spriteRenderer != null)
+            _spriteRenderer.flipX = false;
     }
 }

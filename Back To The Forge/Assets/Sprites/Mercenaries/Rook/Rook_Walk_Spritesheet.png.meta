@@ -103,12 +103,12 @@ TextureImporter:
       name: Rook_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 389
+        y: 775
+        width: 177
+        height: 241
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,253 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 677
+        y: 775
+        width: 177
+        height: 241
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 867074dad9e2433409bbb0dd8b5ebd01
+      internalID: -1066087435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 775
+        width: 177
+        height: 241
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 17c9a8ab5abf96445b7dba6dd9df5fbc
+      internalID: 1173978548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 417
+        y: 547
+        width: 127
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9d3268ab792237448a5f0483dcf6ebe
+      internalID: -1796053035
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 704
+        y: 547
+        width: 129
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec6973230f4608641ab83ebd74e6141a
+      internalID: -1866256028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 547
+        width: 134
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5eba743f98c169f4497f1552447f86ba
+      internalID: 1006101288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 319
+        width: 128
+        height: 226
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd0bbd099f3709d4baac5a809a524520
+      internalID: -1073907685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 319
+        width: 126
+        height: 225
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32688937903b58f428ade0720f20276d
+      internalID: -984679916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 988
+        y: 319
+        width: 127
+        height: 226
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8584e36d4a8dc8548a9e15e9bb6a37e1
+      internalID: 1949210127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 389
+        y: 76
+        width: 177
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c244a6d1cad12e43aa5ae5dfbbfbf3f
+      internalID: -564392545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 677
+        y: 75
+        width: 178
+        height: 241
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7043fc7eaf0b53e41b0cff08fcece7b1
+      internalID: -1627563997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rook_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 78
+        width: 177
+        height: 238
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be5572a78021c7442913d73c08e1923f
+      internalID: -671823851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: e9ee65be33b713c4885c6298fdcbdd05
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +375,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Rook_Walk_Spritesheet_0: -2765532222146592863
+      Rook_Walk_Spritesheet_1: -1066087435
+      Rook_Walk_Spritesheet_10: -1627563997
+      Rook_Walk_Spritesheet_11: -671823851
+      Rook_Walk_Spritesheet_2: 1173978548
+      Rook_Walk_Spritesheet_3: -1796053035
+      Rook_Walk_Spritesheet_4: -1866256028
+      Rook_Walk_Spritesheet_5: 1006101288
+      Rook_Walk_Spritesheet_6: -1073907685
+      Rook_Walk_Spritesheet_7: -984679916
+      Rook_Walk_Spritesheet_8: 1949210127
+      Rook_Walk_Spritesheet_9: -564392545
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

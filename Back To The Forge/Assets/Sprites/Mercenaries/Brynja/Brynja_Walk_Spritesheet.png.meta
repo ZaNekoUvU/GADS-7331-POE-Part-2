@@ -103,12 +103,12 @@ TextureImporter:
       name: Brynja_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 388
+        y: 771
+        width: 160
+        height: 235
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,253 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 770
+        width: 159
+        height: 236
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3fdb15f07e60f184b9aeb37b286c5720
+      internalID: -1867171347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 938
+        y: 770
+        width: 159
+        height: 235
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e9b3efc6ff80ac48a00c49513c3747e
+      internalID: -1802340422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 542
+        width: 132
+        height: 219
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 54fb0e5c4804e804494404eb0da48b97
+      internalID: -2046816127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 671
+        y: 542
+        width: 142
+        height: 219
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65b4ebc5282cc8f4a941e8948475b46e
+      internalID: 308839030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 953
+        y: 542
+        width: 135
+        height: 219
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c36f2cefa60be3458a42a8303f814f4
+      internalID: 746208323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 389
+        y: 313
+        width: 132
+        height: 217
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f440894bdb87314188b32b44505f5c1
+      internalID: 1604122360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 664
+        y: 313
+        width: 141
+        height: 216
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd1ef4ddf077d0c43aaf50ad1795a455
+      internalID: 1946780645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 313
+        width: 132
+        height: 217
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eaa7112340edf174a94a8ecd714ce607
+      internalID: -2022429593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 65
+        width: 158
+        height: 237
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c5f117fad9357047b16e0a8a1ce6ab3
+      internalID: -1758970932
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 64
+        width: 161
+        height: 238
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 206d091c298713d4fa5a3ab480579d62
+      internalID: 837946643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Brynja_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 64
+        width: 158
+        height: 238
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1989d6ea4fd371e4496b8633767b5926
+      internalID: 1564944618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: ce3ce9e713677f745a31c2fb4da39726
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +375,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Brynja_Walk_Spritesheet_0: 3285855419524336038
+      Brynja_Walk_Spritesheet_1: -1867171347
+      Brynja_Walk_Spritesheet_10: 837946643
+      Brynja_Walk_Spritesheet_11: 1564944618
+      Brynja_Walk_Spritesheet_2: -1802340422
+      Brynja_Walk_Spritesheet_3: -2046816127
+      Brynja_Walk_Spritesheet_4: 308839030
+      Brynja_Walk_Spritesheet_5: 746208323
+      Brynja_Walk_Spritesheet_6: 1604122360
+      Brynja_Walk_Spritesheet_7: 1946780645
+      Brynja_Walk_Spritesheet_8: -2022429593
+      Brynja_Walk_Spritesheet_9: -1758970932
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

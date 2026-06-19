@@ -103,12 +103,12 @@ TextureImporter:
       name: Vex_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 357
+        y: 776
+        width: 191
+        height: 227
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,253 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 648
+        y: 776
+        width: 191
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1fa048c9a46dcbd4683205fb55308f7b
+      internalID: -2018337028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 776
+        width: 187
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f4041a29b159174dad0924cab63feda
+      internalID: 1128736709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 377
+        y: 551
+        width: 163
+        height: 212
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e5af18aa009a754894cfd3801e10851
+      internalID: 896408600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 552
+        width: 159
+        height: 211
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c93cdfdab318d6c468a3a3d574cda738
+      internalID: 1064037326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 955
+        y: 552
+        width: 166
+        height: 211
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53babcab015610f4585400a8eb82a7ce
+      internalID: -570247626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 379
+        y: 321
+        width: 161
+        height: 209
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ed40a854e3c5224baf3e0f530df0e9b
+      internalID: 1044734760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 321
+        width: 158
+        height: 209
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49d2fff1e039f684b81b0448d017bba9
+      internalID: 59337592
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 321
+        width: 161
+        height: 209
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d7fd5548ffe70b47ba4dd49a9a6f93e
+      internalID: -1905301748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 374
+        y: 78
+        width: 191
+        height: 222
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e0b48ba25789abb41b46ef7d705d52af
+      internalID: -191855399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 664
+        y: 78
+        width: 190
+        height: 222
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8b42ee475212f21429bec5a992c4d7d1
+      internalID: -513693082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Vex_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 955
+        y: 78
+        width: 189
+        height: 222
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f5ae384a12f4494b842b5d0192ee34e
+      internalID: 1196863234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 8c6f6dccd006c544d9c9ca35816ac111
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +375,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Vex_Walk_Spritesheet_0: 7107087173275626131
+      Vex_Walk_Spritesheet_1: -2018337028
+      Vex_Walk_Spritesheet_10: -513693082
+      Vex_Walk_Spritesheet_11: 1196863234
+      Vex_Walk_Spritesheet_2: 1128736709
+      Vex_Walk_Spritesheet_3: 896408600
+      Vex_Walk_Spritesheet_4: 1064037326
+      Vex_Walk_Spritesheet_5: -570247626
+      Vex_Walk_Spritesheet_6: 1044734760
+      Vex_Walk_Spritesheet_7: 59337592
+      Vex_Walk_Spritesheet_8: -1905301748
+      Vex_Walk_Spritesheet_9: -191855399
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -35,6 +35,7 @@ MonoBehaviour:
     magnitude: 0.2
   walkSpritesheet: {fileID: 2800000, guid: abfc39ce43ed2b845b42c65f56a8df80, type: 3}
   battleReadySprite: {fileID: 8151859443345390314, guid: e7d793cc12a3ea443830c852e878938c, type: 3}
+  walkAnimatorController: {fileID: 9100000, guid: 69eaa7086254ba5299fc812aa3fe4b4e, type: 2}
   walkSheetColumns: 3
   walkSheetRows: 4
   spritePixelsPerUnit: 100

@@ -103,12 +103,12 @@ TextureImporter:
       name: Kaela_Walk_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 346
+        y: 777
+        width: 137
+        height: 242
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +121,253 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 777
+        width: 138
+        height: 242
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c75a85289d4a595439ef76ed985f52ea
+      internalID: -886975981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 777
+        width: 137
+        height: 242
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8bfa964c33c08044ba800765ac4bcce7
+      internalID: -1527862594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 349
+        y: 553
+        width: 144
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 87d2c76612aa1084284d1c117e8255fa
+      internalID: -919477284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 555
+        width: 147
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9914669116265843a32d8464bb33a69
+      internalID: -858021824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 554
+        width: 136
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 79c6e300d68a96d4a8fe902ae1f2ce9d
+      internalID: -1413021654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 322
+        width: 144
+        height: 205
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0251ab82cb2454249a38a49423cab203
+      internalID: -740977229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 668
+        y: 326
+        width: 149
+        height: 203
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8aeacc48ad5b7804fb593c66fff02b01
+      internalID: 476462574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 322
+        width: 143
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82608eca3c0cd8147abecc6cd6ea1d02
+      internalID: -671460315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 353
+        y: 67
+        width: 135
+        height: 232
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a7e6eb08547fea41beb44c62c25fed3
+      internalID: -1815501427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 682
+        y: 67
+        width: 137
+        height: 232
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26873ca289f246c48867f30b54f91cb3
+      internalID: 2019787407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Kaela_Walk_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 1034
+        y: 68
+        width: 137
+        height: 231
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 055c79ed9b2b9314ab3732209d023105
+      internalID: -1239096902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: db07e98f6058a0241a61ad97894d91d6
     internalID: 0
     vertices: []
     indices: 
@@ -133,9 +375,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Kaela_Walk_Spritesheet_0: -8524850980764724122
+      Kaela_Walk_Spritesheet_1: -886975981
+      Kaela_Walk_Spritesheet_10: 2019787407
+      Kaela_Walk_Spritesheet_11: -1239096902
+      Kaela_Walk_Spritesheet_2: -1527862594
+      Kaela_Walk_Spritesheet_3: -919477284
+      Kaela_Walk_Spritesheet_4: -858021824
+      Kaela_Walk_Spritesheet_5: -1413021654
+      Kaela_Walk_Spritesheet_6: -740977229
+      Kaela_Walk_Spritesheet_7: 476462574
+      Kaela_Walk_Spritesheet_8: -671460315
+      Kaela_Walk_Spritesheet_9: -1815501427
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
