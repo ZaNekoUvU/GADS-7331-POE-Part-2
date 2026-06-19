@@ -17,6 +17,7 @@ public class CombatSceneController : MonoBehaviour
         if (_unloading)
             return;
 
+        PlayerPersistentCombatHealth.PersistFromCombatScene();
         StartCoroutine(UnloadRoutine());
     }
 

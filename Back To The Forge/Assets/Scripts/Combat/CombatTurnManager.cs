@@ -439,20 +439,6 @@ public class CombatTurnManager : MonoBehaviour
 
         CombatSession.MarkVictoryLootPending();
 
-        if (spawner != null)
-        {
-            foreach (var a in spawner.SpawnedAllies)
-            {
-                if (a == null || !IsPlayerCommandActor(a))
-                    continue;
-
-                var persist = FindAnyObjectByType<PlayerPersistentCombatHealth>();
-                if (persist != null)
-                    persist.RecordHpAfterCombat(a.CurrentHp);
-                break;
-            }
-        }
-
         _sceneController.EndCombat();
         return true;
     }

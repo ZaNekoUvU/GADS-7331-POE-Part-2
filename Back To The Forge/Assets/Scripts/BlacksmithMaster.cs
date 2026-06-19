@@ -329,6 +329,7 @@ public class BlacksmithMaster : MonoBehaviour
         HiredCompanionManager.Instance?.ClearHiresForNewDay();
         IronVein.RestoreAllForNewDay();
         RollDailyQuest();
+        PlayerPersistentCombatHealth.GetOrCreate()?.ResetToFullHealth();
         OnEconomyChanged?.Invoke();
 
         if (debugLogs)
@@ -395,6 +396,7 @@ public class BlacksmithMaster : MonoBehaviour
         IronVein.RestoreAllForNewDay();
 
         RollDailyQuest();
+        PlayerPersistentCombatHealth.GetOrCreate()?.ResetToFullHealth();
 
         if (total > 0)
             OnGoldAdded?.Invoke(total);

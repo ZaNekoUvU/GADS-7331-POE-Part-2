@@ -133,14 +133,10 @@ public sealed class PlayerDeathController : MonoBehaviour
             inventory?.ClearAll();
 
         ForgeQuestManager.Instance?.ClearForNewDay(inventory);
-        BlacksmithQuestGiver.TryBeginFallbackForgeQuest();
-
-        var health = Object.FindAnyObjectByType<PlayerPersistentCombatHealth>();
-        health?.ResetToFullHealth();
 
         RespawnPlayer(player);
 
-        Debug.Log("[PlayerDeath] Respawned at session start — inventory cleared, day advanced, gold kept.");
+        Debug.Log("[PlayerDeath] Respawned at session start — inventory cleared, forge quest reset, day advanced, gold kept.");
     }
 
     private static Inventory ResolvePlayerInventory(PlayerMovement2D player)
@@ -210,7 +206,7 @@ public sealed class PlayerDeathController : MonoBehaviour
         title.style.marginBottom = 12;
         panel.Add(title);
 
-        _bodyLabel = new Label("Your pack is lost. A new day begins at the forge…") { name = "death-body" };
+        _bodyLabel = new Label("Your pack is lost. A new day begins — visit the blacksmith for a new commission.") { name = "death-body" };
         FfStyleMenuUi.ApplyLabelStyle(_bodyLabel, 14f, false);
         _bodyLabel.style.color = FfStyleMenuUi.SubtitleColor;
         _bodyLabel.style.whiteSpace = WhiteSpace.Normal;
