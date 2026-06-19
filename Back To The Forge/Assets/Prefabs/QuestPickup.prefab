@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: e4e7553c2a7392c40b37530132fa5595, type: 3}
+  m_Sprite: {fileID: 8315422307696952651, guid: 3f3f9856d58298245aeb263b38176657, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -141,4 +141,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5f4a18ff1bb4a040aa5c6e84333db5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestMineralPickup
-  playerTag: Player

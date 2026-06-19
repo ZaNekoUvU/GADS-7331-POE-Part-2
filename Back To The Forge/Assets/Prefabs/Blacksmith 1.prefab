@@ -290,6 +290,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bb22cc33dd44ee55ff66778899abb011, type: 2}
   - {fileID: 11400000, guid: cc33dd44ee55ff66778899abb011cc22, type: 2}
   - {fileID: 11400000, guid: dd44ee55ff66778899abb011cc22dd33, type: 2}
+  - {fileID: 11400000, guid: a10b20c30d40e50f60718293a4b5c010, type: 2}
+  - {fileID: 11400000, guid: a10b20c30d40e50f60718293a4b5c020, type: 2}
+  - {fileID: 11400000, guid: a10b20c30d40e50f60718293a4b5c030, type: 2}
   questItemSellMultiplier: 2
   startingDay: 1
   startingGold: 70
