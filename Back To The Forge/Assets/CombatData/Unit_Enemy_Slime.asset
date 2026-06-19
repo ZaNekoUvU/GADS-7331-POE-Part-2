@@ -10,14 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a2000000111122223333444455556666, type: 3}
-  m_Name: Unit_Player
+  m_Name: Unit_Enemy_Slime
   m_EditorClassIdentifier: 
-  unitId: 1
-  displayName: Hero
-  maxHp: 45
-  attackDamage: 20
+  unitId: 14
+  displayName: Slime
+  maxHp: 16
+  attackDamage: 4
   moveIds:
   - 100
-  - 101
   moves: []
-  battleSprite: {fileID: 3074228507298577535, guid: 2d6720b9690977648a7acf105fa73316, type: 3}

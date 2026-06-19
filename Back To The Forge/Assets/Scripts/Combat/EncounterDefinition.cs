@@ -10,6 +10,7 @@ public class EncounterDefinition : ScriptableObject
     [SerializeField] private int enemyUnitId0 = 10;
     [SerializeField] private int enemyUnitId1 = 11;
     [SerializeField] private int enemyUnitId2 = 12;
+    [SerializeField] private int enemyUnitId3;
 
     public int EncounterId => encounterId;
 
@@ -20,6 +21,7 @@ public class EncounterDefinition : ScriptableObject
             0 => enemyUnitId0,
             1 => enemyUnitId1,
             2 => enemyUnitId2,
+            3 => enemyUnitId3,
             _ => 0
         };
     }

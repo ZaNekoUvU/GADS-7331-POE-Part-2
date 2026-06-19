@@ -11,9 +11,10 @@ public class CombatStarter : MonoBehaviour
     [SerializeField] private int defaultEncounterId;
 
     [Header("Random encounter intro (RiskyGround → LLM)")]
-    [Tooltip("When used via StartRandomEncounterWithLlmIntro, shows one narrator line from Ollama before combat.")]
-    [SerializeField] private bool useLlmBanditEncounterIntro = true;
+    [Tooltip("When used via StartRandomEncounterWithLlmIntro, rolls wild enemies and shows one narrator line from Ollama before combat.")]
+    [SerializeField] private bool useLlmWildEncounterIntro = true;
 
+    [SerializeField] private WildEnemyCatalog wildEnemyCatalog;
     [SerializeField] private OllamaDialogueService ollamaService;
 
     private static readonly string[] EncounterMotifHints =
@@ -28,15 +29,6 @@ public class CombatStarter : MonoBehaviour
         "eyes from the ditch",
         "steel catching sun",
         "someone counted steps wrong"
-    };
-
-    private static readonly string[] FallbackBanditEncounterLines =
-    {
-        "You've walked into bandits.",
-        "Bandits rise — no preamble.",
-        "Ambush. They were waiting.",
-        "Steel answers before words do.",
-        "They're already closing."
     };
 
     private Coroutine _randomEncounterIntroRoutine;
@@ -74,12 +66,13 @@ public class CombatStarter : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by <see cref="RiskyGroundEncounter2D"/> instead of <see cref="StartFightWithId"/> so the player sees one LLM line (bandit-themed) first.
+    /// Called by <see cref="RiskyGroundEncounter2D"/> — rolls enemies, Ollama intro, then combat.
     /// </summary>
     public void StartRandomEncounterWithLlmIntro(int encounterId)
     {
-        if (!useLlmBanditEncounterIntro)
+        if (!useLlmWildEncounterIntro)
         {
+            RollAndStoreWildEncounter();
             StartFightWithId(encounterId);
             return;
         }
@@ -90,21 +83,52 @@ public class CombatStarter : MonoBehaviour
         _randomEncounterIntroRoutine = StartCoroutine(RandomEncounterIntroThenFight(encounterId));
     }
 
+    private void RollAndStoreWildEncounter()
+    {
+        CombatSession.ClearRolledWildEncounter();
+
+        var catalog = wildEnemyCatalog;
+        if (catalog == null)
+        {
+            Debug.LogWarning($"{nameof(CombatStarter)}: No {nameof(WildEnemyCatalog)} assigned — combat will use encounter table enemies.", this);
+            return;
+        }
+
+        var rolled = catalog.RollEncounter();
+        if (rolled != null)
+            CombatSession.SetRolledWildEncounter(rolled);
+    }
+
     private IEnumerator RandomEncounterIntroThenFight(int encounterId)
     {
+        RollAndStoreWildEncounter();
+
+        var rolled = CombatSession.ActiveWildEncounter;
+        if (rolled == null)
+        {
+            _randomEncounterIntroRoutine = null;
+            StartFightWithId(encounterId);
+            yield break;
+        }
+
         var ui = SimpleRpgDialogueUI.GetOrCreate();
         var service = ollamaService != null ? ollamaService : OllamaDialogueService.GetOrCreate();
 
         ui.ShowAwaitingLine(string.Empty, "…");
 
+        var threatSummary = rolled.BuildGroupSummary();
+        var flavor = rolled.BuildFlavorContext();
+        var motif = EncounterMotifHints[Random.Range(0, EncounterMotifHints.Length)];
+
         var systemPrompt =
-            "You are the narrator in Baldur's Gate 3: bone-dry, clipped, present tense. Output ONE short line only — aim under ~14 words, often starting with You / Your / They're / Something. " +
-            "The threat is bandits; name them bandits once (or imply them clearly). Hint one sharp sensory beat at most — no lore, no staging directions, no metaphors piled up. " +
+            "You are the narrator in Baldur's Gate 3: bone-dry, clipped, present tense. Output ONE short line only — aim under ~16 words, often starting with You / Your / They're / Something. " +
+            "Name the threat clearly using the enemy types given. Hint one sharp sensory beat at most — no lore dumps, no staging directions, no metaphors piled up. " +
             "No quotes, no markdown, no second sentence.";
 
-        var motif = EncounterMotifHints[Random.Range(0, EncounterMotifHints.Length)];
         var userPrompt =
-            $"Bandit encounter. One narrator line. Optionally nod at: {motif}. Don't explain much.";
+            $"The party is ambushed. Enemies: {threatSummary}. " +
+            (string.IsNullOrWhiteSpace(flavor) ? string.Empty : $"Context: {flavor} ") +
+            $"Optional sensory nod: {motif}. One narrator line now.";
 
         string line = null;
         string err = null;
@@ -121,12 +145,20 @@ public class CombatStarter : MonoBehaviour
             if (!string.IsNullOrEmpty(err))
                 Debug.LogWarning($"{nameof(CombatStarter)}: Encounter intro LLM failed ({err}). Using fallback.", this);
 
-            ui.SetDialogueLineAndAllowAdvance(FallbackBanditEncounterLines[Random.Range(0, FallbackBanditEncounterLines.Length)]);
+            ui.SetDialogueLineAndAllowAdvance(BuildFallbackIntroLine(rolled));
         }
 
         yield return new WaitUntil(() => !SimpleRpgDialogueUI.IsDialogueOpen);
 
         _randomEncounterIntroRoutine = null;
         StartFightWithId(encounterId);
+    }
+
+    private static string BuildFallbackIntroLine(RolledWildEncounter rolled)
+    {
+        var summary = rolled.BuildGroupSummary();
+        return rolled.Count == 1
+            ? $"A {rolled.PickPrimaryDisplayName().ToLowerInvariant()} blocks the path."
+            : $"{summary} rise from the brush.";
     }
 }

@@ -1,42 +1,29 @@
 using UnityEngine;
 
 /// <summary>
-/// Red pixel-outline on a combat unit sprite while it is the selected strike target.
+/// Crisp white border on a combat unit sprite while it is the selected strike target.
 /// </summary>
 [DisallowMultipleComponent]
 public class CombatTargetSpriteHighlight : MonoBehaviour
 {
-    private static readonly Vector2[] OutlineOffsets =
-    {
-        new(0.055f, 0f),
-        new(-0.055f, 0f),
-        new(0f, 0.055f),
-        new(0f, -0.055f),
-        new(0.039f, 0.039f),
-        new(-0.039f, 0.039f),
-        new(0.039f, -0.039f),
-        new(-0.039f, -0.039f)
-    };
+    private static Material _outlineTemplate;
 
-    [SerializeField] private Color outlineColor = new(1f, 0.18f, 0.18f, 1f);
+    [SerializeField] private Material outlineMaterial;
+    [SerializeField] private Color borderColor = Color.white;
+    [SerializeField] private float borderPixelWidth = 2f;
 
     private SpriteRenderer _source;
-    private GameObject _root;
-    private SpriteRenderer[] _layers;
+    private Material _defaultMaterial;
+    private Material _activeOutlineMaterial;
     private bool _highlighted;
 
     private void Awake()
     {
         var unit = GetComponent<CombatUnit>();
         _source = unit != null ? unit.SpriteRenderer : GetComponent<SpriteRenderer>();
-    }
 
-    private void LateUpdate()
-    {
-        if (!_highlighted || _source == null || _layers == null)
-            return;
-
-        SyncFromSource();
+        if (_source != null)
+            _defaultMaterial = _source.sharedMaterial;
     }
 
     private void OnDisable()
@@ -44,70 +31,65 @@ public class CombatTargetSpriteHighlight : MonoBehaviour
         SetHighlighted(false);
     }
 
+    private void OnDestroy()
+    {
+        if (_activeOutlineMaterial != null)
+            Destroy(_activeOutlineMaterial);
+    }
+
     public void SetHighlighted(bool on)
     {
-        if (on == _highlighted && (!on || _root != null))
+        if (_source == null)
+            return;
+
+        if (on == _highlighted)
             return;
 
         _highlighted = on;
-        EnsureBuilt();
-
-        if (_root == null)
-            return;
 
         if (on)
-            SyncFromSource();
+        {
+            var outline = GetOutlineMaterialInstance();
+            if (outline == null)
+                return;
 
-        _root.SetActive(on);
+            outline.SetColor("_OutlineColor", borderColor);
+            outline.SetFloat("_OutlinePixelWidth", borderPixelWidth);
+            _source.material = outline;
+        }
+        else
+        {
+            _source.sharedMaterial = _defaultMaterial;
+        }
     }
 
-    private void EnsureBuilt()
+    private Material GetOutlineMaterialInstance()
     {
-        if (_root != null || _source == null)
-            return;
+        if (_activeOutlineMaterial != null)
+            return _activeOutlineMaterial;
 
-        _root = new GameObject("TargetOutline");
-        _root.transform.SetParent(_source.transform, false);
+        var template = outlineMaterial != null ? outlineMaterial : GetOutlineTemplate();
+        if (template == null)
+            return null;
 
-        _layers = new SpriteRenderer[OutlineOffsets.Length];
-        for (var i = 0; i < OutlineOffsets.Length; i++)
-        {
-            var layerGo = new GameObject($"layer{i}");
-            layerGo.transform.SetParent(_root.transform, false);
-            layerGo.transform.localPosition = new Vector3(OutlineOffsets[i].x, OutlineOffsets[i].y, 0f);
-
-            var layer = layerGo.AddComponent<SpriteRenderer>();
-            layer.sortingLayerID = _source.sortingLayerID;
-            layer.sortingOrder = _source.sortingOrder - 1;
-            layer.color = outlineColor;
-            _layers[i] = layer;
-        }
-
-        _root.SetActive(false);
+        _activeOutlineMaterial = new Material(template);
+        return _activeOutlineMaterial;
     }
 
-    private void SyncFromSource()
+    private static Material GetOutlineTemplate()
     {
-        if (_source == null || _layers == null)
-            return;
+        if (_outlineTemplate != null)
+            return _outlineTemplate;
 
-        var sprite = _source.sprite;
-        var layerId = _source.sortingLayerID;
-        var order = _source.sortingOrder - 1;
-
-        for (var i = 0; i < _layers.Length; i++)
+        var shader = Shader.Find("Custom/SpriteWhiteOutline");
+        if (shader == null)
         {
-            var layer = _layers[i];
-            if (layer == null)
-                continue;
-
-            layer.sprite = sprite;
-            layer.flipX = _source.flipX;
-            layer.flipY = _source.flipY;
-            layer.sortingLayerID = layerId;
-            layer.sortingOrder = order;
-            layer.color = outlineColor;
+            Debug.LogWarning($"{nameof(CombatTargetSpriteHighlight)}: Outline shader not found.");
+            return null;
         }
+
+        _outlineTemplate = new Material(shader);
+        return _outlineTemplate;
     }
 
     public static CombatTargetSpriteHighlight GetOrAdd(CombatUnit unit)

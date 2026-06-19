@@ -50,7 +50,12 @@ public class OllamaDialogueService : MonoBehaviour
     }
 
     /// <summary>Plain chat reply (sanitized like NPC dialogue). Use for turn-in flavor and small talk.</summary>
-    public IEnumerator RequestRoleplayLineCoroutine(string systemPrompt, string userPrompt, Action<string> onSuccess, Action<string> onError)
+    public IEnumerator RequestRoleplayLineCoroutine(
+        string systemPrompt,
+        string userPrompt,
+        Action<string> onSuccess,
+        Action<string> onError,
+        string enforceSpeakerName = null)
     {
         if (_busy)
         {
@@ -102,7 +107,7 @@ public class OllamaDialogueService : MonoBehaviour
                 yield break;
             }
 
-            onSuccess?.Invoke(SanitizeLine(content));
+            onSuccess?.Invoke(ApplySpeakerSanitize(content, enforceSpeakerName));
         }
         finally
         {
@@ -143,6 +148,7 @@ public class OllamaDialogueService : MonoBehaviour
             var systemContent =
                 "You are " + characterName + ", a hired mercenary traveling with the player in the retro fantasy game \"Back to the Forge\".\n" +
                 "Persona:\n" + persona + "\n\n" +
+                DialogueSpeakerNameUtil.IdentityRules(characterName) + "\n\n" +
                 "Battle skills tied to how the traveler treats you:\n" +
                 "- If their words genuinely encourage you (positive sentiment), you unlock: \"" + positiveSkill.skillName + "\" — " + positiveSkill.description + "\n" +
                 "- If they upset or insult you (negative sentiment), you inflict: \"" + negativeSkill.skillName + "\" — " + negativeSkill.description + "\n\n" +
@@ -213,7 +219,7 @@ public class OllamaDialogueService : MonoBehaviour
                 yield break;
             }
 
-            onSuccess?.Invoke(dto);
+            onSuccess?.Invoke(EnforceCompanionDtoNames(dto, characterName));
         }
         finally
         {
@@ -554,7 +560,7 @@ public class OllamaDialogueService : MonoBehaviour
                 yield break;
             }
 
-            onSuccess?.Invoke(SanitizeLine(content));
+            onSuccess?.Invoke(ApplySpeakerSanitize(content, profile.CharacterName));
         }
         finally
         {
@@ -580,6 +586,7 @@ public class OllamaDialogueService : MonoBehaviour
         }
 
         sb.AppendLine();
+        sb.AppendLine(DialogueSpeakerNameUtil.IdentityRules(p.CharacterName));
         sb.AppendLine(
             "CRITICAL — You write ONLY what this character says out loud in the game, 1-3 short sentences. " +
             "Direct speech only. Do NOT plan, explain, or discuss instructions. Do NOT say: the user, okay, let me think, I need to, I should, " +
@@ -716,6 +723,26 @@ public class OllamaDialogueService : MonoBehaviour
         t = Regex.Replace(t, "<think>[\\s\\S]*?</think>", string.Empty, RegexOptions.IgnoreCase);
         t = Regex.Replace(t, "<thinking>[\\s\\S]*?</thinking>", string.Empty, RegexOptions.IgnoreCase);
         return t.Trim();
+    }
+
+    private static string ApplySpeakerSanitize(string content, string enforceSpeakerName)
+    {
+        var line = SanitizeLine(content);
+        if (string.IsNullOrWhiteSpace(enforceSpeakerName))
+            return line;
+
+        return DialogueSpeakerNameUtil.Enforce(line, enforceSpeakerName);
+    }
+
+    private static CompanionDialogueDto EnforceCompanionDtoNames(CompanionDialogueDto dto, string characterName)
+    {
+        if (dto == null)
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(dto.replyLine) && !string.IsNullOrWhiteSpace(characterName))
+            dto.replyLine = DialogueSpeakerNameUtil.Enforce(dto.replyLine, characterName);
+
+        return dto;
     }
 
     private static string SanitizeLine(string raw)

@@ -40,3 +40,15 @@ MonoBehaviour:
   - unitId: 10
     definition: {fileID: 11400000, guid: 666677778888999900001111222233ff, type: 2}
     prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 11
+    definition: {fileID: 11400000, guid: e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 12
+    definition: {fileID: 11400000, guid: e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 13
+    definition: {fileID: 11400000, guid: e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}
+  - unitId: 14
+    definition: {fileID: 11400000, guid: e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4, type: 2}
+    prefab: {fileID: 901234501, guid: aaaabbbbccccddddeeeeffff00001122, type: 3}

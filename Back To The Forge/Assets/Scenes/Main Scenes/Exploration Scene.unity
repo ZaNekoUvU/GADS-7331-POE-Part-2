@@ -6885,7 +6885,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatStarter
   coordinator: {fileID: 65184189}
   defaultEncounterId: 1
-  useLlmBanditEncounterIntro: 1
+  useLlmWildEncounterIntro: 1
+  wildEnemyCatalog: {fileID: 11400000, guid: f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1, type: 2}
   ollamaService: {fileID: 0}
 --- !u!114 &65184192
 MonoBehaviour:

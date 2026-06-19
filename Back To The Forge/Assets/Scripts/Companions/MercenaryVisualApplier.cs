@@ -6,9 +6,14 @@ using UnityEngine;
 public static class MercenaryVisualApplier
 {
     public const float ExplorationTargetHeight = 0.95f;
+    public const float RecruiterCampTargetHeight = 0.5f;
     public const float CombatTargetHeight = 1.05f;
 
-    public static bool ApplyExplorationVisual(GameObject root, HireableCompanionOffer offer, Color? tint = null)
+    public static bool ApplyExplorationVisual(
+        GameObject root,
+        HireableCompanionOffer offer,
+        Color? tint = null,
+        float targetHeight = ExplorationTargetHeight)
     {
         if (root == null || offer == null || !offer.HasWalkVisuals)
             return false;
@@ -22,10 +27,10 @@ public static class MercenaryVisualApplier
         if (offer.WalkAnimatorController != null)
             ApplyWalkAnimator(root, offer.WalkAnimatorController);
         else
-            ApplyRuntimeWalkSheet(root, offer);
+            ApplyRuntimeWalkSheet(root, offer, targetHeight);
 
         EnsureExplorationPhysics(root);
-        FitScaleToCurrentSprite(root, ExplorationTargetHeight);
+        FitScaleToCurrentSprite(root, targetHeight);
         return true;
     }
 
@@ -49,7 +54,7 @@ public static class MercenaryVisualApplier
         walkSetup.Configure(true);
     }
 
-    private static void ApplyRuntimeWalkSheet(GameObject root, HireableCompanionOffer offer)
+    private static void ApplyRuntimeWalkSheet(GameObject root, HireableCompanionOffer offer, float targetHeight)
     {
         var unityAnimator = root.GetComponent<Animator>();
         if (unityAnimator != null)
@@ -68,7 +73,7 @@ public static class MercenaryVisualApplier
         var refHeight = animator.GetReferenceWorldHeight(offer.SpritePixelsPerUnit);
         if (refHeight > 0.001f)
         {
-            var scale = ExplorationTargetHeight / refHeight;
+            var scale = targetHeight / refHeight;
             root.transform.localScale = new Vector3(scale, scale, 1f);
         }
     }
@@ -78,12 +83,23 @@ public static class MercenaryVisualApplier
         if (unit == null || offer == null || offer.BattleReadySprite == null)
             return;
 
+        ApplyAllyCombatVisual(unit, offer.BattleReadySprite, faceRight: false);
+    }
+
+    /// <summary>Ally battle sprite on the field. Set <paramref name="faceRight"/> when the art faces left by default.</summary>
+    public static void ApplyAllyCombatVisual(CombatUnit unit, Sprite sprite, bool faceRight)
+    {
+        if (unit == null || sprite == null)
+            return;
+
         var spriteRenderer = unit.SpriteRenderer;
         if (spriteRenderer == null)
             return;
 
         spriteRenderer.color = Color.white;
-        spriteRenderer.sprite = offer.BattleReadySprite;
+        spriteRenderer.sprite = sprite;
+        spriteRenderer.flipX = faceRight;
+        spriteRenderer.flipY = false;
         FitScaleToCurrentSprite(unit.gameObject, CombatTargetHeight);
     }
 

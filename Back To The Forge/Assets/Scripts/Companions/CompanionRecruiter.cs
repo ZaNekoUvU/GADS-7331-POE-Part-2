@@ -81,7 +81,11 @@ public class CompanionRecruiter : MonoBehaviour
             companionJoinLine = configuredOffer.CompanionJoinLine;
         }
 
-        if (configuredOffer != null && MercenaryVisualApplier.ApplyExplorationVisual(gameObject, configuredOffer, spriteTint))
+        if (configuredOffer != null && MercenaryVisualApplier.ApplyExplorationVisual(
+                gameObject,
+                configuredOffer,
+                spriteTint,
+                MercenaryVisualApplier.RecruiterCampTargetHeight))
             return;
 
         if (spriteTint.HasValue)
@@ -228,6 +232,9 @@ public class CompanionRecruiter : MonoBehaviour
         if (follower == null)
             follower = gameObject.AddComponent<CompanionFollower2D>();
 
+        if (offer != null)
+            MercenaryVisualApplier.ApplyExplorationVisual(gameObject, offer);
+
         EnsureFollowerConfigured();
         follower.enabled = true;
         DisableWorldGameplayColliders(gameObject);
@@ -319,6 +326,15 @@ public class CompanionRecruiter : MonoBehaviour
     private void ApplyPostVisualAndWanderAtSavedSpawn()
     {
         transform.SetPositionAndRotation(_recruitWorldPosition, _recruitWorldRotation);
+
+        if (offer != null)
+        {
+            MercenaryVisualApplier.ApplyExplorationVisual(
+                gameObject,
+                offer,
+                null,
+                MercenaryVisualApplier.RecruiterCampTargetHeight);
+        }
 
         for (var i = 0; i < _spriteRenderers.Length; i++)
         {
@@ -488,6 +504,7 @@ public class CompanionRecruiter : MonoBehaviour
             $"You are {characterName}, an NPC mercenary for hire in the retro fantasy game \"Back to the Forge\" (mines, forge, risky roads).\n" +
             $"Persona:\n{persona}\n" +
             $"{toneClause}\n\n" +
+            $"{DialogueSpeakerNameUtil.IdentityRules(characterName)}\n\n" +
             "CRITICAL — Output ONLY what this character says out loud, 1–3 short sentences. Direct speech only. " +
             "Do NOT plan, explain, or discuss instructions or prompts. Do NOT say: the user, okay, let me think, I should, respond as, my reply. " +
             "Start immediately with spoken words to the traveler.";
@@ -496,7 +513,7 @@ public class CompanionRecruiter : MonoBehaviour
             $"The traveler just stepped up to your posting. Pitch yourself — your hire fee today is {hireCostGold} gold " +
             "(mention it only if it fits naturally). Invite them to hire you or ask where they're headed.";
 
-        yield return service.RequestRoleplayLineCoroutine(systemPrompt, userPrompt, onSuccess, onError);
+        yield return service.RequestRoleplayLineCoroutine(systemPrompt, userPrompt, onSuccess, onError, characterName);
     }
 
     private IEnumerator WaitDialogueClosed()

@@ -14,8 +14,11 @@ public class UnitDefinition : ScriptableObject
     [Tooltip("Move ids this unit can use (resolve via MoveRegistry).")]
     [SerializeField] private int[] moveIds = { 100 };
     [SerializeField] private MoveDefinition[] moves;
+    [Tooltip("Optional battle sprite for allies that are not mercenary offers (e.g. the hero).")]
+    [SerializeField] private Sprite battleSprite;
 
     public int UnitId => unitId;
+    public Sprite BattleSprite => battleSprite;
     public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
     public int MaxHp => maxHp;
     public int AttackDamage => attackDamage;

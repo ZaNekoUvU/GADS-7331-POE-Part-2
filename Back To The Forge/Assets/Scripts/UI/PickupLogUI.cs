@@ -64,8 +64,7 @@ public sealed class PickupLogUI : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        _inventory = null;
-        _economy = null;
+        UnbindSubscriptions();
         RebindSubscriptions();
     }
 
@@ -99,13 +98,17 @@ public sealed class PickupLogUI : MonoBehaviour
         var player = PlayerMovement2D.Instance ?? FindAnyObjectByType<PlayerMovement2D>();
         if (player != null && player.TryGetComponent(out Inventory inv))
         {
+            inv.OnItemAdded -= OnItemAdded;
+            inv.OnItemAdded += OnItemAdded;
             _inventory = inv;
-            _inventory.OnItemAdded += OnItemAdded;
         }
 
         _economy = BlacksmithMaster.ResolveEconomy();
         if (_economy != null)
+        {
+            _economy.OnGoldAdded -= OnGoldAdded;
             _economy.OnGoldAdded += OnGoldAdded;
+        }
     }
 
     private void UnbindSubscriptions()

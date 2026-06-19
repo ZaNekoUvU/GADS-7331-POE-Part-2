@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1d2e3f4a5b6478091a2b3c4d5e6f710, type: 3}
+  m_Name: WildEnemyCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::WildEnemyCatalog
+  enemyTypes:
+  - typeId: Bandit
+    unit: {fileID: 11400000, guid: e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1, type: 2}
+    battleSprite: {fileID: -8397719124642226753, guid: 854023c7f40c81f44a5105250a529aca, type: 3}
+    encounterFlavor: Roadside thieves in patched leathers — they want your coin and your ore.
+  - typeId: Goblin
+    unit: {fileID: 11400000, guid: e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2, type: 2}
+    battleSprite: {fileID: -2109084893648880599, guid: eb45d5fc3129d6544923bbfcba574104, type: 3}
+    encounterFlavor: Small green raiders, cruel and fast — they strike from ditches and laugh too loud.
+  - typeId: Ogre
+    unit: {fileID: 11400000, guid: e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3, type: 2}
+    battleSprite: {fileID: -6316060112673722843, guid: 901278b8a8c4bbe409130666c4fb3784, type: 3}
+    encounterFlavor: A hulking brute with a club — slow to anger, slower to forgive a trespass.
+  - typeId: Slime
+    unit: {fileID: 11400000, guid: e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4, type: 2}
+    battleSprite: {fileID: -8545230841918576648, guid: 4dd78e4af344f34468e87001f7502578, type: 3}
+    encounterFlavor: Jellied scavengers that ooze from wet stone — weak alone, unsettling in a swarm.
+  minEnemies: 1
+  maxEnemies: 4
+  singleTypeChance: 0.45

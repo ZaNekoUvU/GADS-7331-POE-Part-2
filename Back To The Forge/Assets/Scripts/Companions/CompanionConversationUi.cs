@@ -133,13 +133,15 @@ public sealed class CompanionConversationUi : MonoBehaviour
         var system =
             $"You are {_activeOffer.NpcDisplayName}, a hired mercenary walking with the traveler.\n" +
             $"Persona:\n{_activeOffer.PersonaForLlm}\n\n" +
+            $"{DialogueSpeakerNameUtil.IdentityRules(_activeOffer.NpcDisplayName)}\n\n" +
             "The traveler stops to talk. Speak first in 1-2 short sentences — direct speech only, in character.";
 
         yield return service.RequestRoleplayLineCoroutine(
             system,
             "The traveler turns to you and wants to chat. Greet them briefly.",
             s => line = s,
-            e => err = e);
+            e => err = e,
+            _activeOffer.NpcDisplayName);
 
         if (string.IsNullOrWhiteSpace(line))
         {
@@ -149,7 +151,7 @@ public sealed class CompanionConversationUi : MonoBehaviour
         }
 
         AppendHistory(_activeOffer.NpcDisplayName, line);
-        SetDisplayedDialogue(_activeOffer.NpcDisplayName, line);
+        SetDisplayedDialogue(_activeOffer.NpcDisplayName, DialogueSpeakerNameUtil.Enforce(line, _activeOffer.NpcDisplayName));
 
         _waitingForOllama = false;
         SetInputEnabled(true);
