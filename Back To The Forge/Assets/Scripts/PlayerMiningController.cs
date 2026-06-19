@@ -5,18 +5,23 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// Put on the player (needs <see cref="Rigidbody2D"/> + non-trigger collider). While Interact is held, adds items from the
-/// nearest in-range <see cref="IronVein"/> (ore, wood, stone, etc.): one unit per full second (scaled time).
+/// nearest in-range <see cref="IronVein"/> (ore, wood, stone, etc.). Mining is slower solo and speeds up with party members.
 /// Shows a gather prompt when in range.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMiningController : MonoBehaviour
 {
+    public static PlayerMiningController Instance { get; private set; }
+
     [SerializeField] private InputActionReference interactAction;
     [SerializeField] private Inventory inventory;
     [SerializeField] private string gatherPromptFormat = "Hold {0} to gather";
+    [Tooltip("Seconds per ore tick when mining alone (player only). Divided by party size (player + hired mercs).")]
+    [SerializeField] private float soloSecondsPerOreTick = 2.5f;
 
     private readonly HashSet<IronVein> _veinsInRange = new();
     private float _mineAccumulator;
+    private IronVein _activeVein;
 
     private UIDocument _gatherPromptDocument;
     private VisualElement _gatherPromptPanel;
@@ -25,8 +30,33 @@ public class PlayerMiningController : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning($"Multiple {nameof(PlayerMiningController)} instances; using latest.", this);
+        }
+
+        Instance = this;
+
         if (inventory == null)
             inventory = GetComponent<Inventory>();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    public static bool TryGetActiveMiningState(IronVein vein, out float tickProgress01)
+    {
+        tickProgress01 = 0f;
+        var controller = Instance;
+        if (controller == null || controller._activeVein != vein)
+            return false;
+
+        var duration = controller.GetSecondsPerOreTick();
+        tickProgress01 = duration > 0f ? Mathf.Clamp01(controller._mineAccumulator / duration) : 0f;
+        return true;
     }
 
     private void Start()
@@ -46,6 +76,7 @@ public class PlayerMiningController : MonoBehaviour
             interactAction.action.Disable();
 
         _mineAccumulator = 0f;
+        _activeVein = null;
     }
 
     private void LateUpdate()
@@ -72,9 +103,10 @@ public class PlayerMiningController : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen)
+        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen || TutorialIntroUI.IsOpen)
         {
             _mineAccumulator = 0f;
+            _activeVein = null;
             return;
         }
 
@@ -85,24 +117,34 @@ public class PlayerMiningController : MonoBehaviour
         if (vein == null || !vein.HasOreLeft)
         {
             _mineAccumulator = 0f;
+            _activeVein = null;
             return;
         }
 
         if (!IsInteractHeld())
         {
             _mineAccumulator = 0f;
+            _activeVein = null;
             return;
         }
 
+        _activeVein = vein;
+        var tickDuration = GetSecondsPerOreTick();
         _mineAccumulator += Time.deltaTime;
 
-        while (_mineAccumulator >= 1f)
+        while (_mineAccumulator >= tickDuration)
         {
-            _mineAccumulator -= 1f;
+            _mineAccumulator -= tickDuration;
+            tickDuration = GetSecondsPerOreTick();
 
             vein = GetClosestVein();
             if (vein == null || !vein.HasOreLeft)
+            {
+                _activeVein = null;
                 break;
+            }
+
+            _activeVein = vein;
 
             var leftover = inventory.TryAdd(vein.OreDefinition, vein.OrePerTick, Inventory.ItemAddContext.Gather, vein.name);
             if (leftover > 0)
@@ -112,7 +154,19 @@ public class PlayerMiningController : MonoBehaviour
             }
 
             vein.RegisterSuccessfulMine();
+            if (!vein.HasOreLeft)
+            {
+                _activeVein = null;
+                _mineAccumulator = 0f;
+                break;
+            }
         }
+    }
+
+    private float GetSecondsPerOreTick()
+    {
+        var partySize = 1 + (HiredCompanionManager.Instance?.CountHired() ?? 0);
+        return soloSecondsPerOreTick / Mathf.Max(1, partySize);
     }
 
     private IronVein GetClosestVein()

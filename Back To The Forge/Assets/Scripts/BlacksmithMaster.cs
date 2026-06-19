@@ -372,6 +372,7 @@ public class BlacksmithMaster : MonoBehaviour
         _currentDay++;
 
         HiredCompanionManager.Instance?.ClearHiresForNewDay();
+        IronVein.RestoreAllForNewDay();
 
         RollDailyQuest();
 

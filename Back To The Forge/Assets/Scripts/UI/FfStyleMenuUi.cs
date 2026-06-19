@@ -670,6 +670,30 @@ public static class FfStyleMenuUi
         }
     }
 
+    public static void RefreshInfoParagraphs(VisualElement container, IReadOnlyList<string> paragraphs)
+    {
+        if (container == null)
+            return;
+
+        container.Clear();
+
+        if (paragraphs == null || paragraphs.Count == 0)
+            return;
+
+        for (var i = 0; i < paragraphs.Count; i++)
+        {
+            var text = paragraphs[i];
+            if (string.IsNullOrWhiteSpace(text))
+                continue;
+
+            var label = new Label(text.Trim());
+            label.style.whiteSpace = WhiteSpace.Normal;
+            label.style.marginBottom = 8;
+            ApplyLabelStyle(label, 14f, false);
+            container.Add(label);
+        }
+    }
+
     public static void AttachStyleSheet(VisualElement root)
     {
         if (root == null)

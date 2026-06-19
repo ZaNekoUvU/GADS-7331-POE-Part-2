@@ -5,6 +5,7 @@ using UnityEngine;
 /// <summary>
 /// World resource node (iron vein, tree, stone pile, etc.): trigger <see cref="Collider2D"/>,
 /// assign a <see cref="ItemDefinition"/>. Player gathers by holding Interact while in range (see <see cref="PlayerMiningController"/>).
+/// Ore is finite; depleted nodes restore when the calendar day advances.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class IronVein : MonoBehaviour
@@ -15,17 +16,47 @@ public class IronVein : MonoBehaviour
 
     [SerializeField] private ItemDefinition oreDefinition;
     [SerializeField] private int orePerTick = 1;
-    [Tooltip("-1 = infinite ore.")]
-    [SerializeField] private int totalOreAvailable = -1;
+    [SerializeField] private int maxOreCapacity = 10;
+    [SerializeField] private int totalOreAvailable = 10;
 
     [Tooltip("Extra reach beyond collider bounds for gather prompts / targeting.")]
     [SerializeField] private float gatherReachPadding = 0.35f;
+
+    private readonly Dictionary<SpriteRenderer, float> _defaultSpriteAlphas = new();
+    private bool _isDepleted;
 
     public ItemDefinition OreDefinition => oreDefinition;
 
     public int OrePerTick => orePerTick;
 
-    public bool HasOreLeft => oreDefinition != null && (totalOreAvailable < 0 || totalOreAvailable > 0);
+    public int MaxOreCapacity => maxOreCapacity;
+
+    public int RemainingOre => totalOreAvailable;
+
+    public bool HasOreLeft => oreDefinition != null && totalOreAvailable > 0;
+
+    public bool IsInGatherRange(Vector2 worldPosition) => HasOreLeft && ContainsGatherPoint(worldPosition);
+
+    public float GetRemainingFraction()
+    {
+        if (maxOreCapacity <= 0)
+            return 0f;
+
+        return Mathf.Clamp01((float)totalOreAvailable / maxOreCapacity);
+    }
+
+    /// <summary>Smooth bar drain between ore ticks while mining.</summary>
+    public float GetDisplayedRemainingFraction(bool isMiningThisVein, float miningTickProgress01)
+    {
+        if (maxOreCapacity <= 0)
+            return 0f;
+
+        var displayed = (float)totalOreAvailable;
+        if (isMiningThisVein && orePerTick > 0)
+            displayed -= (1f - Mathf.Clamp01(miningTickProgress01)) * orePerTick;
+
+        return Mathf.Clamp01(displayed / maxOreCapacity);
+    }
 
     /// <summary>Closest gather node at <paramref name="playerPosition"/> (triggers, overlap, or padded reach).</summary>
     public static bool TryGetGatherNodeAtPosition(Vector2 playerPosition, out IronVein vein)
@@ -73,6 +104,39 @@ public class IronVein : MonoBehaviour
         }
 
         return vein != null;
+    }
+
+    public static void RestoreAllForNewDay()
+    {
+        var veins = UnityEngine.Object.FindObjectsByType<IronVein>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var vein in veins)
+        {
+            if (vein != null)
+                vein.RestoreForNewDay();
+        }
+    }
+
+    private void Awake()
+    {
+        NormalizeCapacityFields();
+        CacheDefaultSpriteAlphas();
+
+        if (GetComponent<IronVeinResourceBar>() == null)
+            gameObject.AddComponent<IronVeinResourceBar>();
+    }
+
+    private void NormalizeCapacityFields()
+    {
+        if (maxOreCapacity < 1)
+            maxOreCapacity = totalOreAvailable > 0 ? totalOreAvailable : 10;
+
+        if (totalOreAvailable < 0)
+            totalOreAvailable = maxOreCapacity;
+
+        totalOreAvailable = Mathf.Clamp(totalOreAvailable, 0, maxOreCapacity);
+
+        if (totalOreAvailable <= 0)
+            ApplyDepletedState();
     }
 
     private bool ContainsGatherPoint(Vector2 worldPosition)
@@ -167,16 +231,27 @@ public class IronVein : MonoBehaviour
     /// <summary>Call only after ore was successfully placed in inventory (finite veins decrement).</summary>
     public void RegisterSuccessfulMine()
     {
-        if (totalOreAvailable < 0)
+        if (!HasOreLeft)
             return;
 
         totalOreAvailable = Mathf.Max(0, totalOreAvailable - orePerTick);
         if (totalOreAvailable <= 0)
-            OnDepleted();
+            ApplyDepletedState();
     }
 
-    private void OnDepleted()
+    public void RestoreForNewDay()
     {
+        totalOreAvailable = maxOreCapacity;
+        RestoreActiveState();
+    }
+
+    private void ApplyDepletedState()
+    {
+        if (_isDepleted)
+            return;
+
+        _isDepleted = true;
+
         if (PlayerOverlapping.Remove(this))
             OnPlayerOverlapChanged?.Invoke();
 
@@ -185,14 +260,53 @@ public class IronVein : MonoBehaviour
 
         foreach (var r in GetComponentsInChildren<SpriteRenderer>())
         {
+            if (r == null)
+                continue;
+
             var color = r.color;
             color.a = 0.35f;
             r.color = color;
         }
     }
 
+    private void RestoreActiveState()
+    {
+        _isDepleted = false;
+
+        foreach (var c in GetComponentsInChildren<Collider2D>())
+            c.enabled = true;
+
+        foreach (var r in GetComponentsInChildren<SpriteRenderer>())
+        {
+            if (r == null)
+                continue;
+
+            var color = r.color;
+            color.a = _defaultSpriteAlphas.TryGetValue(r, out var alpha) ? alpha : 1f;
+            r.color = color;
+        }
+    }
+
+    private void CacheDefaultSpriteAlphas()
+    {
+        _defaultSpriteAlphas.Clear();
+        foreach (var r in GetComponentsInChildren<SpriteRenderer>())
+        {
+            if (r != null)
+                _defaultSpriteAlphas[r] = r.color.a;
+        }
+    }
+
     private void OnValidate()
     {
+        if (maxOreCapacity < 1)
+            maxOreCapacity = 10;
+
+        if (totalOreAvailable < 0)
+            totalOreAvailable = maxOreCapacity;
+
+        totalOreAvailable = Mathf.Clamp(totalOreAvailable, 0, maxOreCapacity);
+
         var col = GetComponent<Collider2D>();
         if (col != null && !col.isTrigger)
             Debug.LogWarning($"{nameof(IronVein)} on '{name}': Collider2D should be a trigger so the player can overlap.", this);

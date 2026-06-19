@@ -115,7 +115,8 @@ public class PlayerMovement2D : MonoBehaviour
         return SimpleRpgDialogueUI.IsDialogueOpen
                || CompanionConversationUi.IsBlockingGameplay
                || ForgeQuestChoiceUI.IsBlockingGameplay
-               || PauseMenuController.IsOpen;
+               || PauseMenuController.IsOpen
+               || TutorialIntroUI.IsOpen;
     }
 
     private Vector2 ReadMoveInput()

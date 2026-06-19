@@ -154,7 +154,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronVein
   oreDefinition: {fileID: 11400000, guid: c1d2e3f405162738495a6b7c8d9e0f11, type: 2}
   orePerTick: 1
-  totalOreAvailable: -1
+  maxOreCapacity: 10
+  totalOreAvailable: 10
 --- !u!60 &3057473514468626467
 PolygonCollider2D:
   m_ObjectHideFlags: 0

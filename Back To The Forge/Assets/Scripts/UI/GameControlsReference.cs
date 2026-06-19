@@ -25,7 +25,7 @@ public static class GameControlsReference
         new("C", "Talk to a hired mercenary (pick from party list)"),
         new("Tab (hold)", "Inventory and sell prices"),
         new("Enter / Z", "Confirm menu or dialogue choice"),
-        new("Esc / P", "Pause / unpause"),
+        new("Esc", "Pause / unpause"),
         new("W / S or ↑ / ↓", "Highlight menu options"),
         new("— Combat —", ""),
         new("W / S or ↑ / ↓", "Select attack / skill / item"),

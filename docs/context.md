@@ -47,10 +47,10 @@ This document is the single entry point for project context: what the game is, h
 ### Exploration
 - **`PlayerMovement2D`** — player locomotion; `IsPlayerCharacterCollider` excludes companion followers
 - **`Inventory` / `InventoryPanelToggle`** — inventory (hold **Tab**); gold shown bottom-right of inventory panel
-- **`PickupLogUI`** — bottom-right pickup feed (`[Pickup]` / `[Gather]` debug logs also go to Console via `Inventory.TryAdd`)
+- **`PickupLogUI`** — bottom-right pickup feed (`+N Item` / `+N Gold`); FF `hud-panel` entries; hooks `Inventory.OnItemAdded` and `BlacksmithMaster.OnGoldAdded`
 - **`BlacksmithMaster`**, **`ForgeQuestManager`**, **`BlacksmithQuestGiver`** — forge economy and commissions
 - **`PlayerMiningController`**, **`IronVein`** — mining loop; gather prompt UI lives in `PlayerMiningController`
-- **`QuestLogUI`**, **`QuestWaypointArrow`**, **`QuestWaypointDirector`** — dynamic objectives + floating waypoint arrow
+- **`QuestLogUI`**, **`QuestWaypointArrow`**, **`QuestWaypointDirector`** — dynamic objectives (top-right, dialogue-style panel) + floating waypoint arrow (small blue + white border)
 - **`RiskyGroundEncounter2D`** — random encounter rolls on risky ground (10% per tick with cooldown + movement gate)
 - **`MercenaryCampSpawner`**, **`CompanionRecruiter`**, **`HiredCompanionManager`** — hire and manage companions (max 3)
 - **`CompanionTalkMenuController`** — press **C** to pick a hired mercenary and open `CompanionConversationUi`
@@ -71,13 +71,15 @@ The LLM is a **creative writer only** — it never rolls dice, moves units, or m
 | Forge commissions | Structured JSON (`materialName`, `requestLine`) parsed strictly |
 | Random encounters | One terse narrator line before bandit fights |
 | Mercenary hiring | Opening pitch in designer-authored voice |
+| Mercenary field chat | Structured JSON + reply via `CompanionConversationUi` (`format: json`, robust parse + keyword fallback) |
 
 All call sites have **scripted fallbacks** when Ollama is offline, busy, or returns bad output.
 
 ### UI / session
-- **`SimpleRpgDialogueUI`** — RPG dialogue display
+- **`SimpleRpgDialogueUI`** — RPG dialogue display (DDOL overlay; auto-relocates off Game Manager’s world-space Canvas)
 - **`ForgeQuestChoiceUI`** — quest / NPC choice overlay (also used by mercenary picker)
-- **`CompanionConversationUi`** — free-text Ollama chat with hired mercenaries (morale skills)
+- **`CompanionConversationUi`** — free-text Ollama chat with hired mercenaries (same dialogue shell as NPC talk; morale skills)
+- **`FfStyleMenuUi.HudPanelBlue`** — shared `rgb(0, 0, 128)` used by HUD panels and quest arrow fill
 - **`PauseMenuController`** — pause flow; **Controls** screen lists keys via `GameControlsReference`
 - **`MainMenuController`**, **`GameplaySessionReset`** — menu and session reset
 
@@ -150,7 +152,7 @@ Import settings use **Point** filter where pixel art is intended. Some camp merc
 Derived from playtest feedback and development notes. Not a committed roadmap.
 
 1. **Onboarding** — controls and objectives need in-game explanation without verbal help (partially addressed: pause **Controls** screen, quest log, gather prompt)
-2. **Wayfinding** — quest waypoint arrow helps; ground pathing still requested by playtesters
+2. **Wayfinding** — quest waypoint arrow (blue + white border) + top-right objective panel help; ground pathing still requested by playtesters
 3. **Encounter pacing** — risky-ground rolls now use 3s interval, 45s post-fight cooldown, and movement gate; zone collider in Exploration Scene is very large (~62× scale) — shrink in editor if fights still feel frequent
 4. **Combat targeting** — red outline on selected enemy exists; clarity may still need polish
 5. **Flee button** — investigate reliability (`CombatBattleHud` / turn flow)
@@ -217,7 +219,7 @@ See `docs/setup.md` for full setup and troubleshooting.
 | Key | Action |
 |-----|--------|
 | WASD / arrows | Move |
-| E | Interact — NPCs, dialogue advance, hold to gather |
+| E | Interact — NPCs, dialogue advance, hold to gather (not hired mercs in field) |
 | **C** | Talk to a hired mercenary (pick from party list) |
 | Tab (hold) | Inventory + gold |
 | Esc / P | Pause |

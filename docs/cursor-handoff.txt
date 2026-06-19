@@ -109,8 +109,14 @@ UI / HUD
   Files: InventoryPanelToggle.cs, FfStyleMenuUi.cs
   Notes: GoldDisplayUI.cs is legacy/disabled stub.
 
+- NPC / merc dialogue UI
+  Files: SimpleRpgDialogueUI.cs, CompanionConversationUi.cs, FfStyleMenuUi.cs
+  Notes: Both use full-screen dialogue overlay + hud-panel. SimpleRpgDialogueUI must not live on Game Manager
+         (world-space Canvas broke visibility — relocates to dedicated DDOL host on Awake).
+
 - Pickup log (bottom-right feed)
-  Files: PickupLogUI.cs
+  Files: PickupLogUI.cs, FfStyleMenuUi.BuildPickupLogEntry()
+  Notes: OnItemAdded / OnGoldAdded. Use .pickup-log-entry USS so text fits inside panel.
 
 - Inventory debug logs
   Files: Inventory.cs (ItemAddContext.Pickup vs Gather), PlayerMiningController.cs, QuestMineralPickup.cs
@@ -121,12 +127,12 @@ UI / HUD
   Notes: Lists C for merc talk, E for interact/gather, Tab, combat keys, etc.
 
 - Quest log (top-right)
-  Files: QuestLogUI.cs
-  Notes: Auto-spawns DDOL. Hidden during combat. Smaller font, faded blue panel.
+  Files: QuestLogUI.cs, FfStyleMenuUi.BuildQuestObjectivePanel()
+  Notes: Dialogue-style solid hud-panel (speaker "Objective" + body). Hidden during combat.
 
 - Quest waypoint arrow
   Files: QuestWaypointArrow.cs, QuestWaypointDirector.cs
-  Notes: blacksmith → commission ore → supplementary veins → blacksmith.
+  Notes: Small arrow, HudPanelBlue fill + white border. blacksmith → commission ore → supplementary veins → blacksmith.
 
 - Gather prompt ("Hold E to gather")
   Files: PlayerMiningController.cs

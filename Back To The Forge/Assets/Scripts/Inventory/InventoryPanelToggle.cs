@@ -8,6 +8,8 @@ using UnityEngine.UIElements;
 /// </summary>
 public class InventoryPanelToggle : MonoBehaviour
 {
+    public static bool IsInventoryOpen { get; private set; }
+
     [SerializeField] private InputActionReference inventoryAction;
     [SerializeField] private Inventory inventory;
 
@@ -136,11 +138,15 @@ public class InventoryPanelToggle : MonoBehaviour
 
     private void SetOverlayVisible(bool visible)
     {
+        IsInventoryOpen = visible;
+
         if (_overlay != null)
             _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
 
         if (visible)
             RefreshGold();
+
+        QuestLogUI.Instance?.RefreshVisibility();
     }
 
     private void RebindEconomySubscription()

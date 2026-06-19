@@ -8,7 +8,7 @@ using UnityEditor;
 #endif
 
 /// <summary>
-/// Full-screen pause overlay (Esc / P). Pauses scaled time; UI matches the main menu (FF-style blue panel).
+/// Full-screen pause overlay (Esc). Pauses scaled time; UI matches the main menu (FF-style blue panel).
 /// </summary>
 [DisallowMultipleComponent]
 public class PauseMenuController : MonoBehaviour
@@ -88,7 +88,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
-        if (IsNonPausableScene())
+        if (IsNonPausableScene() || TutorialIntroUI.IsOpen)
             return;
 
         if (IsOpen)
@@ -134,7 +134,7 @@ public class PauseMenuController : MonoBehaviour
     private static bool WasTogglePausePressedThisFrame()
     {
         var k = Keyboard.current;
-        return k != null && (k.escapeKey.wasPressedThisFrame || k.pKey.wasPressedThisFrame);
+        return k != null && k.escapeKey.wasPressedThisFrame;
     }
 
     private void Open()

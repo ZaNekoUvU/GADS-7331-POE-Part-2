@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Top-right HUD showing the current forge objective (blacksmith, commission ore, turn-in, or free play).
+/// Top-right objective panel — visible only while inventory (Tab) is open.
 /// </summary>
 [DisallowMultipleComponent]
 public class QuestLogUI : MonoBehaviour
@@ -31,6 +31,7 @@ public class QuestLogUI : MonoBehaviour
     private CombatAdditiveCoordinator _combatCoordinator;
     private bool _subscribedToForgeQuest;
     private bool _lastCombatActive;
+    private bool _lastInventoryOpen;
 
     private readonly List<string> _objectiveLines = new();
     private readonly StringBuilder _objectiveText = new();
@@ -84,11 +85,13 @@ public class QuestLogUI : MonoBehaviour
     private void LateUpdate()
     {
         var combatActive = IsCombatActive();
-        if (combatActive == _lastCombatActive)
+        var inventoryOpen = InventoryPanelToggle.IsInventoryOpen;
+        if (combatActive == _lastCombatActive && inventoryOpen == _lastInventoryOpen)
             return;
 
         _lastCombatActive = combatActive;
-        Refresh();
+        _lastInventoryOpen = inventoryOpen;
+        RefreshVisibility();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -164,6 +167,8 @@ public class QuestLogUI : MonoBehaviour
             _inventory.OnChanged -= OnInventoryChanged;
         _inventory = null;
     }
+
+    public void RefreshVisibility() => Refresh();
 
     private void Refresh()
     {
@@ -246,6 +251,9 @@ public class QuestLogUI : MonoBehaviour
 
     private bool ShouldShow()
     {
+        if (!InventoryPanelToggle.IsInventoryOpen)
+            return false;
+
         if (IsCombatActive())
             return false;
 
