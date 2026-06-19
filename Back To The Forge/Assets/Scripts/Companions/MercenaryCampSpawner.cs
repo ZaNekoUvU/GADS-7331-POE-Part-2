@@ -96,9 +96,12 @@ public class MercenaryCampSpawner : MonoBehaviour
             recruiter.ConfigureFromOffer(entry.offer, entry.spriteTint);
             recruiter.CommitSpawnPoseSnapshot();
 
-            var sprite = recruiter.GetComponentInChildren<SpriteRenderer>();
-            if (sprite != null)
-                sprite.color = entry.spriteTint;
+            if (!entry.offer.HasWalkVisuals)
+            {
+                var sprite = recruiter.GetComponentInChildren<SpriteRenderer>();
+                if (sprite != null)
+                    sprite.color = entry.spriteTint;
+            }
         }
     }
 

@@ -33,3 +33,8 @@ MonoBehaviour:
     description: A slighted veteran's mood saps the party's fighting spirit.
     effectKind: 2
     magnitude: 0.12
+  walkSpritesheet: {fileID: 2800000, guid: 25a1cc90798e34749b4affcf7e0fcb28, type: 3}
+  battleReadySprite: {fileID: -7815368653854852322, guid: ad50a347c142039448d81249cf515fad, type: 3}
+  walkSheetColumns: 3
+  walkSheetRows: 4
+  spritePixelsPerUnit: 100

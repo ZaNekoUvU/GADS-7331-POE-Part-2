@@ -33,3 +33,8 @@ MonoBehaviour:
     description: Being dismissed scatters his focus and weakens party attacks.
     effectKind: 2
     magnitude: 0.1
+  walkSpritesheet: {fileID: 2800000, guid: baca825ac98e0d044ab8392cfd1155c4, type: 3}
+  battleReadySprite: {fileID: -5885585630773121777, guid: 433f04ad613722e448061505ddde5fc7, type: 3}
+  walkSheetColumns: 3
+  walkSheetRows: 4
+  spritePixelsPerUnit: 100

@@ -33,3 +33,8 @@ MonoBehaviour:
     description: Rudeness makes her hold back — her own attacks falter badly.
     effectKind: 4
     magnitude: 0.25
+  walkSpritesheet: {fileID: 2800000, guid: 667ef98880ded8b4a83e0512f23eb69f, type: 3}
+  battleReadySprite: {fileID: 6731288487224441030, guid: f6f3487610378864595ac865fbb7c436, type: 3}
+  walkSheetColumns: 3
+  walkSheetRows: 4
+  spritePixelsPerUnit: 100
