@@ -103,7 +103,7 @@ public class PlayerMiningController : MonoBehaviour
 
     private void Update()
     {
-        if (SimpleRpgDialogueUI.IsDialogueOpen || CompanionConversationUi.IsBlockingGameplay || ForgeQuestChoiceUI.IsBlockingGameplay || PauseMenuController.IsOpen || TutorialIntroUI.IsOpen)
+        if (ShouldHideGatherPrompt() || TutorialIntroUI.IsOpen)
         {
             _mineAccumulator = 0f;
             _activeVein = null;
@@ -280,10 +280,14 @@ public class PlayerMiningController : MonoBehaviour
 
     private static bool ShouldHideGatherPrompt()
     {
-        return PauseMenuController.IsOpen
-               || SimpleRpgDialogueUI.IsDialogueOpen
-               || CompanionConversationUi.IsBlockingGameplay
-               || ForgeQuestChoiceUI.IsBlockingGameplay;
+        if (PauseMenuController.IsOpen
+            || SimpleRpgDialogueUI.IsDialogueOpen
+            || CompanionConversationUi.IsBlockingGameplay
+            || ForgeQuestChoiceUI.IsBlockingGameplay)
+            return true;
+
+        var coordinator = Object.FindAnyObjectByType<CombatAdditiveCoordinator>();
+        return coordinator != null && coordinator.IsCombatActiveOrLoading;
     }
 
     private bool IsInteractHeld()

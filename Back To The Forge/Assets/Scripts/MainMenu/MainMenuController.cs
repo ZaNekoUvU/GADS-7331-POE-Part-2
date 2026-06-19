@@ -81,6 +81,7 @@ public class MainMenuController : MonoBehaviour
 
         BuildMenuEntries();
         RefreshCommands();
+        GameAudioController.RefreshMusicForActiveScene();
     }
 
     private void ResolveBackgroundSprite()

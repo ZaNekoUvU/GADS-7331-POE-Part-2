@@ -66,6 +66,8 @@ public class CombatBattleHud : MonoBehaviour
 
     private UIDocument _document;
 
+    private VisualElement _battleRoot;
+
     private VisualElement _alliesList;
 
     private VisualElement _enemiesList;
@@ -211,25 +213,15 @@ public class CombatBattleHud : MonoBehaviour
 
 
         if (kb.escapeKey.wasPressedThisFrame || kb.xKey.wasPressedThisFrame)
-
         {
-
-            if (_phase == HudPhase.PickTarget)
-
+            if (!PauseMenuController.IsOpen && _phase == HudPhase.PickTarget)
             {
-
                 _phase = HudPhase.Commands;
-
                 BuildCommands();
-
                 RefreshCommands();
-
             }
 
-
-
             return;
-
         }
 
 
@@ -256,6 +248,8 @@ public class CombatBattleHud : MonoBehaviour
 
     private void LateUpdate()
     {
+        ApplyPauseMenuFade();
+
         if (turnManager == null || _commands.Count == 0)
             return;
 
@@ -265,6 +259,14 @@ public class CombatBattleHud : MonoBehaviour
 
         _lastCanAct = canAct;
         RefreshCommands();
+    }
+
+    private void ApplyPauseMenuFade()
+    {
+        if (_battleRoot == null)
+            return;
+
+        _battleRoot.style.opacity = PauseMenuController.IsOpen ? 0.35f : 1f;
     }
 
 
@@ -458,6 +460,8 @@ public class CombatBattleHud : MonoBehaviour
         battleRoot.AddToClassList("battle-hud");
 
         battleRoot.pickingMode = PickingMode.Position;
+
+        _battleRoot = battleRoot;
 
         root.Add(battleRoot);
 

@@ -9,6 +9,9 @@ public class CombatUnit : MonoBehaviour
     /// <summary>Fired once when this unit is removed from combat (before <see cref="Object.Destroy"/> on enemies).</summary>
     public static event System.Action<CombatUnit> OnDefeated;
 
+    /// <summary>Fired when an ally (player or mercenary) reaches 0 HP in combat.</summary>
+    public static event System.Action<CombatUnit> OnAllyDefeated;
+
     [SerializeField] private SpriteRenderer spriteRenderer;
 
     private UnitDefinition _definition;
@@ -227,7 +230,10 @@ public class CombatUnit : MonoBehaviour
     private void ApplyDefeatPresentation()
     {
         if (_isAlly)
+        {
+            OnAllyDefeated?.Invoke(this);
             return;
+        }
 
         foreach (var r in GetComponentsInChildren<Renderer>(true))
             r.enabled = false;

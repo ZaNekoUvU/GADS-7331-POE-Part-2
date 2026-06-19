@@ -43,6 +43,7 @@ public class QuestMineralPickup : MonoBehaviour
         }
 
         q.MarkOrePickedUp();
+        GameAudioController.PlayQuestItemObtained();
         Destroy(gameObject);
     }
 

@@ -401,6 +401,8 @@ public class CombatTurnManager : MonoBehaviour
             $"[Combat] STRIKE: {actor.gameObject.name} → {target.gameObject.name} | move={moveId} damage={dmg} | target HP {hpBefore} → {target.CurrentHp}/{target.MaxHp}",
             this);
 
+        GameAudioController.PlayAttackSfx();
+
         victory = TryEndCombatIfAllEnemiesDefeated();
         return true;
     }

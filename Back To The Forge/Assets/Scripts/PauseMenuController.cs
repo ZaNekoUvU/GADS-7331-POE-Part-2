@@ -10,6 +10,7 @@ using UnityEditor;
 /// <summary>
 /// Full-screen pause overlay (Esc). Pauses scaled time; UI matches the main menu (FF-style blue panel).
 /// </summary>
+[DefaultExecutionOrder(-200)]
 [DisallowMultipleComponent]
 public class PauseMenuController : MonoBehaviour
 {
@@ -19,6 +20,14 @@ public class PauseMenuController : MonoBehaviour
 
     /// <summary>True while the pause overlay is visible and scaled time is frozen.</summary>
     public static bool IsOpen { get; private set; }
+
+    /// <summary>When true, Esc must not open the pause menu (dialogue / choice overlays handle Esc).</summary>
+    public static bool ShouldBlockOpeningPause =>
+        SimpleRpgDialogueUI.IsDialogueOpen
+        || CompanionConversationUi.IsBlockingGameplay
+        || CompanionTalkMenuController.IsCompanionTalkFlowActive
+        || ForgeQuestChoiceUI.IsBlockingGameplay
+        || TutorialIntroUI.IsOpen;
 
     private static string _pendingMainMenuSceneName = DefaultMainMenuSceneName;
 
@@ -95,6 +104,9 @@ public class PauseMenuController : MonoBehaviour
             HandleMenuInput();
 
         if (!WasTogglePausePressedThisFrame())
+            return;
+
+        if (!IsOpen && ShouldBlockOpeningPause)
             return;
 
         if (IsOpen)

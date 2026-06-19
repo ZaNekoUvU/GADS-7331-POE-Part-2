@@ -112,11 +112,15 @@ public class PlayerMovement2D : MonoBehaviour
 
     private static bool IsMovementBlocked()
     {
-        return SimpleRpgDialogueUI.IsDialogueOpen
-               || CompanionConversationUi.IsBlockingGameplay
-               || ForgeQuestChoiceUI.IsBlockingGameplay
-               || PauseMenuController.IsOpen
-               || TutorialIntroUI.IsOpen;
+        if (SimpleRpgDialogueUI.IsDialogueOpen
+            || CompanionConversationUi.IsBlockingGameplay
+            || ForgeQuestChoiceUI.IsBlockingGameplay
+            || PauseMenuController.IsOpen
+            || TutorialIntroUI.IsOpen)
+            return true;
+
+        var coordinator = Object.FindAnyObjectByType<CombatAdditiveCoordinator>();
+        return coordinator != null && coordinator.IsCombatActiveOrLoading;
     }
 
     private Vector2 ReadMoveInput()
