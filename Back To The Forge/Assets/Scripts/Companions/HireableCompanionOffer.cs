@@ -30,7 +30,22 @@ public class HireableCompanionOffer : ScriptableObject
     [SerializeField] private MercenaryMoraleSkill positiveMoraleSkill;
     [SerializeField] private MercenaryMoraleSkill negativeMoraleSkill;
 
+    [Header("Visuals")]
+    [Tooltip("Walk sheet: columns = Right, Down, Left. Rows = walk frames (top to bottom).")]
+    [SerializeField] private Texture2D walkSpritesheet;
+    [SerializeField] private Sprite battleReadySprite;
+    [SerializeField] private int walkSheetColumns = 3;
+    [SerializeField] private int walkSheetRows = 4;
+    [SerializeField] private float spritePixelsPerUnit = 100f;
+
     public UnitDefinition Unit => unit;
+    public Texture2D WalkSpritesheet => walkSpritesheet;
+    public Sprite BattleReadySprite => battleReadySprite;
+    public int WalkSheetColumns => Mathf.Max(1, walkSheetColumns);
+    public int WalkSheetRows => Mathf.Max(1, walkSheetRows);
+    public float SpritePixelsPerUnit => spritePixelsPerUnit > 0f ? spritePixelsPerUnit : 100f;
+    public bool HasWalkVisuals => walkSpritesheet != null;
+    public bool HasCombatVisual => battleReadySprite != null;
     public int HireCost => Mathf.Max(0, hireCost);
     public int UnitId => unit != null ? unit.UnitId : 0;
     public string PersonalityTrait => personalityTrait;

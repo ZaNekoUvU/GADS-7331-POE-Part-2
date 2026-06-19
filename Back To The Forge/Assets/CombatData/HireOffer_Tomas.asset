@@ -33,3 +33,8 @@ MonoBehaviour:
     description: Harsh words break his confidence and drag the party down.
     effectKind: 2
     magnitude: 0.15
+  walkSpritesheet: {fileID: 2800000, guid: e4b9f2fd9738a7941993ca987e327276, type: 3}
+  battleReadySprite: {fileID: 137560663665073176, guid: 33330edcd3aa847449437f3b6937fa7e, type: 3}
+  walkSheetColumns: 3
+  walkSheetRows: 4
+  spritePixelsPerUnit: 100

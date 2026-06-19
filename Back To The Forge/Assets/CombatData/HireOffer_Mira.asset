@@ -33,3 +33,8 @@ MonoBehaviour:
     description: Insults leave her swinging with bitter, weaker blows.
     effectKind: 4
     magnitude: 0.15
+  walkSpritesheet: {fileID: 2800000, guid: 9609095fdca3c9447a1d5a8d59fa8d06, type: 3}
+  battleReadySprite: {fileID: -4408575552332299256, guid: accaa3592184e3046b781067d897d492, type: 3}
+  walkSheetColumns: 3
+  walkSheetRows: 4
+  spritePixelsPerUnit: 100

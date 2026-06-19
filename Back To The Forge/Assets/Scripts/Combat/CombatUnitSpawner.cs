@@ -10,11 +10,15 @@ public class CombatUnitSpawner : MonoBehaviour
 {
     [SerializeField] private UnitPrefabRegistry unitPrefabRegistry;
     [SerializeField] private EncounterCatalog encounterCatalog;
+    [SerializeField] private MercenaryRosterCatalog mercenaryCatalog;
     [SerializeField] private MoveRegistry moveRegistry;
     [Tooltip("Optional: assign 4 ally anchors (left to right). If empty, tries names Ally, Ally (1), Ally (2), Ally (3).")]
     [SerializeField] private Transform[] allyAnchors = new Transform[4];
     [Tooltip("Optional: assign 3 enemy anchors. If empty, tries Enemy, Enemy (1), Enemy (2).")]
     [SerializeField] private Transform[] enemyAnchors = new Transform[3];
+    [Header("Enemy visuals")]
+    [Tooltip("Battle-ready sprites per enemy anchor slot (0–2).")]
+    [SerializeField] private Sprite[] enemyBattleSpritesBySlot = new Sprite[3];
 
     private readonly List<CombatUnit> _allies = new();
     private readonly List<CombatUnit> _enemies = new();
@@ -60,6 +64,9 @@ public class CombatUnitSpawner : MonoBehaviour
 
     private void Start()
     {
+        if (mercenaryCatalog != null)
+            MercenaryOfferLookup.RegisterCatalog(mercenaryCatalog);
+
         FillAnchorsIfNeeded();
         HidePlaceholderSpritesOnly();
         SpawnAll();
@@ -220,6 +227,11 @@ public class CombatUnitSpawner : MonoBehaviour
         }
 
         cu.Initialize(def, registry, ally, isPlayer, slot, startHp);
+
+        if (ally && def != null && MercenaryOfferLookup.TryGet(def.UnitId, out var offer))
+            MercenaryVisualApplier.ApplyCombatVisual(cu, offer);
+        else if (!ally && enemyBattleSpritesBySlot != null && slot >= 0 && slot < enemyBattleSpritesBySlot.Length)
+            MercenaryVisualApplier.ApplyEnemyCombatVisual(cu, enemyBattleSpritesBySlot[slot]);
 
         if (ally)
         {

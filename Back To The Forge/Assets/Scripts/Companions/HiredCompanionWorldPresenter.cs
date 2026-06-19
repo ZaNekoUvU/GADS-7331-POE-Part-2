@@ -7,6 +7,7 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
 {
     [SerializeField] private Transform player;
     [SerializeField] private UnitPrefabRegistry unitPrefabRegistry;
+    [SerializeField] private MercenaryRosterCatalog mercenaryCatalog;
     [SerializeField] private Transform companionParent;
 
     private GameObject _spawn1;
@@ -17,6 +18,9 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
     {
         if (companionParent == null)
             companionParent = transform;
+
+        if (mercenaryCatalog != null)
+            MercenaryOfferLookup.RegisterCatalog(mercenaryCatalog);
 
         ResolvePlayerTransform();
     }
@@ -111,6 +115,10 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
         if (root == null)
             return;
 
+        var recruiter = root.GetComponent<CompanionRecruiter>();
+        if (recruiter != null && recruiter.Offer != null)
+            MercenaryVisualApplier.ApplyExplorationVisual(root, recruiter.Offer);
+
         var rb = root.GetComponent<Rigidbody2D>();
         if (rb == null)
             rb = root.AddComponent<Rigidbody2D>();
@@ -150,12 +158,40 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
 
     private GameObject SpawnFollower(int unitId, int slotIndex)
     {
+        if (MercenaryOfferLookup.TryGet(unitId, out var offer) && offer.HasWalkVisuals)
+            return SpawnFollowerFromOffer(offer, slotIndex);
+
         if (!unitPrefabRegistry.TryGet(unitId, out _, out var prefab) || prefab == null)
         {
             Debug.LogWarning($"{nameof(HiredCompanionWorldPresenter)}: No registry prefab for unit id {unitId}.", this);
             return null;
         }
 
+        return SpawnFollowerFromPrefab(prefab, unitId, slotIndex);
+    }
+
+    private GameObject SpawnFollowerFromOffer(HireableCompanionOffer offer, int slotIndex)
+    {
+        var go = new GameObject($"HiredCompanionVisual_{offer.NpcDisplayName}");
+        go.transform.SetParent(companionParent);
+        go.transform.position = player.position;
+
+        go.AddComponent<SpriteRenderer>();
+        MercenaryVisualApplier.ApplyExplorationVisual(go, offer);
+
+        foreach (var col in go.GetComponentsInChildren<Collider2D>(true))
+            col.enabled = false;
+
+        var follower = go.GetComponent<CompanionFollower2D>();
+        if (follower == null)
+            follower = go.AddComponent<CompanionFollower2D>();
+
+        follower.Configure(player, slotIndex);
+        return go;
+    }
+
+    private GameObject SpawnFollowerFromPrefab(GameObject prefab, int unitId, int slotIndex)
+    {
         var go = Instantiate(prefab, companionParent);
         go.name = $"HiredCompanionVisual_{unitId}_slot{slotIndex}";
 

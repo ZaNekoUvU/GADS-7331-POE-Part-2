@@ -1072,6 +1072,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatUnitSpawner
   unitPrefabRegistry: {fileID: 11400000, guid: 777788889999000011112222333344aa, type: 2}
   encounterCatalog: {fileID: 11400000, guid: 444455556666777788889999000011dd, type: 2}
+  mercenaryCatalog: {fileID: 11400000, guid: c9dae0b1c2d3e4f5a6b7c8d9e0f1a2b3, type: 2}
   moveRegistry: {fileID: 11400000, guid: 222233334444555566667777888899bb, type: 2}
   allyAnchors:
   - {fileID: 489240836}
@@ -1082,6 +1083,10 @@ MonoBehaviour:
   - {fileID: 11693925}
   - {fileID: 1016914308}
   - {fileID: 636582880}
+  enemyBattleSpritesBySlot:
+  - {fileID: -8397719124642226753, guid: 854023c7f40c81f44a5105250a529aca, type: 3}
+  - {fileID: -2109084893648880599, guid: eb45d5fc3129d6544923bbfcba574104, type: 3}
+  - {fileID: -6316060112673722843, guid: 901278b8a8c4bbe409130666c4fb3784, type: 3}
 --- !u!114 &1526849214
 MonoBehaviour:
   m_ObjectHideFlags: 0

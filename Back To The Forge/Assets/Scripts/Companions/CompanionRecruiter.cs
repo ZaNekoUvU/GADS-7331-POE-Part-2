@@ -68,6 +68,8 @@ public class CompanionRecruiter : MonoBehaviour
     private Coroutine _returnHomeRoutine;
     private int _activePartySlot = -1;
 
+    public HireableCompanionOffer Offer => offer;
+
     public void ConfigureFromOffer(HireableCompanionOffer configuredOffer, Color? spriteTint = null)
     {
         if (configuredOffer != null)
@@ -78,6 +80,9 @@ public class CompanionRecruiter : MonoBehaviour
             cannotAffordLine = configuredOffer.CannotAffordLine;
             companionJoinLine = configuredOffer.CompanionJoinLine;
         }
+
+        if (configuredOffer != null && MercenaryVisualApplier.ApplyExplorationVisual(gameObject, configuredOffer, spriteTint))
+            return;
 
         if (spriteTint.HasValue)
         {

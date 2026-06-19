@@ -33,3 +33,8 @@ MonoBehaviour:
     description: Doubt in her leader weakens the party's coordinated attack.
     effectKind: 2
     magnitude: 0.12
+  walkSpritesheet: {fileID: 2800000, guid: d41ba9179a164f54fa2598faa9b3e2b7, type: 3}
+  battleReadySprite: {fileID: 7094581033088115851, guid: ec7f37ad87bf12044b9489cd4b6fdd6e, type: 3}
+  walkSheetColumns: 3
+  walkSheetRows: 4
+  spritePixelsPerUnit: 100

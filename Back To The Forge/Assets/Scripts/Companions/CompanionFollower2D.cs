@@ -17,6 +17,7 @@ public class CompanionFollower2D : MonoBehaviour
     private Rigidbody2D _rb;
     private CombatAdditiveCoordinator _combatCoordinator;
     private PlayerMovement2D _leaderMovement;
+    private MercenaryDirectionalAnimator2D _mercenaryAnimator;
 
     private void Awake()
     {
@@ -26,6 +27,7 @@ public class CompanionFollower2D : MonoBehaviour
         _rb.gravityScale = 0f;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         _rb.simulated = true;
+        _mercenaryAnimator = GetComponent<MercenaryDirectionalAnimator2D>();
     }
 
     public void Configure(Transform followTarget, int companionSlotIndex)
@@ -68,6 +70,23 @@ public class CompanionFollower2D : MonoBehaviour
         var desired = (Vector2)target.position + behind * depth + lateral;
 
         var next = Vector2.Lerp(_rb.position, desired, 1f - Mathf.Exp(-smoothSpeed * Time.fixedDeltaTime));
+        UpdateMercenaryAnimation(next, facing);
         _rb.MovePosition(next);
+    }
+
+    private void UpdateMercenaryAnimation(Vector2 nextPosition, Vector2 leaderFacing)
+    {
+        if (_mercenaryAnimator == null)
+            return;
+
+        var moveDelta = nextPosition - _rb.position;
+        var moving = moveDelta.sqrMagnitude > 0.0002f;
+
+        if (leaderFacing.sqrMagnitude > 0.0001f)
+            _mercenaryAnimator.SetFacingFromDirection(leaderFacing);
+        else if (moving)
+            _mercenaryAnimator.SetFacingFromDirection(moveDelta);
+
+        _mercenaryAnimator.SetMoving(moving);
     }
 }

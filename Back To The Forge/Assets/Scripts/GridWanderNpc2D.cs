@@ -21,6 +21,7 @@ public class GridWanderNpc2D : MonoBehaviour
     // ANIMATION:
     [Header("Animation")]
     [SerializeField] private Animator animator;
+    [SerializeField] private MercenaryDirectionalAnimator2D mercenaryAnimator;
 
     private Rigidbody2D _body;
     private Vector2 _cellStart;
@@ -28,6 +29,8 @@ public class GridWanderNpc2D : MonoBehaviour
     private float _stepT;
     private bool _stepping;
     private float _idleUntil;
+
+    private Vector2 _lastStepDirection = Vector2.down;
 
     private static readonly Vector2[] Cardinals =
     {
@@ -51,6 +54,9 @@ public class GridWanderNpc2D : MonoBehaviour
         // ANIMATION:
         if (animator == null)
             animator = GetComponent<Animator>();
+
+        if (mercenaryAnimator == null)
+            mercenaryAnimator = GetComponent<MercenaryDirectionalAnimator2D>();
     }
 
     private void OnEnable()
@@ -65,10 +71,15 @@ public class GridWanderNpc2D : MonoBehaviour
         _idleUntil = Time.time + RandomIdleDelay();
 
         // ANIMATION: Pause on first frame
-        if (animator != null)
+        if (mercenaryAnimator != null)
+        {
+            _lastStepDirection = Vector2.down;
+            mercenaryAnimator.SetGridIdle(_lastStepDirection);
+        }
+        else if (animator != null)
         {
             animator.speed = 0f;
-            animator.Play("down", 0, 0f);
+            animator.Play("Down", 0, 0f);
         }
     }
 
@@ -93,8 +104,10 @@ public class GridWanderNpc2D : MonoBehaviour
 
             if (_stepT < 1f)
             {
-                // ANIMATION: keep playing while stepping
-                if (animator != null) animator.speed = 1f;
+                if (mercenaryAnimator != null)
+                    mercenaryAnimator.SetGridStep(_stepT, _lastStepDirection);
+                else if (animator != null)
+                    animator.speed = 1f;
                 return;
             }
 
@@ -102,8 +115,9 @@ public class GridWanderNpc2D : MonoBehaviour
             _stepping = false;
             _idleUntil = Time.time + RandomIdleDelay();
 
-            // ANIMATION: pause on frame 0 of same direction
-            if (animator != null)
+            if (mercenaryAnimator != null)
+                mercenaryAnimator.SetGridIdle(_lastStepDirection);
+            else if (animator != null)
             {
                 animator.speed = 0f;
                 animator.Play(animator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, 0f);
@@ -132,21 +146,26 @@ public class GridWanderNpc2D : MonoBehaviour
                 // -------------------------------------------------
                 // ANIMATION SWITCHING
                 // -------------------------------------------------
-                if (animator != null)
+                if (mercenaryAnimator != null)
+                {
+                    _lastStepDirection = dir;
+                    mercenaryAnimator.SetGridStep(0f, dir);
+                }
+                else if (animator != null)
                 {
                     if (dir.y > 0.01f)
                         animator.Play("Up");
                     else if (dir.y < -0.01f)
                         animator.Play("Down");
                     else
-                        animator.Play("Left"); // use left for both ? flipping handles right
+                        animator.Play("Left");
 
                     animator.speed = 1f;
                 }
 
                 // SPRITE FLIP
-                if (flipXWhenFacingLeft && spriteRenderer != null && Mathf.Abs(dir.x) > 0.01f)
-                    spriteRenderer.flipX = dir.x > 0f; // right should flip
+                if (mercenaryAnimator == null && flipXWhenFacingLeft && spriteRenderer != null && Mathf.Abs(dir.x) > 0.01f)
+                    spriteRenderer.flipX = dir.x > 0f;
 
                 _cellStart = origin;
                 _cellEnd = next;

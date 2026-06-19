@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e4b9f2fd9738a7941993ca987e327276
+guid: 4dd78e4af344f34468e87001f7502578
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6624824442824996375
-    second: Tomas_Walk_Spritesheet_0
+      213: -8545230841918576648
+    second: Slime_BattleReady_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -24,7 +24,7 @@ TextureImporter:
     heightScale: 0.25
     normalMapFilter: 0
     flipGreenChannel: 0
-  isReadable: 1
+  isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Tomas_Walk_Spritesheet_0
+      name: Slime_BattleReady_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1536
-        height: 1024
+        x: 219
+        y: 131
+        width: 1084
+        height: 775
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 716b8ed1bba10fb50800000000000000
-      internalID: 6624824442824996375
+      spriteID: 8f72bb7e2dd396980800000000000000
+      internalID: -8545230841918576648
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Tomas_Walk_Spritesheet_0: 6624824442824996375
+      Slime_BattleReady_0: -8545230841918576648
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
