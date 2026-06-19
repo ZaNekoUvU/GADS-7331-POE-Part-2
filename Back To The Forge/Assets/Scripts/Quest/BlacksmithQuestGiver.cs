@@ -265,6 +265,9 @@ public class BlacksmithQuestGiver : MonoBehaviour
         EnsureBlacksmithResolved();
 
         var unitsQuest = q.TurnInAndPay(inv, blacksmith, out var goldPaid, out var ironUnits);
+        if (unitsQuest > 0)
+            GameAudioController.PlayQuestComplete();
+
         var sys = BuildTurnInSystemPrompt(materialName, unitsQuest, ironUnits, goldPaid);
         var user = "Speak your line to the traveler now (their reply ends the conversation).";
 

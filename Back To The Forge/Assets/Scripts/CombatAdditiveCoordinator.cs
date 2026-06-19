@@ -25,18 +25,19 @@ public class CombatAdditiveCoordinator : MonoBehaviour
 
     private AsyncOperation _loadOp;
     private float _savedTimeScale = 1f;
+    private bool _explorationPausedForCombat;
 
     private List<(Camera cam, bool wasEnabled)> _cameraIsolationRestore;
     private List<(AudioListener listener, bool wasEnabled)> _listenerIsolationRestore;
     private List<(Renderer renderer, bool wasEnabled)> _rendererIsolationRestore;
     private List<(Canvas canvas, bool wasEnabled)> _canvasIsolationRestore;
 
-    /// <summary>True while the combat scene is loading or already loaded.</summary>
+    /// <summary>True while combat is loading, active, or the pre-fight intro has paused exploration.</summary>
     public bool IsCombatActiveOrLoading
     {
         get
         {
-            if (_loadOp != null)
+            if (_explorationPausedForCombat || _loadOp != null)
                 return true;
 
             if (string.IsNullOrEmpty(combatSceneName))
@@ -45,6 +46,20 @@ public class CombatAdditiveCoordinator : MonoBehaviour
             var scene = SceneManager.GetSceneByName(combatSceneName);
             return scene.IsValid() && scene.isLoaded;
         }
+    }
+
+    /// <summary>Freezes exploration scaled time so risky ground and movement cannot chain another fight.</summary>
+    public void PauseExplorationForCombat()
+    {
+        if (!_explorationPausedForCombat)
+        {
+            _explorationPausedForCombat = true;
+            _savedTimeScale = Time.timeScale;
+            if (_savedTimeScale <= 0.01f)
+                _savedTimeScale = 1f;
+        }
+
+        Time.timeScale = 0f;
     }
 
     private void OnEnable()
@@ -70,6 +85,8 @@ public class CombatAdditiveCoordinator : MonoBehaviour
     {
         if (_loadOp != null)
             return;
+
+        PauseExplorationForCombat();
 
         if (string.IsNullOrEmpty(combatSceneName))
         {
@@ -107,10 +124,7 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         ApplyCombatSceneIsolation();
 
         if (pauseExplorationWithTimeScale)
-        {
-            _savedTimeScale = Time.timeScale;
-            Time.timeScale = 0f;
-        }
+            PauseExplorationForCombat();
     }
 
     private void OnSceneUnloaded(Scene scene)
@@ -121,7 +135,10 @@ public class CombatAdditiveCoordinator : MonoBehaviour
         RestoreCombatSceneIsolation();
 
         if (pauseExplorationWithTimeScale)
-            Time.timeScale = _savedTimeScale;
+        {
+            _explorationPausedForCombat = false;
+            Time.timeScale = _savedTimeScale > 0.01f ? _savedTimeScale : 1f;
+        }
 
         if (CombatSession.PeekVictoryLootPending())
         {

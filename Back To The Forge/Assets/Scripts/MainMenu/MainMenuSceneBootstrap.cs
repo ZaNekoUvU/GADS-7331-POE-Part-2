@@ -14,7 +14,10 @@ public static class MainMenuSceneBootstrap
 
         var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
         if (scene.IsValid() && scene.name == MainMenuSceneName)
+        {
             PauseMenuController.ForceCloseAndResetTime();
+            GameAudioController.RefreshMusicForActiveScene();
+        }
         else
             GameplaySessionReset.PrepareForGameplayScene();
     }

@@ -73,6 +73,9 @@ public class CombatStarter : MonoBehaviour
         if (!useLlmWildEncounterIntro)
         {
             RollAndStoreWildEncounter();
+            if (coordinator == null)
+                coordinator = FindAnyObjectByType<CombatAdditiveCoordinator>();
+            coordinator?.PauseExplorationForCombat();
             StartFightWithId(encounterId);
             return;
         }
@@ -101,6 +104,11 @@ public class CombatStarter : MonoBehaviour
 
     private IEnumerator RandomEncounterIntroThenFight(int encounterId)
     {
+        if (coordinator == null)
+            coordinator = FindAnyObjectByType<CombatAdditiveCoordinator>();
+
+        coordinator?.PauseExplorationForCombat();
+
         RollAndStoreWildEncounter();
 
         var rolled = CombatSession.ActiveWildEncounter;

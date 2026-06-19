@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -64,7 +65,8 @@ public class CombatUnitSpawner : MonoBehaviour
 
     public MoveRegistry MoveRegistry => moveRegistry;
 
-
+    /// <summary>Fired after allies and enemies are spawned for the current fight.</summary>
+    public static event Action<IReadOnlyList<CombatUnit>> EnemiesSpawned;
 
     private void OnEnable()
 
@@ -421,6 +423,8 @@ public class CombatUnitSpawner : MonoBehaviour
 
 
         _spawnedEnemyCount = _enemies.Count;
+
+        EnemiesSpawned?.Invoke(_enemies);
 
     }
 

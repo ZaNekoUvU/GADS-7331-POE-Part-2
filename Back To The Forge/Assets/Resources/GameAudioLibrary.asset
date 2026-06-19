@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c8d9e0f1a2b3c4d5e6f7890abcd1234, type: 3}
+  m_Name: GameAudioLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::GameAudioLibrary
+  mainMenuMusic: {fileID: 8300000, guid: 159712177a067344296a2abb030070cc, type: 3}
+  explorationMusic: {fileID: 8300000, guid: 68dca39e14cf3364c824677a00fb4d94, type: 3}
+  combatMusic: {fileID: 8300000, guid: b050cbdc764800d46935871749df3d46, type: 3}
+  questCompleteSfx: {fileID: 8300000, guid: a3aca213ec830cf4dbf8e3d62286886b, type: 3}
+  questItemObtainedSfx: {fileID: 8300000, guid: a0faca1c04c477640b33ae2f8a5da84d, type: 3}
+  goblinEngageSfx: {fileID: 8300000, guid: 3c89cf1e65d9c7b4ab3dee53e73d1f64, type: 3}
+  ogreEngageSfx: {fileID: 8300000, guid: eafc8c494395d544dad4419e490d1512, type: 3}
+  slimeEngageSfx: {fileID: 0}
+  playerAlliesDeathSfx: {fileID: 8300000, guid: 8062d9b398e17f44da2faa1ce6963fd0, type: 3}
+  goblinDeathSfx: {fileID: 8300000, guid: 8ef5932c983255d42825a611ae80e188, type: 3}
+  slimeDeathSfx: {fileID: 8300000, guid: c6bc800e58d6a444cb6ae7b0444b1248, type: 3}
+  ogreDeathSfx: {fileID: 8300000, guid: 567b7da740f1d124988c4def737a9ff0, type: 3}
+  attackSfx: {fileID: 8300000, guid: bac5b29c27d4ff347a943f323276b4ac, type: 3}

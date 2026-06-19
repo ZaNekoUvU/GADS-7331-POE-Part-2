@@ -112,6 +112,9 @@ public sealed class CompanionConversationUi : MonoBehaviour
         }
 
         IsBlockingGameplay = true;
+        if (PauseMenuController.IsOpen)
+            PauseMenuController.ForceCloseAndResetTime();
+
         SetVisible(true);
         StartCoroutine(FocusInputNextFrame());
         StartCoroutine(RequestOpeningLineRoutine());

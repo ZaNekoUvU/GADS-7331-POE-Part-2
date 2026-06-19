@@ -12,6 +12,9 @@ public sealed class CompanionTalkMenuController : MonoBehaviour
 {
     public static CompanionTalkMenuController Instance { get; private set; }
 
+    /// <summary>True while picking a mercenary or in a companion conversation (C menu flow).</summary>
+    public static bool IsCompanionTalkFlowActive => Instance != null && Instance._busy;
+
     [SerializeField] private InputActionReference companionMenuAction;
 
     private bool _busy;
