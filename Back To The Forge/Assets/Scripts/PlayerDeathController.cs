@@ -163,6 +163,7 @@ public sealed class PlayerDeathController : MonoBehaviour
 
         PlayerSessionStartRecorder.ResetToRecordedStart(player.transform, player.GetComponent<Rigidbody2D>());
         player.EnsureInputReady();
+        RiskyGroundEncounter2D.NotifyPlayerSafeTeleport();
     }
 
     private void BuildUi()

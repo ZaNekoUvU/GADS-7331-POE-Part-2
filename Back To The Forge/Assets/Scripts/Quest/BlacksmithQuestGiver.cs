@@ -260,7 +260,10 @@ public class BlacksmithQuestGiver : MonoBehaviour
 
         var player = PlayerMovement2D.Instance ?? FindAnyObjectByType<PlayerMovement2D>();
         if (player != null)
+        {
             PlayerSessionStartRecorder.ResetToRecordedStart(player.transform, player.GetComponent<Rigidbody2D>());
+            RiskyGroundEncounter2D.NotifyPlayerSafeTeleport();
+        }
 
         yield return StartCoroutine(OfferNewQuestContentRoutine());
     }

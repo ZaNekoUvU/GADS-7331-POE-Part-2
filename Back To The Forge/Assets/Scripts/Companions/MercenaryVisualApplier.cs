@@ -6,7 +6,7 @@ using UnityEngine;
 public static class MercenaryVisualApplier
 {
     public const float ExplorationTargetHeight = 0.95f;
-    public const float RecruiterCampTargetHeight = 0.5f;
+    public const float RecruiterCampTargetHeight = ExplorationTargetHeight;
     public const float CombatTargetHeight = 1.05f;
 
     public static bool ApplyExplorationVisual(
@@ -17,6 +17,8 @@ public static class MercenaryVisualApplier
     {
         if (root == null || offer == null || !offer.HasWalkVisuals)
             return false;
+
+        root.transform.localScale = Vector3.one;
 
         var spriteRenderer = root.GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
@@ -30,8 +32,66 @@ public static class MercenaryVisualApplier
             ApplyRuntimeWalkSheet(root, offer, targetHeight);
 
         EnsureExplorationPhysics(root);
-        FitScaleToCurrentSprite(root, targetHeight);
+        FitScaleToOfferExploration(root, offer, targetHeight);
         return true;
+    }
+
+    /// <summary>Consistent exploration height using the offer art (not whichever animator frame is active).</summary>
+    public static void FitScaleToOfferExploration(
+        GameObject root,
+        HireableCompanionOffer offer,
+        float targetHeight = ExplorationTargetHeight)
+    {
+        if (root == null || offer == null || targetHeight <= 0f)
+            return;
+
+        if (!TryGetExplorationReferenceHeight(root, offer, out var referenceHeight))
+        {
+            FitScaleToCurrentSprite(root, targetHeight);
+            return;
+        }
+
+        root.transform.localScale = Vector3.one;
+        var scale = targetHeight / referenceHeight;
+        root.transform.localScale = new Vector3(scale, scale, 1f);
+    }
+
+    /// <summary>Walk-frame height for exploration — battle-ready portraits are too tall for this.</summary>
+    public static bool TryGetExplorationReferenceHeight(
+        GameObject root,
+        HireableCompanionOffer offer,
+        out float height)
+    {
+        height = 0f;
+        if (offer == null)
+            return false;
+
+        var dirAnim = root != null ? root.GetComponent<MercenaryDirectionalAnimator2D>() : null;
+        if (dirAnim != null)
+        {
+            height = dirAnim.GetReferenceWorldHeight(offer.SpritePixelsPerUnit);
+            if (height > 0.001f)
+                return true;
+        }
+
+        if (offer.WalkSpritesheet != null
+            && MercenaryDirectionalAnimator2D.TryGetWalkReferenceWorldHeight(
+                offer.WalkSpritesheet,
+                offer.WalkSheetColumns,
+                offer.WalkSheetRows,
+                offer.SpritePixelsPerUnit,
+                out height))
+        {
+            return true;
+        }
+
+        if (!offer.HasWalkVisuals && offer.BattleReadySprite != null)
+        {
+            height = offer.BattleReadySprite.bounds.size.y;
+            return height > 0.001f;
+        }
+
+        return false;
     }
 
     private static void ApplyWalkAnimator(GameObject root, RuntimeAnimatorController controller)
@@ -70,12 +130,7 @@ public static class MercenaryVisualApplier
 
         animator.Configure(offer.WalkSpritesheet, offer.WalkSheetColumns, offer.WalkSheetRows, offer.SpritePixelsPerUnit);
 
-        var refHeight = animator.GetReferenceWorldHeight(offer.SpritePixelsPerUnit);
-        if (refHeight > 0.001f)
-        {
-            var scale = targetHeight / refHeight;
-            root.transform.localScale = new Vector3(scale, scale, 1f);
-        }
+        // Scale is applied once below via FitScaleToCurrentSprite.
     }
 
     public static void ApplyCombatVisual(CombatUnit unit, HireableCompanionOffer offer)
@@ -134,6 +189,8 @@ public static class MercenaryVisualApplier
         var spriteRenderer = root.GetComponent<SpriteRenderer>();
         if (spriteRenderer == null || spriteRenderer.sprite == null || targetHeight <= 0f)
             return;
+
+        root.transform.localScale = Vector3.one;
 
         var height = spriteRenderer.sprite.bounds.size.y;
         if (height <= 0.001f)

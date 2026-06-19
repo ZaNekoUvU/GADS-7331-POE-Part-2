@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Walk sheet layout: 3 columns = Right, Down, Left. 4 rows = walk frames (top to bottom).
+/// Walk sheet layout: 3 columns = Left, Down, Right. 4 rows = walk frames (top to bottom).
 /// Row 3 is typically a shorter/up-facing pose — used for Up when moving vertically.
 /// Grid NPCs use step-synced frames; followers use timed playback.
 /// </summary>
@@ -215,10 +215,10 @@ public class MercenaryDirectionalAnimator2D : MonoBehaviour
         var cellW = walkSheet.width / (float)columns;
         var cellH = walkSheet.height / (float)rows;
 
-        // Columns: 0 = Right, 1 = Down, 2 = Left. Rows 0–2 = walk stride; row 3 = up / compact pose.
-        _right = SliceDirection(walkSheet, 0, new[] { 0, 2 }, 3, rows, cellW, cellH, pixelsPerUnit);
+        // Columns: 0 = Left, 1 = Down, 2 = Right. Rows 0–2 = walk stride; row 3 = up / compact pose.
+        _left = SliceDirection(walkSheet, 0, new[] { 0, 2 }, 3, rows, cellW, cellH, pixelsPerUnit);
         _down = SliceDirection(walkSheet, 1, new[] { 0, 2 }, 3, rows, cellW, cellH, pixelsPerUnit);
-        _left = SliceDirection(walkSheet, 2, new[] { 0, 2 }, 3, rows, cellW, cellH, pixelsPerUnit);
+        _right = SliceDirection(walkSheet, 2, new[] { 0, 2 }, 3, rows, cellW, cellH, pixelsPerUnit);
         _up = SliceDirection(walkSheet, 1, new[] { 2, 3 }, 3, rows, cellW, cellH, pixelsPerUnit);
     }
 
@@ -321,5 +321,39 @@ public class MercenaryDirectionalAnimator2D : MonoBehaviour
             return 0f;
 
         return _down[0].bounds.size.y;
+    }
+
+    /// <summary>Measures trimmed walk-frame height without leaving a probe on the live mercenary.</summary>
+    public static bool TryGetWalkReferenceWorldHeight(
+        Texture2D walkSheet,
+        int columns,
+        int rows,
+        float pixelsPerUnit,
+        out float height)
+    {
+        height = 0f;
+        if (walkSheet == null)
+            return false;
+
+        var probe = new GameObject("MercenaryWalkHeightProbe")
+        {
+            hideFlags = HideFlags.HideAndDontSave
+        };
+
+        try
+        {
+            probe.AddComponent<SpriteRenderer>();
+            var animator = probe.AddComponent<MercenaryDirectionalAnimator2D>();
+            animator.Configure(walkSheet, columns, rows, pixelsPerUnit);
+            height = animator.GetReferenceWorldHeight(pixelsPerUnit);
+            return height > 0.001f;
+        }
+        finally
+        {
+            if (Application.isPlaying)
+                Object.Destroy(probe);
+            else
+                Object.DestroyImmediate(probe);
+        }
     }
 }

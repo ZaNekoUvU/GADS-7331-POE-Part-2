@@ -31,7 +31,7 @@ public class HireableCompanionOffer : ScriptableObject
     [SerializeField] private MercenaryMoraleSkill negativeMoraleSkill;
 
     [Header("Visuals")]
-    [Tooltip("Walk sheet: columns = Right, Down, Left. Rows = walk frames (top to bottom). Ignored when Walk Animator is set.")]
+    [Tooltip("Walk sheet: columns = Left, Down, Right. Rows = walk frames (top to bottom). Ignored when Walk Animator is set.")]
     [SerializeField] private Texture2D walkSpritesheet;
     [SerializeField] private Sprite battleReadySprite;
     [Tooltip("Optional sliced-sheet walk clips (Down, Right, Left, Up). Preferred when assigned.")]

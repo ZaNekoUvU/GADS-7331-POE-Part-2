@@ -41,6 +41,39 @@ public class RiskyGroundEncounter2D : MonoBehaviour
     /// <summary>Shared cooldown across all risky-ground zones in the loaded world.</summary>
     private static float _nextRollAllowedAt;
 
+    /// <summary>Grace period after player death respawn / day reset teleport — prevents instant re-fights at home.</summary>
+    private static float _encountersSuppressedUntil;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        _nextRollAllowedAt = 0f;
+        _encountersSuppressedUntil = 0f;
+    }
+
+    /// <summary>Call after death respawn or end-of-day teleport so risky ground does not chain another fight.</summary>
+    public static void NotifyPlayerSafeTeleport(float suppressSeconds = 60f)
+    {
+        var duration = Mathf.Max(0f, suppressSeconds);
+        _encountersSuppressedUntil = Time.time + duration;
+        _nextRollAllowedAt = Mathf.Max(_nextRollAllowedAt, _encountersSuppressedUntil);
+
+        foreach (var zone in FindObjectsByType<RiskyGroundEncounter2D>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            zone.ResetPlayerPresence();
+    }
+
+    private void ResetPlayerPresence()
+    {
+        _playerLeaderBodies.Clear();
+        _hasRollAnchor = false;
+
+        if (_riskRoutine != null)
+        {
+            StopCoroutine(_riskRoutine);
+            _riskRoutine = null;
+        }
+    }
+
     private void Awake()
     {
         var col = GetComponent<Collider2D>();
@@ -70,7 +103,7 @@ public class RiskyGroundEncounter2D : MonoBehaviour
         if (_playerLeaderBodies.Add(leaderBody) && _playerLeaderBodies.Count == 1)
         {
             _hasRollAnchor = false;
-            if (_riskRoutine == null)
+            if (_riskRoutine == null && !IsEncounterRollingBlocked())
                 _riskRoutine = StartCoroutine(RiskLoop());
         }
     }
@@ -96,6 +129,11 @@ public class RiskyGroundEncounter2D : MonoBehaviour
         }
     }
 
+    private static bool IsEncounterRollingBlocked()
+    {
+        return PlayerDeathController.IsDeathSequenceActive || Time.time < _encountersSuppressedUntil;
+    }
+
     private IEnumerator RiskLoop()
     {
         var wait = new WaitForSeconds(rollIntervalSeconds);
@@ -108,6 +146,12 @@ public class RiskyGroundEncounter2D : MonoBehaviour
                 break;
 
             if (Time.time < _nextRollAllowedAt)
+                continue;
+
+            if (Time.time < _encountersSuppressedUntil)
+                continue;
+
+            if (PlayerDeathController.IsDeathSequenceActive)
                 continue;
 
             if (coordinator == null)

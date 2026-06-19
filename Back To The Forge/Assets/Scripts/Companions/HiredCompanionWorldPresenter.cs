@@ -174,7 +174,6 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
     {
         var go = new GameObject($"HiredCompanionVisual_{offer.NpcDisplayName}");
         go.transform.SetParent(companionParent);
-        go.transform.position = player.position;
 
         go.AddComponent<SpriteRenderer>();
         MercenaryVisualApplier.ApplyExplorationVisual(go, offer);
@@ -225,7 +224,6 @@ public sealed class HiredCompanionWorldPresenter : MonoBehaviour
             follower = go.AddComponent<CompanionFollower2D>();
 
         follower.Configure(player, slotIndex);
-        go.transform.position = player.position;
         return go;
     }
 

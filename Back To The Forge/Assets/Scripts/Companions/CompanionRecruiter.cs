@@ -84,8 +84,7 @@ public class CompanionRecruiter : MonoBehaviour
         if (configuredOffer != null && MercenaryVisualApplier.ApplyExplorationVisual(
                 gameObject,
                 configuredOffer,
-                spriteTint,
-                MercenaryVisualApplier.RecruiterCampTargetHeight))
+                spriteTint))
             return;
 
         if (spriteTint.HasValue)
@@ -328,13 +327,7 @@ public class CompanionRecruiter : MonoBehaviour
         transform.SetPositionAndRotation(_recruitWorldPosition, _recruitWorldRotation);
 
         if (offer != null)
-        {
-            MercenaryVisualApplier.ApplyExplorationVisual(
-                gameObject,
-                offer,
-                null,
-                MercenaryVisualApplier.RecruiterCampTargetHeight);
-        }
+            MercenaryVisualApplier.ApplyExplorationVisual(gameObject, offer);
 
         for (var i = 0; i < _spriteRenderers.Length; i++)
         {

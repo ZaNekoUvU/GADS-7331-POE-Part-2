@@ -222,6 +222,8 @@ public class GridWanderNpc2D : MonoBehaviour
         else if (dir.y < -0.01f)
             animator.Play("Down");
         else if (dir.x > 0.01f && walkAnimatorSetup != null && walkAnimatorSetup.UseDedicatedRightWalk)
+            animator.Play("Left");
+        else if (dir.x < -0.01f && walkAnimatorSetup != null && walkAnimatorSetup.UseDedicatedRightWalk)
             animator.Play("Right");
         else
             animator.Play("Left");
