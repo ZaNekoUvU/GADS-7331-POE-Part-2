@@ -315,6 +315,26 @@ public class BlacksmithMaster : MonoBehaviour
             Debug.Log(sb.ToString(), this);
     }
 
+    /// <summary>
+    /// Player death penalty: discard inventory without selling, advance the day, restore nodes and mercenary roster.
+    /// Gold is unchanged.
+    /// </summary>
+    public void ApplyDeathDayAdvance()
+    {
+        EnsurePlayerInventory();
+        if (playerInventory != null)
+            playerInventory.ClearAll();
+
+        _currentDay++;
+        HiredCompanionManager.Instance?.ClearHiresForNewDay();
+        IronVein.RestoreAllForNewDay();
+        RollDailyQuest();
+        OnEconomyChanged?.Invoke();
+
+        if (debugLogs)
+            Debug.Log($"{LogPrefix} Death day advance — now Day {_currentDay}, gold kept at {_playerGold}g.", this);
+    }
+
     /// <summary>Sells every stack in the inventory using <see cref="GetUnitSellPrice"/> (daily special + active forge ore share the same bonus), clears bags, advances the day, rolls the next quest.</summary>
     public SellDayResult SellAllAndEndDay()
     {

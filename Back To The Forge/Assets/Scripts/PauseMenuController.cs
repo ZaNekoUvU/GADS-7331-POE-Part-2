@@ -27,7 +27,8 @@ public class PauseMenuController : MonoBehaviour
         || CompanionConversationUi.IsBlockingGameplay
         || CompanionTalkMenuController.IsCompanionTalkFlowActive
         || ForgeQuestChoiceUI.IsBlockingGameplay
-        || TutorialIntroUI.IsOpen;
+        || TutorialIntroUI.IsOpen
+        || PlayerDeathController.IsDeathSequenceActive;
 
     private static string _pendingMainMenuSceneName = DefaultMainMenuSceneName;
 

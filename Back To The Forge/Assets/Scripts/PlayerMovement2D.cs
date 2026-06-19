@@ -116,7 +116,8 @@ public class PlayerMovement2D : MonoBehaviour
             || CompanionConversationUi.IsBlockingGameplay
             || ForgeQuestChoiceUI.IsBlockingGameplay
             || PauseMenuController.IsOpen
-            || TutorialIntroUI.IsOpen)
+            || TutorialIntroUI.IsOpen
+            || PlayerDeathController.IsDeathSequenceActive)
             return true;
 
         var coordinator = Object.FindAnyObjectByType<CombatAdditiveCoordinator>();

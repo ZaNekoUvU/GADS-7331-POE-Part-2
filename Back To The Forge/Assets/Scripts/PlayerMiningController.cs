@@ -103,7 +103,7 @@ public class PlayerMiningController : MonoBehaviour
 
     private void Update()
     {
-        if (ShouldHideGatherPrompt() || TutorialIntroUI.IsOpen)
+        if (ShouldHideGatherPrompt() || TutorialIntroUI.IsOpen || PlayerDeathController.IsDeathSequenceActive)
         {
             _mineAccumulator = 0f;
             _activeVein = null;
@@ -283,7 +283,8 @@ public class PlayerMiningController : MonoBehaviour
         if (PauseMenuController.IsOpen
             || SimpleRpgDialogueUI.IsDialogueOpen
             || CompanionConversationUi.IsBlockingGameplay
-            || ForgeQuestChoiceUI.IsBlockingGameplay)
+            || ForgeQuestChoiceUI.IsBlockingGameplay
+            || PlayerDeathController.IsDeathSequenceActive)
             return true;
 
         var coordinator = Object.FindAnyObjectByType<CombatAdditiveCoordinator>();

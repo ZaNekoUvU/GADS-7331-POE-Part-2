@@ -38,7 +38,11 @@ public static class GameplaySessionReset
 
         var player = Object.FindAnyObjectByType<PlayerMovement2D>();
         if (player != null)
+        {
+            PlayerStartLocation.EnsureFromPlayerPoseIfMissing(player.transform);
+            PlayerSessionStartRecorder.CaptureSessionStartIfNeeded(player.transform);
             player.EnsureInputReady();
+        }
     }
 
     private static void ScheduleDelayedPrepare()

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 870438584397927842}
   - component: {fileID: 881102030405060708}
   - component: {fileID: 881102030405060709}
+  - component: {fileID: 881102030405060710}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -210,6 +211,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMiningController
   interactAction: {fileID: 0}
   inventory: {fileID: 881102030405060708}
+--- !u!114 &881102030405060710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836394787678868948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5af27977da960543b382b1ae00028f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSessionStartRecorder
 --- !u!1 &997066532484814596
 GameObject:
   m_ObjectHideFlags: 0

@@ -164,6 +164,30 @@ public class BlacksmithQuestGiver : MonoBehaviour
         }
     }
 
+    /// <summary>Starts a new forge commission without dialogue (e.g. after player death).</summary>
+    public static bool TryBeginFallbackForgeQuest()
+    {
+        var giver = Object.FindAnyObjectByType<BlacksmithQuestGiver>();
+        if (giver == null)
+            return false;
+
+        giver.AssignFallbackQuestSilent();
+        return true;
+    }
+
+    /// <summary>Rolls a new AI-named commission ore quest without opening dialogue.</summary>
+    public void AssignFallbackQuestSilent()
+    {
+        if (questMineralDefinition == null || forgeIronTurnInDefinition == null)
+            return;
+
+        ForgeQuestManager.GetOrCreate().BeginQuest(
+            "Raw Emberglass",
+            questMineralDefinition,
+            forgeIronTurnInDefinition,
+            CommissionGoldPerUnitHint());
+    }
+
     private Inventory ResolvePlayerInventory()
     {
         var pm = PlayerMovement2D.Instance;
@@ -238,6 +262,10 @@ public class BlacksmithQuestGiver : MonoBehaviour
             playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
         if (playerHealth != null)
             playerHealth.ResetToFullHealth();
+
+        var player = PlayerMovement2D.Instance ?? FindAnyObjectByType<PlayerMovement2D>();
+        if (player != null)
+            PlayerSessionStartRecorder.ResetToRecordedStart(player.transform, player.GetComponent<Rigidbody2D>());
 
         yield return StartCoroutine(OfferNewQuestContentRoutine());
     }
