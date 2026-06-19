@@ -30,7 +30,6 @@ public class BlacksmithQuestGiver : MonoBehaviour
     [Header("Services")]
     [SerializeField] private BlacksmithMaster blacksmith;
     [SerializeField] private Inventory playerInventory;
-    [SerializeField] private PlayerPersistentCombatHealth playerHealth;
     [SerializeField] private OllamaDialogueService ollamaService;
     [SerializeField] private ForgeQuestChoiceUI choiceUi;
 
@@ -110,8 +109,6 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (playerInventory == null)
             playerInventory = FindAnyObjectByType<Inventory>();
         EnsureBlacksmithResolved();
-        if (playerHealth == null)
-            playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
 
         var q = ForgeQuestManager.Instance;
         if (q != null && q.QuestActive)
@@ -164,7 +161,8 @@ public class BlacksmithQuestGiver : MonoBehaviour
         }
     }
 
-    /// <summary>Starts a new forge commission without dialogue (e.g. after player death).</summary>
+    /// <summary>Starts a new forge commission without dialogue. Prefer <see cref="BlacksmithQuestGiver"/> talk flow after day reset.</summary>
+    [System.Obsolete("Do not call after death or day reset — player should accept a commission by talking to the blacksmith.")]
     public static bool TryBeginFallbackForgeQuest()
     {
         var giver = Object.FindAnyObjectByType<BlacksmithQuestGiver>();
@@ -258,10 +256,7 @@ public class BlacksmithQuestGiver : MonoBehaviour
         if (q != null)
             q.ClearForNewDay(ResolvePlayerInventory());
 
-        if (playerHealth == null)
-            playerHealth = FindAnyObjectByType<PlayerPersistentCombatHealth>();
-        if (playerHealth != null)
-            playerHealth.ResetToFullHealth();
+        PlayerPersistentCombatHealth.GetOrCreate()?.ResetToFullHealth();
 
         var player = PlayerMovement2D.Instance ?? FindAnyObjectByType<PlayerMovement2D>();
         if (player != null)

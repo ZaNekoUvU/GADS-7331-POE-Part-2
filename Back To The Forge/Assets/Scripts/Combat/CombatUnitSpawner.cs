@@ -606,10 +606,8 @@ public class CombatUnitSpawner : MonoBehaviour
 
         {
 
-            var persist = FindAnyObjectByType<PlayerPersistentCombatHealth>();
-
-            if (persist != null && def != null)
-
+            var persist = PlayerPersistentCombatHealth.GetOrCreate();
+            if (def != null)
                 startHp = persist.GetHpForCombatStart(def.MaxHp);
 
         }
