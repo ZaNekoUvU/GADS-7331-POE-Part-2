@@ -8,7 +8,8 @@ Unity 6 **2D RPG** prototype: exploration, forge economy, mercenary companions, 
 
 | Document | Description |
 |----------|-------------|
-| [**Project context**](docs/context.md) | Overview, architecture, playtest state, known priorities |
+| [**Project context**](docs/context.md) | Overview, architecture, playtest state, character art, priorities |
+| [**Cursor handoff**](docs/cursor-handoff.txt) | Teammate / AI handoff: recent features, gotchas, file map |
 | [**High concept**](docs/high-concept.txt) | Ideation, LLM role, why local models fit the project |
 | [**Setup guide**](docs/setup.md) | Unity + Ollama install, models, troubleshooting |
 | [**Refinements log**](docs/refinements-changes.md) | Scope changes & AI-assisted decisions |
@@ -22,7 +23,8 @@ Unity 6 **2D RPG** prototype: exploration, forge economy, mercenary companions, 
 
 - **Exploration** — village/wilds navigation, inventory (**hold Tab**), economy tied to **`BlacksmithMaster`**.
 - **Combat** — **`CombatAdditiveCoordinator`** loads **Combat Scene** additively and isolates exploration renderers/cameras so only combat content draws.
-- **Companions** — **`MercenaryCampSpawner`** + **`HireableCompanionOffer`** assets; hire flow **`CompanionRecruiter`**.
+- **Companions** — **`MercenaryCampSpawner`** + **`HireableCompanionOffer`** assets; hire flow **`CompanionRecruiter`**; talk to hired mercs with **C** (`CompanionTalkMenuController`).
+- **Art** — AI-generated character sprites imported under **`Assets/Sprites/`** (player, NPCs, mercenary walk sheets).
 - **LLM features** — **`OllamaDialogueService`** talks to **Ollama** on your PC (`http://127.0.0.1:11434`). NPC dialogue, forge commissions (JSON), random **bandit** encounter intros, and mercenary **openings** use it when available.
 
 If **Ollama is not installed**, **not running**, or the **model is missing**, the game **still runs** and falls back to **scripted dialogue** where implemented — but you will **not** get AI-generated lines until Ollama is set up correctly.

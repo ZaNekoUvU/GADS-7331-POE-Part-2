@@ -4,7 +4,8 @@ This folder is the **documentation section** for **GADS 7331 POE Part 2 — Back
 
 | File | Format | Contents |
 |------|--------|----------|
-| [context.md](context.md) | Markdown | Project context: overview, architecture, playtest state, priorities |
+| [context.md](context.md) | Markdown | Project context: overview, architecture, playtest state, priorities, character art |
+| [cursor-handoff.txt](cursor-handoff.txt) | Plain text | Dense handoff for Cursor/teammates: recent features, gotchas, file map |
 | [high-concept.txt](high-concept.txt) | Plain text | Ideation, LLM role, rationale for local models |
 | [setup.md](setup.md) | Markdown | Unity + Ollama setup, specs, troubleshooting |
 | [refinements-changes.md](refinements-changes.md) | Markdown | Log of refinements and AI-assisted decisions |

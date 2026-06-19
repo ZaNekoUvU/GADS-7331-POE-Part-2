@@ -45,13 +45,15 @@ This document is the single entry point for project context: what the game is, h
 - **Combat** — loaded **additively** via `CombatAdditiveCoordinator`
 
 ### Exploration
-- **`PlayerMovement2D`** — player locomotion
-- **`Inventory` / `InventoryPanelToggle`** — inventory (hold **Tab**)
-- **`GoldDisplayUI`** — currency HUD
+- **`PlayerMovement2D`** — player locomotion; `IsPlayerCharacterCollider` excludes companion followers
+- **`Inventory` / `InventoryPanelToggle`** — inventory (hold **Tab**); gold shown bottom-right of inventory panel
+- **`PickupLogUI`** — bottom-right pickup feed (`[Pickup]` / `[Gather]` debug logs also go to Console via `Inventory.TryAdd`)
 - **`BlacksmithMaster`**, **`ForgeQuestManager`**, **`BlacksmithQuestGiver`** — forge economy and commissions
-- **`PlayerMiningController`**, **`IronVein`** — mining loop
-- **`RiskyGroundEncounter2D`** — random encounter triggers on risky ground
-- **`MercenaryCampSpawner`**, **`CompanionRecruiter`**, **`HiredCompanionManager`** — hire and manage companions
+- **`PlayerMiningController`**, **`IronVein`** — mining loop; gather prompt UI lives in `PlayerMiningController`
+- **`QuestLogUI`**, **`QuestWaypointArrow`**, **`QuestWaypointDirector`** — dynamic objectives + floating waypoint arrow
+- **`RiskyGroundEncounter2D`** — random encounter rolls on risky ground (10% per tick with cooldown + movement gate)
+- **`MercenaryCampSpawner`**, **`CompanionRecruiter`**, **`HiredCompanionManager`** — hire and manage companions (max 3)
+- **`CompanionTalkMenuController`** — press **C** to pick a hired mercenary and open `CompanionConversationUi`
 - **`ScenePortalTrigger2D`**, **`SceneTransitionStore`** — scene transitions and return placement
 
 ### Combat
@@ -74,9 +76,22 @@ All call sites have **scripted fallbacks** when Ollama is offline, busy, or retu
 
 ### UI / session
 - **`SimpleRpgDialogueUI`** — RPG dialogue display
-- **`ForgeQuestChoiceUI`** — quest choice blocking
-- **`PauseMenuController`** — pause flow
+- **`ForgeQuestChoiceUI`** — quest / NPC choice overlay (also used by mercenary picker)
+- **`CompanionConversationUi`** — free-text Ollama chat with hired mercenaries (morale skills)
+- **`PauseMenuController`** — pause flow; **Controls** screen lists keys via `GameControlsReference`
 - **`MainMenuController`**, **`GameplaySessionReset`** — menu and session reset
+
+### Art & character visuals
+Custom **AI-generated character art** is imported in Unity and wired to exploration sprites / animators (replacing placeholder squares on key NPCs and the player).
+
+| Location | Contents |
+|----------|----------|
+| `Assets/Sprites/` | Per-character folders (e.g. **Aelric**, **Tobin**, **Garron**, **Sterk**, **Brynja**, **Kaela**) with `removalai_preview` source sheets sliced into walk animations |
+| `Assets/Sprites/Mercenaries/` | One folder per hireable merc (**Rook**, **Kaela**, **Mira**, **Brynja**, **Vex**, **Silas**, **Tomas**) with `*_Walk_Spritesheet.png` and `*_BattleReady.png` |
+| Player | Walk sprites + animator on Player prefab / Exploration Scene instance |
+| Blacksmith | `Blacksmith_Idle_Breathing_Spritesheet.png` and related idle art |
+
+Import settings use **Point** filter where pixel art is intended. Some camp mercs may still use tinted placeholder sprites until each roster entry is assigned the new sheets on `CompanionRecruiter` / unit prefabs.
 
 ---
 
@@ -89,6 +104,7 @@ All call sites have **scripted fallbacks** when Ollama is offline, busy, or retu
 | Ollama plan | `docs/ollama-plan.md` | Model choice, timing, prompts, risks |
 | Refinements log | `docs/refinements-changes.md` | Scope changes and implementation decisions |
 | Prompt archive | `docs/prompts-used.md` | Tested prompts and iteration notes |
+| Cursor handoff | `docs/cursor-handoff.txt` | Dense AI/teammate handoff: recent features, gotchas, file map |
 | Feedback summary | `Back To The Forge/feedback-summary.md` | Structured playtest feedback (unbiased capture) |
 | **This file** | `docs/context.md` | Project context entry point |
 
@@ -133,14 +149,15 @@ All call sites have **scripted fallbacks** when Ollama is offline, busy, or retu
 
 Derived from playtest feedback and development notes. Not a committed roadmap.
 
-1. **Onboarding** — controls and objectives need in-game explanation without verbal help
-2. **Wayfinding** — add visual pathing or ground cues for navigation
-3. **Encounter pacing** — reduce or rebalance random encounter frequency on risky ground
-4. **Combat targeting** — make selected enemy obvious in the combat UI
+1. **Onboarding** — controls and objectives need in-game explanation without verbal help (partially addressed: pause **Controls** screen, quest log, gather prompt)
+2. **Wayfinding** — quest waypoint arrow helps; ground pathing still requested by playtesters
+3. **Encounter pacing** — risky-ground rolls now use 3s interval, 45s post-fight cooldown, and movement gate; zone collider in Exploration Scene is very large (~62× scale) — shrink in editor if fights still feel frequent
+4. **Combat targeting** — red outline on selected enemy exists; clarity may still need polish
 5. **Flee button** — investigate reliability (`CombatBattleHud` / turn flow)
-6. **Placeholder art** — replace assets that break immersion
+6. **Art pass** — many characters now have generated sprites in Unity; finish assigning merc walk sheets to all camp followers / combat prefabs
 7. **Main menu UI bug** — in-game HUD appearing on main menu (likely session/UI reset issue)
 8. **LLM visibility** — concept praised but players may not distinguish AI dialogue from scripted lines without clearer framing
+9. **Mercenary duplicate triggers** — fixed: companion colliders no longer fire quest pickups / risky-ground rolls; leader-only detection on `PlayerMovement2D`
 
 ---
 
@@ -156,9 +173,11 @@ Back To The Forge/
 │       ├── Dialogue/        # Ollama service, NPC profiles
 │       ├── Inventory/       # Items, market pricing
 │       ├── MainMenu/        # Menu bootstrap and controller
-│       ├── Quest/           # Forge quests, mineral pickups
+│       ├── Quest/           # Forge quests, mineral pickups, quest log, waypoint
 │       ├── SceneTransition/ # Portals, return placement
-│       └── UI/              # Shared menu styling
+│       └── UI/              # Shared menu styling, pickup log, controls reference
+│   ├── Sprites/             # Generated character art, merc sheets, environment
+│   │   └── Mercenaries/     # Per-merc walk + battle-ready PNGs
 ├── feedback-summary.md      # Playtest feedback capture
 └── ProjectSettings/
 ```
@@ -193,9 +212,23 @@ See `docs/setup.md` for full setup and troubleshooting.
 
 ---
 
-## 10. How to use this file
+## 10. Exploration controls (quick reference)
+
+| Key | Action |
+|-----|--------|
+| WASD / arrows | Move |
+| E | Interact — NPCs, dialogue advance, hold to gather |
+| **C** | Talk to a hired mercenary (pick from party list) |
+| Tab (hold) | Inventory + gold |
+| Esc / P | Pause |
+
+Hired mercenaries are **not** talked to with E in the field anymore — **C only**.
+
+---
+
+## 11. How to use this file
 
 - **Before planning changes:** read §5–6 for playtest signal, then cross-check `feedback-summary.md`
 - **Before touching LLM features:** read `docs/high-concept.txt` and `docs/ollama-plan.md`
 - **Before combat/UI work:** check refinements log for prior fixes (`docs/refinements-changes.md`)
-- **For AI assistants:** treat this file + `feedback-summary.md` as current project state; prefer minimal diffs and existing conventions in `Assets/Scripts/`
+- **For AI assistants / teammates in Cursor:** read **`docs/cursor-handoff.txt`** first for the latest implementation notes and gotchas; then this file + `feedback-summary.md`. Prefer minimal diffs and existing conventions in `Assets/Scripts/`

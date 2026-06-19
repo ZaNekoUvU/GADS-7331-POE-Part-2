@@ -6,8 +6,10 @@ Unity project: Back To The Forge/
 Main gameplay scene: Assets/Scenes/Main Scenes/Exploration Scene.unity
 Stack: Unity 6, URP 2D, UI Toolkit (FF-style hud-panel), local Ollama (qwen3:8b @ http://127.0.0.1:11434)
 
-Use this document to bring another Cursor session up to speed on work done in a prior AI session.
+Use this document to bring another Cursor session up to speed on work done in prior AI sessions.
 Do not assume everything is committed — check git status before pushing.
+
+Also read: docs/context.md (project overview + playtest feedback + art section).
 
 
 1. GAME LOOP (FOR CONTEXT)
@@ -16,211 +18,235 @@ Do not assume everything is committed — check git status before pushing.
 - Exploration: top-down 2D, mine/chop IronVein nodes (hold E), inventory (hold Tab), talk to NPCs/blacksmith.
 - Forge quest: Blacksmith commissions Ollama-invented ore name → pickup in world → also needs supplementary ore (e.g. Iron) → turn-in → optional end day.
 - Combat: additive load of Combat Scene; exploration stays loaded; coordinator hides non-combat rendering.
-- Mercenaries: hired at camp, follow player, Ollama opening lines use persona from hire offer.
+- Mercenaries: hired at camp (max 3), follow player, Ollama chat via C-key party menu (not E in field).
 - Economy: BlacksmithMaster — gold, daily market, sell-all on end day.
 
 
-2. FEATURES IMPLEMENTED IN THE RECENT SESSION
+2. CHARACTER ART (GENERATED IN UNITY)
+--------------------------------------------------------------------------------
+
+The team has generated custom character images and imported them into Unity (no longer only placeholder squares).
+
+WHERE TO LOOK
+  Assets/Sprites/                    — NPC + player source sheets and anim folders
+  Assets/Sprites/Mercenaries/        — hireable merc art (one subfolder per merc)
+
+NPC / VILLAGER FOLDERS (examples)
+  Assets/Sprites/Aelric/     — removalai_preview sheets → walk anims + animator controllers
+  Assets/Sprites/Tobin/
+  Assets/Sprites/Garron/
+  Assets/Sprites/Sterk/
+  Assets/Sprites/Brynja/
+  Assets/Sprites/Kaela/
+
+MERCENARY ROSTER ART (per character)
+  Assets/Sprites/Mercenaries/Rook/   — Rook_Walk_Spritesheet.png, Rook_BattleReady.png
+  Assets/Sprites/Mercenaries/Kaela/
+  Assets/Sprites/Mercenaries/Mira/
+  Assets/Sprites/Mercenaries/Brynja/
+  Assets/Sprites/Mercenaries/Vex/
+  Assets/Sprites/Mercenaries/Silas/
+  Assets/Sprites/Mercenaries/Tomas/
+
+OTHER
+  Player walk sprites + animator on Player prefab / Exploration Scene instance override
+  Blacksmith_Idle_Breathing_Spritesheet.png (and related) under Assets/Sprites/
+
+NOTES
+  - Many files named *_removalai_preview* are sliced sprite sheets from generated art.
+  - Use Point filter / appropriate PPU for pixel look where intended.
+  - Camp merc prefabs may still use tinted squares until each CompanionRecruiter / unit prefab is assigned the new sheets.
+  - Combat exploration followers use CompanionFollower2D; world colliders on followers are disabled so they do not trigger quest/risky zones.
+
+
+3. FEATURES IMPLEMENTED (RECENT SESSIONS)
 --------------------------------------------------------------------------------
 
 COMBAT & EXPLORATION
-- Additive combat (see exploration during fights)
+- Additive combat
   Files: CombatAdditiveCoordinator.cs
-  Notes: Disables cameras/listeners/renderers/canvases outside combat scene while combat loaded.
-         IsCombatActiveOrLoading used by HUD systems.
+  Notes: IsCombatActiveOrLoading used by HUD systems.
 
-- Combat target red outline on enemy sprite
+- Combat target red outline
   Files: CombatTargetSpriteHighlight.cs, CombatBattleHud.cs
-  Notes: 8-offset outline when picking strike target.
 
 - Random encounter LLM intro (bandits)
   Files: CombatStarter.cs, RiskyGroundEncounter2D.cs
-  Notes: BG3-style short narrator line before fight; fallback if Ollama busy/offline.
+
+- Risky ground pacing fix
+  Files: RiskyGroundEncounter2D.cs
+  Notes: 10% is PER ROLL TICK (default every 3s), not once per visit. Added 45s shared cooldown after fights,
+         movement gate (~1.1 units between rolls), leader-only player detection.
+         Exploration Scene "Risky Ground" prefab is scaled ~62× — covers huge area; shrink in editor if still too frequent.
+
+- Mercenary / companion trigger fix
+  Files: PlayerMovement2D.cs, QuestMineralPickup.cs, RiskyGroundEncounter2D.cs,
+         CompanionRecruiter.cs, HiredCompanionWorldPresenter.cs
+  Notes: Hired followers no longer duplicate quest pickups or risky-ground rolls.
+         IsPlayerCharacterCollider requires leader rigidbody; excludes CompanionFollower2D hierarchy.
+         HiredCompanionDialogue.cs was REMOVED — no E-to-talk in field.
 
 
 MERCENARIES & CAMP
-- Spawn placement (clearance, separation)
-  Files: MercenaryCampSpawner.cs
-  Notes: Editor anchors under MercenarySpawnPoints; scene positions aligned to clearing layout.
+- Mercenary camp spawner + roster
+  Files: MercenaryCampSpawner.cs, MercenaryRosterCatalog.asset
 
 - Ollama mercenary hire/opening dialogue
   Files: CompanionRecruiter.cs, HireableCompanionOffer.cs
-  Notes: Uses PersonaForLlm / personality from roster.
 
-- Roster asset + scene wiring
-  Files: MercenaryRosterCatalog.asset, Exploration Scene
+- C-key mercenary talk menu (ONLY way to chat with hired mercs in field)
+  Files: CompanionTalkMenuController.cs, ForgeQuestChoiceUI.RunChoiceListRoutine(),
+         CompanionConversationUi.cs
+  Notes: Press C → pick merc from list → free-text Ollama conversation + morale skills.
+         E interact with hired mercenaries was removed (HiredCompanionDialogue deleted).
+
+- Companion followers
+  Files: CompanionFollower2D.cs, HiredCompanionManager.cs, CompanionRecruiter.cs
 
 
 UI / HUD
-- Gold moved into inventory panel (bottom-right of blue panel)
+- Gold in inventory panel (bottom-right of blue panel)
   Files: InventoryPanelToggle.cs, FfStyleMenuUi.cs
-  Notes: Gold no longer top-right HUD. GoldDisplayUI.cs is legacy/disabled (empty stub).
+  Notes: GoldDisplayUI.cs is legacy/disabled stub.
+
+- Pickup log (bottom-right feed)
+  Files: PickupLogUI.cs
+
+- Inventory debug logs
+  Files: Inventory.cs (ItemAddContext.Pickup vs Gather), PlayerMiningController.cs, QuestMineralPickup.cs
+  Notes: Console shows [Pickup] and [Gather] lines on successful adds.
 
 - Pause menu Controls screen
-  Files: PauseMenuController.cs, GameControlsReference.cs, FfStyleMenuUi.cs
-  Notes: Lists WASD, E, Tab, combat keys, etc.
+  Files: PauseMenuController.cs, GameControlsReference.cs
+  Notes: Lists C for merc talk, E for interact/gather, Tab, combat keys, etc.
 
 - Quest log (top-right)
   Files: QuestLogUI.cs
-  Notes: Auto-spawns DDOL at runtime. Hidden during combat.
+  Notes: Auto-spawns DDOL. Hidden during combat. Smaller font, faded blue panel.
 
-- Quest waypoint arrow (floats near player)
+- Quest waypoint arrow
   Files: QuestWaypointArrow.cs, QuestWaypointDirector.cs
-  Notes: Points: blacksmith → commission ore → supplementary veins → blacksmith.
-         Hidden in combat/dialogue/pause.
+  Notes: blacksmith → commission ore → supplementary veins → blacksmith.
 
 - Gather prompt ("Hold E to gather")
   Files: PlayerMiningController.cs
-  Notes: MERGED INTO THIS FILE. Do NOT recreate GatherResourcePromptUI.cs — it was deleted
-         due to CS0246/circular ref issues. Bottom-center HUD.
+  Notes: MERGED INTO THIS FILE. Do NOT recreate GatherResourcePromptUI.cs.
+         Bottom-center faded hud-panel--faded. Keyboard-only label (not "Button North").
 
-- Faded translucent panels (quest log + gather prompt ONLY)
-  Files: CombatBattleHud.uss (Assets/Resources/Combat/ and Assets/UI/Combat/)
-  Notes: Class hud-panel--faded: rgba(0,0,128,0.45). Inventory/pause/combat panels unchanged.
-
-- Gather prompt keyboard label only
-  Files: PlayerMiningController.GetInteractKeyLabel()
-  Notes: Uses InputBinding.MaskByGroup("Keyboard&Mouse") so it shows E, not gamepad "Button North".
+- Blacksmith small-talk inventory fix
+  Files: BlacksmithQuestGiver.cs
+  Notes: System prompt includes live inventory; filter for contradictory LLM lines.
 
 
 QUEST SYSTEMS
-- Quest log dynamic objectives
+- Dynamic quest log objectives + supplementary ore line
   Files: QuestLogUI.cs, ForgeQuestManager.cs
-  Notes: visit blacksmith → find material → return material → continue exploring;
-         second line for missing supplementary ore (e.g. Iron).
 
-- CommissionDelivered flag
-  Files: ForgeQuestManager.cs
-  Notes: Set on successful turn-in; cleared on new ore pickup / new day.
-
-- Supplementary ore in quest log
-  Files: ForgeQuestManager.IsMissingSupplementaryTurnIn()
-  Notes: Shows "Collect {Iron} from the mines." when needed.
-
-- Waypoint to supplementary veins
-  Files: QuestWaypointDirector.cs, IronVein.TryGetNearestWorldPosition()
-  Notes: After main commission collected, arrow points to nearest matching IronVein until player has iron.
-
-- Commission spawn position for arrow
-  Files: QuestMineralSpawner.TryGetActiveSpawnPosition()
-  Notes: Singleton Instance on spawner.
+- CommissionDelivered flag, waypoint helpers
+  Files: ForgeQuestManager.cs, QuestMineralSpawner.cs, IronVein.cs
 
 
-GATHERING / RESOURCES
-- Robust "in range" detection
-  Files: IronVein.TryGetGatherNodeAtPosition()
-  Notes: Trigger registry + OverlapPoint + padded ClosestPoint on colliders.
-
-- Gather prompt visibility
-  Files: PlayerMiningController.cs
-  Notes: Hides during pause, dialogue, forge choice UI.
-
-
-DOCUMENTATION (docs/)
-- high-concept.txt, setup.md, refinements-changes.md, ollama-plan.md, prompts-used.md, docs/README.md
-- Root README.md — Ollama install, must run qwen3:8b in background
-
-
-3. QUEST LOG OBJECTIVE FLOW (EXACT BEHAVIOR)
+4. QUEST LOG OBJECTIVE FLOW
 --------------------------------------------------------------------------------
 
 1. No active quest: "Visit the blacksmith for work."
 2. Quest active, no commission ore yet: "Find {QuestMaterialName} resource."
-3. Has commission ore (picked up / in inventory): "Return {QuestMaterialName} to the blacksmith."
-4. After turn-in, nothing left to fetch: "Continue exploring."
-5. If supplementary ore required and missing: extra line "Collect {Iron DisplayName} from the mines."
+3. Has commission ore: "Return {QuestMaterialName} to the blacksmith."
+4. After turn-in: "Continue exploring."
+5. If supplementary ore required and missing: "Collect {Iron DisplayName} from the mines."
 
 Quest log hidden when CombatAdditiveCoordinator.IsCombatActiveOrLoading.
 
 
-4. WAYPOINT ARROW FLOW
+5. WAYPOINT ARROW FLOW
 --------------------------------------------------------------------------------
 
 1. No quest / need blacksmith → blacksmith
-2. Quest active, main ore not collected → quest mineral spawn (QuestMineralSpawner)
-3. Main ore collected, supplementary missing → nearest IronVein matching ForgeIronTurnInItem
+2. Quest active, main ore not collected → quest mineral spawn
+3. Main ore collected, supplementary missing → nearest matching IronVein
 4. Otherwise → blacksmith (turn-in)
 
-Arrow: QuestWaypointArrow.cs — procedural triangle, ~55% scale, tip points toward target, orbits player in LateUpdate.
+
+6. EXPLORATION CONTROLS
+--------------------------------------------------------------------------------
+
+WASD / arrows     Move
+E                 Interact (NPCs, dialogue, hold to gather) — NOT hired mercs
+C                 Talk to hired mercenary (party picker → Ollama chat)
+Tab (hold)        Inventory + gold
+Enter / Z         Confirm menu / dialogue
+Esc / P           Pause
+Esc / X           Cancel choice menu
 
 
-5. IMPORTANT FILES TO READ FIRST
+7. IMPORTANT FILES TO READ FIRST
 --------------------------------------------------------------------------------
 
 Back To The Forge/Assets/Scripts/
+  Companions/CompanionTalkMenuController.cs
+  Companions/CompanionConversationUi.cs
+  Companions/CompanionRecruiter.cs
+  Companions/HiredCompanionManager.cs
   Quest/ForgeQuestManager.cs
   Quest/QuestLogUI.cs
   Quest/QuestWaypointDirector.cs
-  Quest/QuestWaypointArrow.cs
-  Quest/QuestMineralSpawner.cs
   Quest/BlacksmithQuestGiver.cs
-  PlayerMiningController.cs          (gather prompt UI lives HERE)
-  IronVein.cs
-  Inventory/InventoryPanelToggle.cs
-  UI/FfStyleMenuUi.cs
-  CombatAdditiveCoordinator.cs
+  PlayerMiningController.cs
+  PlayerMovement2D.cs
+  RiskyGroundEncounter2D.cs
+  Inventory/Inventory.cs
+  UI/PickupLogUI.cs
+  UI/GameControlsReference.cs
   Dialogue/OllamaDialogueService.cs
-  PauseMenuController.cs
+  CombatAdditiveCoordinator.cs
 
-Back To The Forge/Assets/Resources/Combat/CombatBattleHud.uss  (hud-panel--faded)
+Back To The Forge/Assets/Sprites/              — generated character art
+Back To The Forge/Assets/Sprites/Mercenaries/  — merc walk + battle-ready sheets
 
 
-6. GOTCHAS / BUGS ALREADY HIT
+8. GOTCHAS / BUGS ALREADY HIT
 --------------------------------------------------------------------------------
 
-1. GatherResourcePromptUI.cs was REMOVED — caused CS0246 circular reference with PlayerMiningController.
-   All gather UI is in PlayerMiningController.cs. Do not re-split without fixing meta/asm issues.
+1. GatherResourcePromptUI.cs was REMOVED — caused CS0246 with PlayerMiningController.
+   All gather UI is in PlayerMiningController.cs.
 
-2. IronVein.cs: use UnityEngine.Object.FindObjectsByType, not Object.FindObjectsByType
-   (ambiguous with System.Object when using System;).
+2. HiredCompanionDialogue.cs was REMOVED — merc talk is C-menu only now.
 
-3. Gather prompt didn't show for a long time because: DDOL bootstrap on Main Menu, unreliable
-   trigger-only detection, UI layout. Fixed by: UI on player + TryGetGatherNodeAtPosition.
+3. IronVein.cs: use UnityEngine.Object.FindObjectsByType, not bare Object (ambiguous with System.Object).
 
-4. Player prefab interactAction may be null in prefab but IS wired in Exploration Scene instance override.
+4. PlayerMovement2D.IsPlayerCharacterCollider — must be leader rigidbody only; companions excluded.
 
-5. Git: team prefers not to commit unless asked; many changes may be local only.
+5. Risky ground: chancePerRoll is per tick while inside zone; huge collider scale = constant rolls.
+
+6. Git: team prefers not to commit unless asked; check git status before pushing.
 
 
-7. OLLAMA DEFAULTS (RUNTIME)
+9. OLLAMA DEFAULTS
 --------------------------------------------------------------------------------
 
 - Host: http://127.0.0.1:11434
-- Model: qwen3:8b (pin in docs for reproducibility)
+- Model: qwen3:8b
 - Service: OllamaDialogueService.cs
-- LLM is flavor only — game state changed only via parsed JSON (forge quest) and validated fallbacks.
+- LLM is flavor only — game state via parsed JSON (forge quest) and validated fallbacks.
 
 
-8. LECTURER FEEDBACK (AI "NOT IMPACTFUL ENOUGH") — IDEAS ONLY, NOT IMPLEMENTED
+10. SUGGESTED PROMPT FOR TEAMMATE'S CURSOR
 --------------------------------------------------------------------------------
 
-Current AI: blacksmith commission JSON, NPC/merc dialogue, encounter intro. Feels thin because
-it mostly rewrites lines without changing loop.
-
-Suggested extensions (discussion only):
-- Surface invented ore name in pickup/inventory/turn-in
-- Merc combat barks using existing persona
-- Daily rumor board on new day
-- Session memory in prompts (fights, hires, turn-ins)
-- Structured hint field in quest JSON for quest log / waypoints
+"I'm continuing Back To The Forge (Unity 6, Exploration Scene). Read docs/cursor-handoff.txt and docs/context.md.
+Recent work: C-key mercenary talk menu, quest log + waypoint arrow, gather prompt in PlayerMiningController,
+risky ground pacing fix, mercenary trigger dedupe, generated character sprites in Assets/Sprites/.
+Do not recreate GatherResourcePromptUI or HiredCompanionDialogue. Ollama runs locally. Check git before commit."
 
 
-9. SUGGESTED PROMPT FOR FRIEND'S CURSOR
+11. PLAYTEST CHECKLIST
 --------------------------------------------------------------------------------
 
-"I'm continuing Back To The Forge (Unity 6, Exploration Scene). Read docs/cursor-handoff.txt.
-Key recent work: quest log + waypoint arrow, gather prompt in PlayerMiningController, gold in
-inventory footer, faded hud-panel--faded on quest log and gather prompt only. Do not recreate
-GatherResourcePromptUI. Ollama runs locally. Check git status before committing."
-
-
-10. PLAYTEST CHECKLIST
---------------------------------------------------------------------------------
-
-[ ] Start Main Menu → Exploration (or play Exploration directly)
-[ ] Quest log top-right: "Visit blacksmith…" then updates after quest
-[ ] Waypoint arrow: blacksmith → ore → iron veins → blacksmith
-[ ] Quest log hides in combat, returns after
-[ ] Hold Tab: gold bottom-right of inventory panel
-[ ] Walk to iron/tree: "Hold E to gather" (faded blue, bottom center)
-[ ] Ollama running: blacksmith gives invented ore name
+[ ] Start Main Menu → Exploration
+[ ] Quest log + waypoint arrow through forge quest flow
+[ ] Hold Tab: gold bottom-right of inventory
+[ ] Walk to vein: "Hold E to gather" (faded panel)
+[ ] Hire mercenaries at camp; press C → pick merc → Ollama chat (E should NOT talk to hired mercs)
+[ ] Risky ground: fights not chaining instantly after each win
+[ ] Character sprites visible (player, NPCs, mercs where assigned)
+[ ] Ollama running: blacksmith commission + merc chat
